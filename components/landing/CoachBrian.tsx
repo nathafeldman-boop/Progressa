@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Reveal } from "./reveal";
 
 const MESSAGES = [
@@ -12,34 +13,44 @@ const MESSAGES = [
 
 export function CoachBrian() {
   return (
-    <section className="lp-section relative">
+    <section className="lp-section relative overflow-hidden">
       <div className="lp-container grid gap-12 md:grid-cols-2 md:items-center">
         <Reveal className="order-2 md:order-1">
-          <div className="lp-card relative mx-auto flex w-full max-w-sm flex-col gap-3 overflow-hidden p-5">
-            <div className="lp-glow-ring" style={{ width: 200, height: 200, top: -70, left: -70 }} />
-            <div className="relative flex items-center gap-3 border-b border-[var(--lp-border)] pb-3">
-              <div className="lp-pulse relative flex h-10 w-10 items-center justify-center rounded-full bg-[var(--lp-accent-soft)] text-lg">
-                🧑‍🏫
-              </div>
-              <div>
-                <p className="font-display text-sm font-bold uppercase tracking-wide">Coach Brian</p>
-                <p className="text-xs text-[var(--lp-accent-strong)]">En ligne</p>
-              </div>
-            </div>
-
-            <div className="relative flex flex-col gap-2.5 pt-1">
-              {MESSAGES.map((m, i) => (
-                <div
-                  key={i}
-                  className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm ${
-                    m.from === "brian"
-                      ? "self-start rounded-tl-sm bg-[var(--lp-surface-2)] text-[var(--lp-text)]"
-                      : "self-end rounded-tr-sm bg-[var(--lp-accent)] text-[var(--lp-on-accent)]"
-                  }`}
-                >
-                  {m.text}
+          <div className="relative mx-auto flex w-full max-w-sm items-end justify-center">
+            <Image
+              src="/brian/coach-brian.png"
+              alt="Coach Brian"
+              width={420}
+              height={670}
+              className="lp-float relative z-0 -mr-10 h-52 w-auto shrink-0 drop-shadow-[0_16px_24px_rgba(16,35,26,0.15)] sm:h-64"
+              priority={false}
+            />
+            <div className="lp-card relative z-10 flex w-full max-w-[15.5rem] flex-col gap-3 overflow-hidden p-4 sm:max-w-[16.5rem]">
+              <div className="lp-glow-ring" style={{ width: 160, height: 160, top: -60, right: -60 }} />
+              <div className="relative flex items-center gap-2.5 border-b border-[var(--lp-border)] pb-2.5">
+                <div className="lp-pulse relative h-9 w-9 shrink-0 overflow-hidden rounded-full ring-2 ring-[var(--lp-accent-soft)]">
+                  <Image src="/brian/coach-brian-avatar.png" alt="" fill className="object-cover" sizes="36px" />
                 </div>
-              ))}
+                <div>
+                  <p className="font-display text-xs font-bold uppercase tracking-wide">Coach Brian</p>
+                  <p className="text-[0.7rem] text-[var(--lp-accent-strong)]">En ligne</p>
+                </div>
+              </div>
+
+              <div className="relative flex flex-col gap-2 pt-1">
+                {MESSAGES.map((m, i) => (
+                  <div
+                    key={i}
+                    className={`max-w-[88%] rounded-2xl px-3 py-2 text-xs leading-snug ${
+                      m.from === "brian"
+                        ? "self-start rounded-tl-sm bg-[var(--lp-surface-2)] text-[var(--lp-text)]"
+                        : "self-end rounded-tr-sm bg-[var(--lp-accent)] text-[var(--lp-on-accent)]"
+                    }`}
+                  >
+                    {m.text}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </Reveal>
