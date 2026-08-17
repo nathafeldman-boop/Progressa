@@ -1,14 +1,12 @@
+import Image from "next/image";
 import Link from "next/link";
-import { StadiumBackdrop, PlayerSilhouette } from "./decor";
+import { StadiumBackdrop } from "./decor";
 
 export function Hero() {
   return (
     <section className="relative overflow-hidden pt-16 pb-0 md:pt-20">
       <StadiumBackdrop className="absolute inset-0" />
-      <div
-        className="lp-glow-ring lp-pulse"
-        style={{ width: 420, height: 420, top: -140, left: -140 }}
-      />
+      <div className="lp-glow-ring lp-pulse" style={{ width: 420, height: 420, top: -140, left: -140 }} />
 
       <div className="lp-container relative grid gap-10 px-5 md:grid-cols-2 md:items-center md:gap-6 md:px-6">
         <div className="flex flex-col items-start gap-6 text-left">
@@ -41,12 +39,15 @@ export function Hero() {
           </p>
         </div>
 
-        <div className="relative mx-auto h-[320px] w-full max-w-xs md:h-[520px] md:max-w-none">
-          <div
-            className="lp-glow-ring"
-            style={{ width: 320, height: 320, bottom: -60, right: -20 }}
+        <div className="relative mx-auto h-[340px] w-full max-w-xs overflow-hidden rounded-[1.75rem] shadow-[0_30px_60px_-20px_rgba(16,35,26,0.35)] md:h-[560px] md:max-w-none">
+          <Image
+            src="/hero/stadium-player.jpg"
+            alt="Joueur de dos dans un stade, maillot numéro 10"
+            fill
+            priority
+            sizes="(min-width: 768px) 50vw, 100vw"
+            className="object-cover object-center"
           />
-          <PlayerSilhouette className="lp-float relative z-10 h-full w-full drop-shadow-[0_24px_40px_rgba(16,35,26,0.18)]" />
         </div>
       </div>
 
