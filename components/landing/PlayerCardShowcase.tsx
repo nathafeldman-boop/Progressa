@@ -49,7 +49,7 @@ export function PlayerCardShowcase() {
         </Reveal>
 
         <Reveal delayMs={120} className="mx-auto w-full max-w-sm">
-          <div className="lp-card relative overflow-hidden border-2 border-[var(--lp-accent-soft)] p-6 shadow-[0_30px_70px_-30px_rgba(53,214,124,0.4)]">
+          <div className="lp-card relative overflow-hidden border-2 border-[var(--lp-accent-soft)] p-6 shadow-[0_24px_50px_-24px_rgba(26,163,80,0.35)]">
             <div className="lp-glow-ring" style={{ width: 220, height: 220, top: -80, right: -80 }} />
             <div className="relative flex items-start justify-between">
               <div>

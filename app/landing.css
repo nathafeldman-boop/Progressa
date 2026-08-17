@@ -1,25 +1,25 @@
 /*
-  Landing page — stadium theme. Scoped under .lp so the rest of the app
-  (light theme, app shell) is untouched. Values are deliberate, not the
-  app's light-theme tokens: a football-at-night palette (deep pitch green,
-  floodlight white, one confident accent green).
+  Landing page — stadium theme, light. Scoped under .lp so the rest of the
+  app is untouched. Background stays white/near-white throughout (including
+  the hero) — green is reserved for buttons, accents and the player art,
+  never a page-wide background color.
 */
 .lp {
-  --lp-bg: #071510;
-  --lp-bg-2: #0a1f16;
-  --lp-surface: #0e2618;
-  --lp-surface-2: #123420;
-  --lp-border: rgba(233, 250, 240, 0.1);
-  --lp-border-strong: rgba(233, 250, 240, 0.18);
-  --lp-text: #f2fbf5;
-  --lp-text-muted: #9fbaa9;
-  --lp-text-dim: #6f8b7b;
-  --lp-accent: #35d67c;
-  --lp-accent-strong: #5cf29a;
-  --lp-accent-soft: rgba(53, 214, 124, 0.14);
-  --lp-on-accent: #052d15;
-  --lp-gold: #e3b23c;
-  --lp-danger: #e0685f;
+  --lp-bg: #ffffff;
+  --lp-bg-2: #f4f8f5;
+  --lp-surface: #ffffff;
+  --lp-surface-2: #eef6f1;
+  --lp-border: #e2e8e4;
+  --lp-border-strong: #cddad1;
+  --lp-text: #10231a;
+  --lp-text-muted: #5c6b63;
+  --lp-text-dim: #8a988f;
+  --lp-accent: #1aa350;
+  --lp-accent-strong: #0e7a3c;
+  --lp-accent-soft: rgba(26, 163, 80, 0.09);
+  --lp-on-accent: #ffffff;
+  --lp-gold: #b6871a;
+  --lp-danger: #c23b3b;
 
   background: var(--lp-bg);
   color: var(--lp-text);
@@ -72,44 +72,45 @@
 }
 
 .lp-card {
-  background: linear-gradient(180deg, var(--lp-surface), var(--lp-surface-2));
+  background: var(--lp-surface);
   border: 1px solid var(--lp-border);
   border-radius: 1.25rem;
+  box-shadow: 0 1px 2px rgba(16, 35, 26, 0.04), 0 8px 24px rgba(16, 35, 26, 0.05);
 }
 
-/* Pitch-line texture: faint horizontal + a center circle, used as a
-   background layer, never as foreground content. */
+/* Pitch-line texture: faint horizontal rules, used as a background layer,
+   never as foreground content. */
 .lp-pitch-lines {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.6;
   background-image:
     repeating-linear-gradient(
       to bottom,
-      rgba(233, 250, 240, 0.05) 0px,
-      rgba(233, 250, 240, 0.05) 1px,
+      rgba(16, 35, 26, 0.05) 0px,
+      rgba(16, 35, 26, 0.05) 1px,
       transparent 1px,
       transparent 64px
     );
   mask-image: linear-gradient(to bottom, black, transparent 85%);
 }
 
-/* Floodlight glow — soft radial washes, GPU-cheap (single gradient, no blur filter on large areas) */
+/* Floodlight wash — a soft mint glow, not a dark vignette */
 .lp-floodlights {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(60% 55% at 18% 0%, rgba(53, 214, 124, 0.22), transparent 60%),
-    radial-gradient(45% 40% at 90% 10%, rgba(92, 242, 154, 0.14), transparent 65%);
+    radial-gradient(60% 55% at 18% 0%, rgba(26, 163, 80, 0.12), transparent 60%),
+    radial-gradient(45% 40% at 90% 10%, rgba(26, 163, 80, 0.09), transparent 65%);
 }
 
 .lp-glow-ring {
   position: absolute;
   border-radius: 999px;
   filter: blur(48px);
-  background: radial-gradient(circle, rgba(53, 214, 124, 0.35), transparent 70%);
+  background: radial-gradient(circle, rgba(26, 163, 80, 0.2), transparent 70%);
   pointer-events: none;
 }
 
@@ -127,18 +128,18 @@
   letter-spacing: 0.03em;
   font-size: 1rem;
   color: var(--lp-on-accent);
-  background: linear-gradient(180deg, var(--lp-accent-strong), var(--lp-accent));
+  background: linear-gradient(180deg, var(--lp-accent), var(--lp-accent-strong));
   border: none;
   border-radius: 0.9rem;
   padding: 1.05rem 1.75rem;
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.35) inset,
-    0 10px 30px -8px rgba(53, 214, 124, 0.55);
+    0 10px 24px -10px rgba(26, 163, 80, 0.5);
   transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
 }
 .lp-btn-primary:hover { filter: brightness(1.05); transform: translateY(-1px); }
 .lp-btn-primary:active { transform: translateY(0); }
-.lp-btn-primary:focus-visible { outline: 2px solid var(--lp-accent-strong); outline-offset: 3px; }
+.lp-btn-primary:focus-visible { outline: 2px solid var(--lp-accent); outline-offset: 3px; }
 
 .lp-btn-secondary {
   display: inline-flex;
@@ -157,7 +158,7 @@
   padding: 1rem 1.5rem;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
-.lp-btn-secondary:hover { background: rgba(255, 255, 255, 0.04); border-color: var(--lp-accent); }
+.lp-btn-secondary:hover { background: var(--lp-accent-soft); border-color: var(--lp-accent); }
 
 /* Scroll reveal */
 .lp-reveal {

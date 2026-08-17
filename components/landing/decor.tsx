@@ -26,21 +26,21 @@ export function PlayerSilhouette({ number = "10", className }: { number?: string
     >
       <defs>
         <radialGradient id="lp-ground" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#35d67c" stopOpacity="0.28" />
-          <stop offset="100%" stopColor="#35d67c" stopOpacity="0" />
+          <stop offset="0%" stopColor="#1aa350" stopOpacity="0.16" />
+          <stop offset="100%" stopColor="#1aa350" stopOpacity="0" />
         </radialGradient>
         <linearGradient id="lp-jersey" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#1c4430" />
-          <stop offset="55%" stopColor="#0e2618" />
-          <stop offset="100%" stopColor="#081a11" />
+          <stop offset="55%" stopColor="#123420" />
+          <stop offset="100%" stopColor="#0a2016" />
         </linearGradient>
         <linearGradient id="lp-rim" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#5cf29a" stopOpacity="0" />
-          <stop offset="100%" stopColor="#5cf29a" stopOpacity="0.9" />
+          <stop offset="0%" stopColor="#1aa350" stopOpacity="0" />
+          <stop offset="100%" stopColor="#1aa350" stopOpacity="0.9" />
         </linearGradient>
         <linearGradient id="lp-skin" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#2a4a3a" />
-          <stop offset="100%" stopColor="#16281f" />
+          <stop offset="0%" stopColor="#5a4330" />
+          <stop offset="100%" stopColor="#3a2b1c" />
         </linearGradient>
       </defs>
 

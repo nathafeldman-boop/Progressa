@@ -46,7 +46,7 @@ export function Hero() {
             className="lp-glow-ring"
             style={{ width: 320, height: 320, bottom: -60, right: -20 }}
           />
-          <PlayerSilhouette className="lp-float relative z-10 h-full w-full drop-shadow-[0_30px_60px_rgba(0,0,0,0.5)]" />
+          <PlayerSilhouette className="lp-float relative z-10 h-full w-full drop-shadow-[0_24px_40px_rgba(16,35,26,0.18)]" />
         </div>
       </div>
 
