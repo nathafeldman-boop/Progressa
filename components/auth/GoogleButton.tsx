@@ -8,8 +8,9 @@ export function GoogleButton({ redirectTo }: { redirectTo: string }) {
   const [loading, setLoading] = useState(false);
 
   async function signInWithGoogle() {
-    setLoading(true);
     const supabase = createClient();
+    if (!supabase) return;
+    setLoading(true);
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}` },

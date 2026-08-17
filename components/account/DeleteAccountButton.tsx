@@ -17,7 +17,7 @@ export function DeleteAccountButton() {
     try {
       await fetch("/api/account/delete", { method: "DELETE" });
       const supabase = createClient();
-      await supabase.auth.signOut();
+      if (supabase) await supabase.auth.signOut();
       window.location.href = "/";
     } finally {
       setSubmitting(false);

@@ -9,6 +9,7 @@ import type { User } from "@prisma/client";
  */
 export async function syncInternalUser(): Promise<User | null> {
   const supabase = await createClient();
+  if (!supabase) return null;
   const {
     data: { user: authUser },
   } = await supabase.auth.getUser();
@@ -34,6 +35,7 @@ export async function syncInternalUser(): Promise<User | null> {
 
 export async function getCurrentInternalUser(): Promise<User | null> {
   const supabase = await createClient();
+  if (!supabase) return null;
   const {
     data: { user: authUser },
   } = await supabase.auth.getUser();

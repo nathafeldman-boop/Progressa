@@ -18,6 +18,11 @@ export function SignInForm({ redirectTo }: { redirectTo: string }) {
     setError(null);
     setLoading(true);
     const supabase = createClient();
+    if (!supabase) {
+      setLoading(false);
+      setError("Connexion indisponible pour le moment.");
+      return;
+    }
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (signInError) {

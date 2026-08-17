@@ -10,7 +10,7 @@ export function UserMenu() {
   async function handleSignOut() {
     setLoading(true);
     const supabase = createClient();
-    await supabase.auth.signOut();
+    if (supabase) await supabase.auth.signOut();
     window.location.href = "/";
   }
 
