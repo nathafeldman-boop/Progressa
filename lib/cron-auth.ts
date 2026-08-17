@@ -1,0 +1,6 @@
+/** Vercel Cron envoie `Authorization: Bearer <CRON_SECRET>` automatiquement. */
+export function isAuthorizedCronRequest(request: Request): boolean {
+  const secret = process.env.CRON_SECRET;
+  if (!secret) return false;
+  return request.headers.get("authorization") === `Bearer ${secret}`;
+}

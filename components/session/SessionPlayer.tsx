@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
 import { Button } from "@/components/ui/Button";
+import { MicroSurveyPrompt } from "@/components/session/MicroSurveyPrompt";
 
 export interface SessionBlockView {
   id: string;
@@ -52,6 +53,12 @@ export function SessionPlayer({
   const [recoveryNote, setRecoveryNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [expandedVariant, setExpandedVariant] = useState<Record<string, "easy" | "hard" | null>>({});
+  const [pendingSurvey, setPendingSurvey] = useState<{ surveyKey: string; question: string; options: string[] } | null>(null);
+
+  function goToDashboard() {
+    router.push("/dashboard");
+    router.refresh();
+  }
 
   async function complete() {
     if (!difficulty) return;
@@ -62,13 +69,39 @@ export function SessionPlayer({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ difficultyRating: difficulty, recoveryNote: recoveryNote || undefined }),
       });
-      if (res.ok) {
-        router.push("/dashboard");
-        router.refresh();
+      if (!res.ok) return;
+      const data = await res.json().catch(() => ({}));
+      const totalCompleted: number | undefined = data.totalCompleted;
+
+      // Micro-sondages en contexte réel (section 8): à la toute première
+      // séance terminée (tout le monde), puis "pourquoi pas Premium" aux
+      // 2e/3e séances pour les comptes gratuits uniquement.
+      if (totalCompleted === 1) {
+        setPendingSurvey({
+          surveyKey: "comment_connu",
+          question: "Comment as-tu connu [APP] ?",
+          options: ["Un ami", "Réseaux sociaux", "Mon club", "Recherche Google", "Autre"],
+        });
+      } else if (showPremiumBanner && (totalCompleted === 2 || totalCompleted === 3)) {
+        setPendingSurvey({
+          surveyKey: "pourquoi_pas_premium",
+          question: "Pourquoi Premium ne t'intéresse pas (pour l'instant) ?",
+          options: ["Trop cher", "Je veux tester encore", "Pas convaincu par l'utilité", "Je vais demander à mes parents"],
+        });
+      } else {
+        goToDashboard();
       }
     } finally {
       setSubmitting(false);
     }
+  }
+
+  if (pendingSurvey) {
+    return (
+      <div className="mx-auto max-w-md p-4">
+        <MicroSurveyPrompt {...pendingSurvey} onDone={goToDashboard} />
+      </div>
+    );
   }
 
   async function skip() {

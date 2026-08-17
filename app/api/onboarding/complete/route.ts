@@ -9,6 +9,8 @@ import { pickTargetWeekDays } from "@/lib/scheduling";
 import { getCurrentWeekStart } from "@/lib/week";
 import { generateWeeklyProgram } from "@/lib/ai/generate-program";
 import { persistWeeklyProgram } from "@/lib/programs/persist-weekly-program";
+import { sendEmailOnce } from "@/lib/email/send";
+import { welcomeEmail } from "@/lib/email/templates";
 
 /**
  * Finalise l'onboarding. Étape critique (doit réussir): synchroniser la
@@ -145,6 +147,13 @@ export async function POST(request: Request) {
     }
   } catch (err) {
     console.error("[onboarding/complete] initial program generation failed", err);
+  }
+
+  try {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+    await sendEmailOnce(user.id, user.email, "welcome", welcomeEmail(user.firstName, appUrl));
+  } catch (err) {
+    console.error("[onboarding/complete] welcome email failed", err);
   }
 
   return NextResponse.json({ ok: true });

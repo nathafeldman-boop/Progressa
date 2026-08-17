@@ -11,6 +11,8 @@ const isPublicRoute = createRouteMatcher([
   "/api/track",
   "/api/webhooks(.*)",
   "/api/cron(.*)",
+  "/admin(.*)", // protégé par son propre secret, indépendant de Clerk
+  "/api/admin(.*)",
   "/ressources(.*)",
   "/confidentialite",
   "/avis",
