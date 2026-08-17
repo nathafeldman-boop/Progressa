@@ -14,7 +14,7 @@ function SceneCreate() {
         🧑
         <span
           className="lp-reel-anim absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--lp-accent)] text-xs text-white shadow"
-          style={{ animation: "lp-reel-pop 400ms cubic-bezier(0.16,1,0.3,1) 900ms both" }}
+          style={{ animation: "lp-reel-pop 250ms cubic-bezier(0.16,1,0.3,1) 500ms both" }}
         >
           ✓
         </span>
@@ -30,7 +30,7 @@ function SceneCreate() {
                 className="lp-reel-bar h-full rounded-full"
                 style={{
                   background: "linear-gradient(90deg, var(--lp-accent-strong), var(--lp-accent))",
-                  animation: `lp-reel-grow-x 650ms cubic-bezier(0.16,1,0.3,1) ${300 + i * 500}ms both`,
+                  animation: `lp-reel-grow-x 360ms cubic-bezier(0.16,1,0.3,1) ${170 + i * 280}ms both`,
                   ["--w" as string]: "100%",
                 }}
               />
@@ -48,14 +48,14 @@ function SceneTrain() {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3">
       {EXERCISES.map((label, i) => {
-        const delay = i * 700;
+        const delay = i * 400;
         return (
           <div key={label} className="flex w-52 items-center gap-3">
             <span className="relative flex h-9 w-9 shrink-0 items-center justify-center">
               <svg
                 viewBox="0 0 36 36"
                 className="lp-reel-anim h-9 w-9 -rotate-90"
-                style={{ animation: `lp-reel-fade-up 300ms ease ${delay}ms both` }}
+                style={{ animation: `lp-reel-fade-up 180ms ease ${delay}ms both` }}
               >
                 <circle cx="18" cy="18" r={r} fill="none" stroke="var(--lp-surface-2)" strokeWidth="3" />
                 <circle
@@ -69,14 +69,14 @@ function SceneTrain() {
                   strokeDasharray={circ}
                   className="lp-reel-ring"
                   style={{
-                    animation: `lp-reel-ring-fill 700ms ease ${delay + 150}ms both`,
+                    animation: `lp-reel-ring-fill 400ms ease ${delay + 80}ms both`,
                     ["--circ" as string]: circ,
                   }}
                 />
               </svg>
               <span
                 className="lp-reel-anim absolute inset-0 flex items-center justify-center rounded-full bg-[var(--lp-accent)] text-xs font-bold text-white"
-                style={{ animation: `lp-reel-pop 350ms cubic-bezier(0.16,1,0.3,1) ${delay + 850}ms both` }}
+                style={{ animation: `lp-reel-pop 200ms cubic-bezier(0.16,1,0.3,1) ${delay + 470}ms both` }}
               >
                 ✓
               </span>
@@ -110,7 +110,7 @@ function SceneStats() {
                 className="lp-reel-bar h-full rounded-full"
                 style={{
                   background: "linear-gradient(90deg, var(--lp-accent-strong), var(--lp-accent))",
-                  animation: `lp-reel-grow-x 750ms cubic-bezier(0.16,1,0.3,1) ${200 + i * 220}ms both`,
+                  animation: `lp-reel-grow-x 400ms cubic-bezier(0.16,1,0.3,1) ${110 + i * 120}ms both`,
                   ["--w" as string]: `${stat.value}%`,
                 }}
               />
@@ -122,7 +122,7 @@ function SceneStats() {
         className="lp-reel-anim rounded-full bg-[var(--lp-accent)] px-3 py-1 text-xs font-bold text-white shadow"
         style={{
           animation:
-            "lp-reel-pop 400ms cubic-bezier(0.16,1,0.3,1) 1700ms both, lp-float 2.4s ease-in-out 2100ms infinite",
+            "lp-reel-pop 220ms cubic-bezier(0.16,1,0.3,1) 900ms both, lp-float 2.4s ease-in-out 1150ms infinite",
         }}
       >
         + 3 Vitesse
@@ -136,11 +136,11 @@ function SceneCard() {
     <div className="relative flex h-full flex-col items-center justify-center">
       <div
         className="lp-glow-ring lp-reel-anim"
-        style={{ width: 140, height: 140, animation: "lp-reel-pop 700ms cubic-bezier(0.16,1,0.3,1) both" }}
+        style={{ width: 140, height: 140, animation: "lp-reel-pop 400ms cubic-bezier(0.16,1,0.3,1) both" }}
       />
       <div
         className="lp-reel-anim lp-card relative flex w-40 flex-col items-center gap-2 border-2 border-[var(--lp-accent-soft)] p-4 text-center"
-        style={{ animation: "lp-reel-levelup 1400ms cubic-bezier(0.16,1,0.3,1) 250ms both" }}
+        style={{ animation: "lp-reel-levelup 750ms cubic-bezier(0.16,1,0.3,1) 140ms both" }}
       >
         <span className="text-3xl" aria-hidden>
           🃏
@@ -149,13 +149,13 @@ function SceneCard() {
         <span className="relative block h-4 w-24 text-[0.65rem] font-bold uppercase tracking-widest">
           <span
             className="lp-reel-anim absolute inset-0 text-[var(--lp-text-dim)]"
-            style={{ animation: "lp-reel-swap-out 400ms ease 1600ms both" }}
+            style={{ animation: "lp-reel-swap-out 220ms ease 900ms both" }}
           >
             Bronze
           </span>
           <span
             className="lp-reel-anim absolute inset-0 text-[var(--lp-accent-strong)]"
-            style={{ animation: "lp-reel-swap-in 400ms ease 1700ms both" }}
+            style={{ animation: "lp-reel-swap-in 220ms ease 950ms both" }}
           >
             Argent
           </span>
@@ -176,28 +176,28 @@ const STEPS: {
     n: "01",
     title: "Crée ton joueur",
     caption: "Poste, âge, objectifs — ta fiche joueur en une minute.",
-    durationMs: 4400,
+    durationMs: 2200,
     Scene: SceneCreate,
   },
   {
     n: "02",
     title: "Fais ton premier entraînement",
     caption: "Une séance guidée, exercice par exercice, avec Coach Brian.",
-    durationMs: 4800,
+    durationMs: 2200,
     Scene: SceneTrain,
   },
   {
     n: "03",
     title: "Gagne des stats",
     caption: "Chaque exercice réussi fait progresser tes statistiques réelles.",
-    durationMs: 4400,
+    durationMs: 2100,
     Scene: SceneStats,
   },
   {
     n: "04",
     title: "Fais évoluer ta carte",
     caption: "Ta carte change de rang à chaque vraie progression.",
-    durationMs: 4800,
+    durationMs: 2000,
     Scene: SceneCard,
   },
 ];
@@ -257,12 +257,16 @@ export function HowItWorksReel() {
         ))}
       </div>
 
-      <div
-        key={`stage-${active}`}
-        className="lp-reel-anim mt-5 flex h-56 items-center justify-center rounded-2xl bg-[var(--lp-surface-2)] sm:h-64"
-        style={{ animation: "lp-reel-stage-in 320ms ease both" }}
-      >
-        <ActiveScene />
+      <div className="lp-reel-jumbotron mt-5">
+        <span className="lp-reel-jumbotron-dot" />
+        <span className="lp-reel-jumbotron-dot" />
+        <div
+          key={`stage-${active}`}
+          className="lp-reel-anim flex h-56 items-center justify-center rounded-xl bg-[var(--lp-surface-2)] sm:h-64"
+          style={{ animation: "lp-reel-stage-in 320ms ease both" }}
+        >
+          <ActiveScene />
+        </div>
       </div>
 
       <div key={`meta-${active}`} className="lp-reel-anim mt-5 text-center" style={{ animation: "lp-reel-stage-in 320ms ease both" }}>

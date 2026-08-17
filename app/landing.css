@@ -288,6 +288,38 @@
   .lp-reel-ring { animation: none !important; stroke-dashoffset: 0 !important; }
 }
 
+/* Stage mounted like a stadium jumbotron screen */
+.lp-reel-jumbotron {
+  position: relative;
+  padding: 0.85rem;
+  border-radius: 1.5rem;
+  background: linear-gradient(160deg, #0c1a12, #16301f 55%, #0c1a12);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 25px 45px -22px rgba(8, 20, 12, 0.55);
+}
+.lp-reel-jumbotron::before {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  z-index: -1;
+  border-radius: 1.9rem;
+  background: radial-gradient(60% 60% at 50% 0%, rgba(26, 163, 80, 0.3), transparent 70%);
+  pointer-events: none;
+}
+.lp-reel-jumbotron-dot {
+  position: absolute;
+  top: 0.55rem;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+}
+.lp-reel-jumbotron-dot:first-child { left: 0.7rem; }
+.lp-reel-jumbotron-dot:last-child {
+  right: 0.7rem;
+  background: var(--lp-accent);
+  box-shadow: 0 0 6px var(--lp-accent);
+}
+
 /* Gamification — screens mocked up on floating phones */
 .lp-phone-float {
   animation: lp-float 4.5s ease-in-out infinite;

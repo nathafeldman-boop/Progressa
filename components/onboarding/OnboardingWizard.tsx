@@ -186,18 +186,72 @@ function ScreenAnneeNaissance({
   onChange: (v: number | null) => void;
   categoryLabel: string | null;
 }) {
+  const currentYear = new Date().getFullYear();
+  const minYear = currentYear - 70;
+  const maxYear = currentYear - 5;
+  const [query, setQuery] = useState(value ? String(value) : "");
+
+  const suggestions = useMemo(() => {
+    const digits = query.trim();
+    const years: number[] = [];
+    if (!digits) {
+      // Pas de saisie: on propose d'abord la tranche la plus probable (joueurs jeunes).
+      for (let y = Math.min(maxYear, currentYear - 6); y >= Math.max(minYear, currentYear - 19); y--) years.push(y);
+      return years;
+    }
+    for (let y = maxYear; y >= minYear; y--) {
+      if (String(y).startsWith(digits)) years.push(y);
+    }
+    return years.slice(0, 16);
+  }, [query, currentYear, minYear, maxYear]);
+
+  function pick(y: number) {
+    setQuery(String(y));
+    onChange(y);
+  }
+
+  function handleTyping(raw: string) {
+    const digits = raw.replace(/[^0-9]/g, "").slice(0, 4);
+    setQuery(digits);
+    if (digits.length === 4) {
+      const y = Number(digits);
+      onChange(y >= minYear && y <= maxYear ? y : null);
+    } else {
+      onChange(null);
+    }
+  }
+
   return (
     <div>
       <CardTitle>Ton année de naissance ?</CardTitle>
       <CardSubtitle className="mt-1">Ça nous permet de calculer ta catégorie et d&apos;adapter les séances.</CardSubtitle>
       <input
-        type="number"
         inputMode="numeric"
+        pattern="[0-9]*"
         className={`${fieldClass()} mt-6`}
-        placeholder="ex: 2010"
-        value={value ?? ""}
-        onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}
+        placeholder="Tape pour filtrer, ex: 2010"
+        value={query}
+        onChange={(e) => handleTyping(e.target.value)}
       />
+      {suggestions.length > 0 ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {suggestions.map((y) => (
+            <button key={y} type="button" onClick={() => pick(y)}>
+              <Chip
+                className={
+                  value === y
+                    ? "border-[var(--color-primary)] bg-[var(--color-primary-soft)] text-[var(--color-primary-strong)]"
+                    : ""
+                }
+              >
+                {y}
+              </Chip>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-3 text-xs text-[var(--color-text-muted)]">Aucune année ne correspond — vérifie les chiffres.</p>
+      )}
       {categoryLabel && (
         <p className="mt-3 font-display text-sm font-bold uppercase tracking-wide text-[var(--color-primary-strong)]">
           Catégorie {categoryLabel}
