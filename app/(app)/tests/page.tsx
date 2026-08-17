@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { TEST_PROTOCOLS, nextEligibleDate } from "@/lib/evaluation-tests";
+import { isInFuture } from "@/lib/time";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { TestSubmitForm } from "@/components/tests/TestSubmitForm";
 import { EvaluationTestType } from "@prisma/client";
@@ -27,7 +28,7 @@ export default async function TestsPage() {
       {Object.values(TEST_PROTOCOLS).map((protocol) => {
         const last = lastByType.get(protocol.type);
         const eligibleAt = last ? nextEligibleDate(last.recordedAt) : null;
-        const isLocked = !!eligibleAt && eligibleAt.getTime() > Date.now();
+        const isLocked = isInFuture(eligibleAt);
 
         return (
           <Card key={protocol.type}>

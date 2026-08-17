@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { resend, EMAIL_FROM } from "@/lib/email/resend";
+import { getResendClient, EMAIL_FROM } from "@/lib/email/resend";
 
 /**
  * Envoi d'email idempotent (jamais deux fois le même email, section 9) et
@@ -15,7 +15,7 @@ export async function sendEmailOnce(
     const existing = await prisma.emailSendLog.findUnique({ where: { userId_emailKey: { userId, emailKey } } });
     if (existing) return false;
 
-    await resend.emails.send({ from: EMAIL_FROM, to: email, subject: content.subject, html: content.html });
+    await getResendClient().emails.send({ from: EMAIL_FROM, to: email, subject: content.subject, html: content.html });
     await prisma.emailSendLog.create({ data: { userId, emailKey } });
     return true;
   } catch (err) {

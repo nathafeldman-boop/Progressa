@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { stripe } from "@/lib/stripe";
+import { getStripeClient } from "@/lib/stripe";
 
 /** Résiliation/gestion en 1 clic via le portail client Stripe (section 3). */
 export async function POST(request: Request) {
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   if (!subscription?.stripeCustomerId) return NextResponse.json({ error: "no_subscription" }, { status: 400 });
 
   const origin = request.headers.get("origin") ?? process.env.NEXT_PUBLIC_APP_URL ?? "";
-  const session = await stripe.billingPortal.sessions.create({
+  const session = await getStripeClient().billingPortal.sessions.create({
     customer: subscription.stripeCustomerId,
     return_url: `${origin}/parametres/abonnement`,
   });

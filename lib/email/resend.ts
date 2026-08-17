@@ -1,11 +1,16 @@
 import { Resend } from "resend";
 
-const globalForResend = globalThis as unknown as { resend?: Resend };
+// Instanciation paresseuse: le SDK Resend lève une erreur dès le
+// constructeur si la clé API est vide, ce qui ferait planter le build (et
+// toute route qui importe ce module) tant que RESEND_API_KEY n'est pas
+// configurée. On ne construit le client qu'au premier envoi réel.
+let cached: Resend | null = null;
 
-export const resend = globalForResend.resend ?? new Resend(process.env.RESEND_API_KEY ?? "");
-
-if (process.env.NODE_ENV !== "production") {
-  globalForResend.resend = resend;
+export function getResendClient(): Resend {
+  if (!cached) {
+    cached = new Resend(process.env.RESEND_API_KEY ?? "re_dev_placeholder");
+  }
+  return cached;
 }
 
 export const EMAIL_FROM = process.env.EMAIL_FROM ?? "[APP] <no-reply@example.com>";

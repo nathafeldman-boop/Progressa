@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { isPremiumActive } from "@/lib/subscription";
+import { isInFuture } from "@/lib/time";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { SubscriptionActions } from "@/components/billing/SubscriptionActions";
 
@@ -22,7 +23,7 @@ export default async function AbonnementPage() {
             ? "Programme 100% personnalisé, jusqu'à 3 séances/semaine, bibliothèque complète."
             : "1 séance générique par semaine, accès limité à la bibliothèque d'exercices."}
         </CardSubtitle>
-        {subscription?.bonusPremiumUntil && subscription.bonusPremiumUntil.getTime() > Date.now() && (
+        {subscription?.bonusPremiumUntil && isInFuture(subscription.bonusPremiumUntil) && (
           <p className="mt-2 text-xs font-semibold text-[var(--color-primary-strong)]">
             🎁 Premium offert par le parrainage jusqu&apos;au {subscription.bonusPremiumUntil.toLocaleDateString("fr-FR")}
           </p>

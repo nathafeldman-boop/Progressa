@@ -11,7 +11,7 @@ import { getAgeCategory } from "@/lib/age-category";
 import { COUNTRY_LABELS, FRANCE_LIGUES, getDistrictsForLigue, getNiveauxForCountry } from "@/lib/geo";
 import { EQUIPMENT_EMOJI, EQUIPMENT_LABELS, OBJECTIVE_EMOJI, OBJECTIVE_LABELS, POSITION_LABELS, WEEKDAY_LABELS } from "@/lib/labels";
 import { getOrCreateAnonId, loadOnboardingData, saveOnboardingData, setReferralCode } from "@/lib/onboarding/storage";
-import { ONBOARDING_SCREEN_KEYS, EMPTY_ONBOARDING_DATA, type OnboardingData } from "@/lib/onboarding/types";
+import { ONBOARDING_SCREEN_KEYS, type OnboardingData } from "@/lib/onboarding/types";
 import { trackClick, trackOnboardingFunnel } from "@/lib/analytics/track";
 
 const TOTAL_SCREENS = ONBOARDING_SCREEN_KEYS.length;
@@ -22,21 +22,20 @@ function fieldClass() {
 
 export function OnboardingWizard() {
   const [step, setStep] = useState(0);
-  const [data, setData] = useState<OnboardingData>(EMPTY_ONBOARDING_DATA);
-  const [anonId, setAnonId] = useState("");
+  // Initialisation paresseuse plutôt qu'un effet: localStorage n'est lisible
+  // que côté client, mais useState((..) => ..) s'exécute déjà lors du rendu
+  // client (hydratation), donc pas besoin d'un effet + setState séparé.
+  const [data, setData] = useState<OnboardingData>(() => loadOnboardingData());
+  const [anonId] = useState<string>(() => getOrCreateAnonId());
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setAnonId(getOrCreateAnonId());
-    setData(loadOnboardingData());
     const ref = new URLSearchParams(window.location.search).get("ref");
     if (ref) setReferralCode(ref);
   }, []);
 
   useEffect(() => {
-    if (!anonId) return;
     trackOnboardingFunnel(anonId, step, ONBOARDING_SCREEN_KEYS[step], "VIEWED");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, anonId]);
 
   function update<K extends keyof OnboardingData>(key: K, value: OnboardingData[K]) {

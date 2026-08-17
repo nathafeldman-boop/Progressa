@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { stripe, STRIPE_PRICE_IDS } from "@/lib/stripe";
+import { getStripeClient, STRIPE_PRICE_IDS } from "@/lib/stripe";
 
 const bodySchema = z.object({
   plan: z.enum(["MONTHLY", "ANNUAL"]),
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
   const existingSubscription = await prisma.subscription.findUnique({ where: { userId: user.id } });
   const origin = request.headers.get("origin") ?? process.env.NEXT_PUBLIC_APP_URL ?? "";
 
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripeClient().checkout.sessions.create({
     mode: "subscription",
     customer: existingSubscription?.stripeCustomerId ?? undefined,
     customer_email: existingSubscription?.stripeCustomerId ? undefined : user.email,

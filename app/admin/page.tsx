@@ -1,17 +1,20 @@
 import { isAdminAuthenticated } from "@/lib/admin/auth";
 import { getFeatureUsage, getGlobalStats, getOnboardingFunnel, getOnlineNow } from "@/lib/admin/queries";
 import { AdminLoginForm } from "@/components/admin/AdminLoginForm";
+import { TestimonialModeration } from "@/components/admin/TestimonialModeration";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
+import { prisma } from "@/lib/prisma";
 
 export default async function AdminPage() {
   const authenticated = await isAdminAuthenticated();
   if (!authenticated) return <AdminLoginForm />;
 
-  const [online, stats, funnel, usage] = await Promise.all([
+  const [online, stats, funnel, usage, pendingTestimonials] = await Promise.all([
     getOnlineNow(),
     getGlobalStats(),
     getOnboardingFunnel(),
     getFeatureUsage(),
+    prisma.testimonial.findMany({ where: { status: "PENDING" }, orderBy: { createdAt: "asc" } }),
   ]);
 
   const firstScreenViews = funnel[0]?.viewed ?? 0;
@@ -78,6 +81,13 @@ export default async function AdminPage() {
             </tbody>
           </table>
         </Card>
+      </section>
+
+      <section>
+        <h2 className="mb-2 font-display text-sm font-bold uppercase tracking-wide text-[var(--color-text-muted)]">
+          Avis en attente de modération ({pendingTestimonials.length})
+        </h2>
+        <TestimonialModeration testimonials={pendingTestimonials} />
       </section>
 
       <section>

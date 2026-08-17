@@ -1,36 +1,123 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# [APP]
 
-## Getting Started
+Préparateur physique et technique personnel pour jeunes footballeurs (13-18 ans,
+extensible aux adultes amateurs). L'app génère un programme hebdomadaire
+personnalisé par IA, toujours en complément — jamais en remplacement — du
+calendrier club.
 
-First, run the development server:
+> Le nom de l'app n'est pas encore choisi. `[APP]` est un placeholder utilisé
+> partout dans le code (`lib/app-config.ts`) — remplace cette seule constante
+> une fois le nom validé.
+
+## Stack
+
+- **Next.js 16** (App Router, TypeScript strict, Turbopack)
+- **PostgreSQL + Prisma 6** ([`prisma/schema.prisma`](./prisma/schema.prisma))
+- **Clerk** pour l'auth, synchronisée vers une table `User` interne
+  (`lib/auth.ts`) — l'app ne dépend jamais uniquement de l'id du provider
+- **Stripe** (Checkout + Customer Portal + webhooks) — paiement direct, sans
+  essai gratuit
+- **API Claude (Anthropic)**, `claude-opus-5`, pour la génération de
+  programme — sortie validée par Zod contre le catalogue d'exercices, avec
+  garde-fou anti-hallucination et repli déterministe (`lib/ai/`)
+- **Resend** pour les emails transactionnels
+- **Design system** en tokens CSS (thème clair, accent vert,
+  `app/globals.css`), prêt pour un futur toggle sombre
+- PWA installable (manifest + service worker minimal)
+
+## Démarrer en local
 
 ```bash
+npm install
+cp .env.example .env.local   # renseigner les variables (voir plus bas)
+npm run db:generate
+npm run db:push              # ou db:migrate si tu préfères des migrations versionnées
+npm run db:seed              # charge le catalogue d'exercices (~60) et les badges
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- `npm test` — tests unitaires (node:test) sur la logique métier critique:
+  calcul de catégorie d'âge, couverture du catalogue par objectif, garde-fou
+  anti-hallucination de l'IA, calcul de la carte joueur.
+- `npm run lint` / `npx tsc --noEmit` — le repo est 100% propre sur les deux.
+- `npm run build` — build de production validé (Next 16 / Turbopack).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Variables d'environnement
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Usage |
+|---|---|
+| `DATABASE_URL` | Connexion PostgreSQL (Prisma) |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` | Auth Clerk |
+| `ANTHROPIC_API_KEY` | Génération de programme (Claude API) |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Paiement |
+| `STRIPE_PRICE_ID_MONTHLY`, `STRIPE_PRICE_ID_ANNUAL` | Prix Stripe (les réductions/coupons se configurent côté Stripe, jamais en dur dans le code) |
+| `RESEND_API_KEY`, `EMAIL_FROM` | Emails transactionnels |
+| `ADMIN_DASHBOARD_SECRET` | Accès au dashboard admin (`/admin`), protection par secret simple |
+| `CRON_SECRET` | Vérifie que les appels aux routes `/api/cron/*` viennent bien de Vercel Cron |
+| `NEXT_PUBLIC_APP_URL` | URL publique (liens dans les emails, redirections Stripe) |
 
-## Learn More
+Les clients Stripe/Resend sont **initialisés paresseusement**
+(`lib/stripe.ts`, `lib/email/resend.ts`): l'app build et démarre même sans
+ces clés, elles ne sont requises qu'au moment d'un vrai paiement/envoi.
 
-To learn more about Next.js, take a look at the following resources:
+## Architecture
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+app/
+  (app)/            shell authentifié (dashboard, séance, tests, carte, journal, réglages)
+  onboarding/        wizard 8 écrans (localStorage jusqu'à la création de compte)
+  admin/             dashboard interne protégé par secret
+  api/               routes (auth, IA, Stripe, cron, analytics...)
+lib/
+  ai/                génération de programme: schéma Zod, prompts, garde-fou, repli
+  exercises/         catalogue d'exercices (source unique de vérité, ~60)
+  programs/          persistance/régénération des programmes hebdomadaires
+  analytics/         couche first-party (page views, clics, funnel, micro-sondages)
+  onboarding/        état localStorage + schéma de validation
+  ...
+prisma/schema.prisma modèle de données complet
+tests/                tests node:test
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Le garde-fou IA (`lib/ai/`)
 
-## Deploy on Vercel
+L'IA ne peut **jamais** inventer un exercice: le schéma Zod passé au modèle
+est construit dynamiquement à partir des slugs du catalogue déjà filtré
+(âge, poste, matériel, douleurs non résolues). Toute réponse hors catalogue
+est rejetée par le parsing lui-même. En cas d'échec (deux tentatives), un
+programme-template déterministe prend le relais — le joueur n'a jamais
+d'écran d'erreur. Voir `tests/ai-guard.test.ts` pour la preuve par le test.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Base de données et affiliation créateurs externes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Conformément au brief produit, la base de données de production et le
+système d'affiliation créateurs externes (liens `/r/<code>` pour les
+créateurs, commissions, offres de lancement) **existent déjà ailleurs** et
+seront réimportés tel quel — c'est une migration de données, hors périmètre
+de ce repo. Seul le parrainage joueur-à-joueur (viral loop natif,
+`lib/referral.ts`) est implémenté ici.
+
+## Ce qui est implémenté
+
+Onboarding 8 écrans non-bloquant · génération IA + repli déterministe ·
+catalogue 60 exercices (couverture vérifiée par test pour chaque objectif,
+y compris en freemium) · lecteur de séance · streaks/badges · tests
+d'évaluation + carte joueur partageable · Stripe (checkout, portail,
+webhooks) · parrainage joueur-à-joueur avec verrou anti double-crédit ·
+analytics first-party + dashboard admin + micro-sondages en contexte ·
+emails transactionnels + relances + cron hebdomadaire · PWA installable ·
+RGPD (suppression de compte en cascade, politique de confidentialité) ·
+journal santé complet (check-in, douleurs, croissance, matchs, objectifs) ·
+avis modérés · pages éditoriales (nutrition, mental, filière pro réaliste).
+
+## Backlog / limitations connues
+
+- **Notifications push web** : le modèle de données (`PushSubscription`)
+  existe, l'intégration Web Push (VAPID, service worker push) reste à faire.
+- **Programme d'affiliation créateurs externes** : volontairement absent,
+  voir ci-dessus.
+- **Favicon** : toujours celui du scaffold Next.js par défaut — les vraies
+  icônes PWA sont dans `public/icons/` (générées, prêtes à l'emploi), il
+  reste à produire un `favicon.ico` multi-résolution assorti.
+- Les seuils de conversion mesure → note (`lib/player-card.ts`) sont
+  indicatifs et à recalibrer avec des données réelles.

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
-import { stripe, STRIPE_PRICE_IDS } from "@/lib/stripe";
+import { getStripeClient, STRIPE_PRICE_IDS } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { creditReferralOnFriendPayment } from "@/lib/referral";
 
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
   const rawBody = await request.text();
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
+    event = getStripeClient().webhooks.constructEvent(rawBody, signature, webhookSecret);
   } catch (err) {
     console.error("[webhooks/stripe] signature verification failed", err);
     return NextResponse.json({ error: "invalid_signature" }, { status: 400 });
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
         const session = event.data.object as Stripe.Checkout.Session;
         if (session.mode === "subscription" && session.subscription) {
           const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription.id;
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const subscription = await getStripeClient().subscriptions.retrieve(subscriptionId);
           const userId = await syncSubscriptionFromStripe(subscription, session.metadata?.userId ?? session.client_reference_id ?? undefined);
           if (userId) {
             // Un seul crédit possible par filleul, verrouillé par la

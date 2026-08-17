@@ -44,6 +44,18 @@ export default function Home() {
           </CardSubtitle>
         </Card>
       </section>
+
+      <footer className="mx-auto flex w-full max-w-md justify-center gap-4 pb-10 text-xs text-[var(--color-text-muted)]">
+        <Link href="/ressources" className="underline">
+          Ressources
+        </Link>
+        <Link href="/avis" className="underline">
+          Avis
+        </Link>
+        <Link href="/confidentialite" className="underline">
+          Confidentialité
+        </Link>
+      </footer>
     </main>
   );
 }
