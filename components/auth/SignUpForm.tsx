@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { GoogleButton } from "@/components/auth/GoogleButton";
 import { Button } from "@/components/ui/Button";
 
@@ -9,42 +8,14 @@ export function SignUpForm({ redirectTo }: { redirectTo: string }) {
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  // Phase design: on ne crée pas encore de vrai compte Supabase ici — on
+  // veut pouvoir juger l'expérience de bout en bout sans backend d'auth.
+  // À remplacer par le vrai supabase.auth.signUp() quand l'auth reviendra
+  // au premier plan.
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
-    setLoading(true);
-    const supabase = createClient();
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { first_name: firstName },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
-      },
-    });
-    setLoading(false);
-    if (signUpError) {
-      setError(signUpError.message === "User already registered" ? "Un compte existe déjà avec cet email." : "Impossible de créer le compte.");
-      return;
-    }
-    // Si la confirmation email est désactivée, une session est déjà ouverte.
-    if (data.session) {
-      window.location.href = redirectTo;
-      return;
-    }
-    setSent(true);
-  }
-
-  if (sent) {
-    return (
-      <div className="w-full max-w-sm rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 text-sm">
-        Un email de confirmation vient de t&apos;être envoyé. Clique sur le lien pour activer ton compte.
-      </div>
-    );
+    window.location.href = redirectTo;
   }
 
   return (
@@ -83,9 +54,8 @@ export function SignUpForm({ redirectTo }: { redirectTo: string }) {
           onChange={(e) => setPassword(e.target.value)}
           className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-4 py-2"
         />
-        {error && <p className="text-sm text-[var(--color-danger)]">{error}</p>}
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Création..." : "Créer mon compte"}
+        <Button type="submit" className="w-full">
+          Créer mon compte
         </Button>
       </form>
     </div>

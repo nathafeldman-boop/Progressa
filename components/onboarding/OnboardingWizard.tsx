@@ -1,15 +1,29 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Equipment, Objective, Position, Weekday, type Country } from "@prisma/client";
-import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
+import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { BrianAvatar } from "@/components/brian/BrianAvatar";
+import { DragSliderField } from "@/components/onboarding/DragSliderField";
+import { OnboardingBackground } from "@/components/onboarding/OnboardingBackground";
+import { SuggestField } from "@/components/onboarding/SuggestField";
 import { getAgeCategory } from "@/lib/age-category";
 import { COUNTRY_LABELS, FRANCE_LIGUES, getDistrictsForLigue, getNiveauxForCountry } from "@/lib/geo";
 import { EQUIPMENT_EMOJI, EQUIPMENT_LABELS, OBJECTIVE_EMOJI, OBJECTIVE_LABELS, POSITION_LABELS, WEEKDAY_LABELS } from "@/lib/labels";
+import {
+  composeOnboardingBirthYear,
+  composeOnboardingBodyRhythm,
+  composeOnboardingCountryLevel,
+  composeOnboardingEquipment,
+  composeOnboardingIntro,
+  composeOnboardingObjective,
+  composeOnboardingPosition,
+  composeOnboardingRevelation,
+} from "@/lib/brian/messages";
 import { getOrCreateAnonId, loadOnboardingData, saveOnboardingData, setReferralCode } from "@/lib/onboarding/storage";
 import { ONBOARDING_SCREEN_KEYS, type OnboardingData } from "@/lib/onboarding/types";
 import { trackClick, trackOnboardingFunnel } from "@/lib/analytics/track";
@@ -18,6 +32,19 @@ const TOTAL_SCREENS = ONBOARDING_SCREEN_KEYS.length;
 
 function fieldClass() {
   return "w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-base text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
+}
+
+/** Chaque écran de l'onboarding est présenté par Brian, pas par un formulaire anonyme. */
+function BrianAsks({ children, celebrating = false }: { children: ReactNode; celebrating?: boolean }) {
+  return (
+    <div className="mb-6 flex items-start gap-3">
+      <BrianAvatar state={celebrating ? "celebrating" : "talking"} size={44} />
+      <div className="min-w-0 flex-1 rounded-[var(--radius-card)] rounded-tl-sm border border-[var(--color-border)] bg-[var(--color-surface-alt)] px-4 py-3">
+        <p className="text-xs font-bold uppercase tracking-wide text-[var(--color-primary-strong)]">Coach Brian</p>
+        <p className="mt-1 text-sm text-[var(--color-text)]">{children}</p>
+      </div>
+    </div>
+  );
 }
 
 export function OnboardingWizard() {
@@ -63,7 +90,9 @@ export function OnboardingWizard() {
       case "gabarit_rythme":
         return null;
       case "materiel":
-        return data.equipment.length > 0 ? null : "Choisis au moins une option (ou \"Aucun matériel\").";
+        return data.equipment.length > 0 || data.otherEquipmentNote.trim().length > 0
+          ? null
+          : "Choisis au moins une option (ou \"Aucun matériel\").";
       case "objectif":
         return data.objective ? null : "Choisis ton objectif principal.";
       default:
@@ -89,8 +118,10 @@ export function OnboardingWizard() {
   const ageCategory = useMemo(() => (data.birthYear ? getAgeCategory(data.birthYear) : null), [data.birthYear]);
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 p-4">
-      <ProgressBar value={((step + 1) / TOTAL_SCREENS) * 100} />
+    <div className="relative min-h-screen">
+      <OnboardingBackground />
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 p-4">
+        <ProgressBar value={((step + 1) / TOTAL_SCREENS) * 100} />
 
       <Card className="p-6">
         {ONBOARDING_SCREEN_KEYS[step] === "prenom" && (
@@ -101,6 +132,7 @@ export function OnboardingWizard() {
             value={data.birthYear}
             onChange={(v) => update("birthYear", v)}
             categoryLabel={ageCategory?.label ?? null}
+            firstName={data.firstName}
           />
         )}
         {ONBOARDING_SCREEN_KEYS[step] === "poste" && (
@@ -131,7 +163,12 @@ export function OnboardingWizard() {
           />
         )}
         {ONBOARDING_SCREEN_KEYS[step] === "materiel" && (
-          <ScreenMateriel value={data.equipment} onChange={(v) => update("equipment", v)} />
+          <ScreenMateriel
+            value={data.equipment}
+            onChange={(v) => update("equipment", v)}
+            otherNote={data.otherEquipmentNote}
+            onChangeOtherNote={(v) => update("otherEquipmentNote", v)}
+          />
         )}
         {ONBOARDING_SCREEN_KEYS[step] === "objectif" && (
           <ScreenObjectif
@@ -156,6 +193,7 @@ export function OnboardingWizard() {
           </div>
         )}
       </Card>
+      </div>
     </div>
   );
 }
@@ -163,8 +201,7 @@ export function OnboardingWizard() {
 function ScreenPrenom({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div>
-      <CardTitle>Comment tu t&apos;appelles ?</CardTitle>
-      <CardSubtitle className="mt-1">On personnalise tout ton programme à partir d&apos;ici.</CardSubtitle>
+      <BrianAsks>{composeOnboardingIntro()}</BrianAsks>
       <input
         autoFocus
         className={`${fieldClass()} mt-6`}
@@ -181,10 +218,12 @@ function ScreenAnneeNaissance({
   value,
   onChange,
   categoryLabel,
+  firstName,
 }: {
   value: number | null;
   onChange: (v: number | null) => void;
   categoryLabel: string | null;
+  firstName: string;
 }) {
   const currentYear = new Date().getFullYear();
   const minYear = currentYear - 70;
@@ -223,12 +262,11 @@ function ScreenAnneeNaissance({
 
   return (
     <div>
-      <CardTitle>Ton année de naissance ?</CardTitle>
-      <CardSubtitle className="mt-1">Ça nous permet de calculer ta catégorie et d&apos;adapter les séances.</CardSubtitle>
+      <BrianAsks>{composeOnboardingBirthYear(firstName)}</BrianAsks>
       <input
         inputMode="numeric"
         pattern="[0-9]*"
-        className={`${fieldClass()} mt-6`}
+        className={fieldClass()}
         placeholder="Tape pour filtrer, ex: 2010"
         value={query}
         onChange={(e) => handleTyping(e.target.value)}
@@ -264,8 +302,8 @@ function ScreenAnneeNaissance({
 function ScreenPoste({ value, onChange }: { value: Position | null; onChange: (v: Position) => void }) {
   return (
     <div>
-      <CardTitle>Ton poste ?</CardTitle>
-      <div className="mt-6 grid grid-cols-2 gap-2">
+      <BrianAsks>{composeOnboardingPosition()}</BrianAsks>
+      <div className="grid grid-cols-2 gap-2">
         {Object.values(Position).map((position) => (
           <button
             key={position}
@@ -305,49 +343,43 @@ function ScreenPaysNiveau({
   onChangeLevel: (v: string) => void;
 }) {
   const niveaux = getNiveauxForCountry(country);
+  const countryLabels = Object.values(COUNTRY_LABELS);
+  const ligueNames = FRANCE_LIGUES.map((l) => l.name);
+
   return (
     <div>
-      <CardTitle>Ton pays et ton niveau ?</CardTitle>
-      <div className="mt-6 flex flex-col gap-4">
-        <select className={fieldClass()} value={country} onChange={(e) => onChangeCountry(e.target.value as Country)}>
-          {Object.entries(COUNTRY_LABELS).map(([code, label]) => (
-            <option key={code} value={code}>
-              {label}
-            </option>
-          ))}
-        </select>
+      <BrianAsks>{composeOnboardingCountryLevel()}</BrianAsks>
+      <div className="flex flex-col gap-4">
+        <SuggestField
+          value={COUNTRY_LABELS[country]}
+          onChange={(label) => {
+            const code = Object.entries(COUNTRY_LABELS).find(([, l]) => l === label)?.[0] as Country | undefined;
+            if (code) onChangeCountry(code);
+          }}
+          options={countryLabels}
+          placeholder="Cherche ton pays"
+        />
 
         {country === "FR" && (
           <>
-            <select className={fieldClass()} value={ligue ?? ""} onChange={(e) => onChangeLigue(e.target.value)}>
-              <option value="">Choisis ta ligue régionale</option>
-              {FRANCE_LIGUES.map((l) => (
-                <option key={l.name} value={l.name}>
-                  {l.name}
-                </option>
-              ))}
-            </select>
+            <SuggestField
+              value={ligue}
+              onChange={onChangeLigue}
+              options={ligueNames}
+              placeholder="Cherche ta ligue régionale"
+            />
             {ligue && (
-              <select className={fieldClass()} value={district ?? ""} onChange={(e) => onChangeDistrict(e.target.value)}>
-                <option value="">Choisis ton district</option>
-                {getDistrictsForLigue(ligue).map((d) => (
-                  <option key={d} value={d}>
-                    District de {d}
-                  </option>
-                ))}
-              </select>
+              <SuggestField
+                value={district}
+                onChange={onChangeDistrict}
+                options={getDistrictsForLigue(ligue)}
+                placeholder="Cherche ton district"
+              />
             )}
           </>
         )}
 
-        <select className={fieldClass()} value={levelLabel ?? ""} onChange={(e) => onChangeLevel(e.target.value)}>
-          <option value="">Choisis ton niveau de jeu</option>
-          {niveaux.map((n) => (
-            <option key={n} value={n}>
-              {n}
-            </option>
-          ))}
-        </select>
+        <SuggestField value={levelLabel} onChange={onChangeLevel} options={niveaux} placeholder="Cherche ton niveau de jeu" />
       </div>
     </div>
   );
@@ -374,27 +406,26 @@ function ScreenGabaritRythme({
 }) {
   return (
     <div>
-      <CardTitle>Ton gabarit et ton rythme</CardTitle>
-      <CardSubtitle className="mt-1">Tout est facultatif — réponds à ce que tu sais.</CardSubtitle>
-      <div className="mt-6 grid grid-cols-2 gap-3">
-        <div>
-          <label className="mb-1 block text-xs font-semibold text-[var(--color-text-muted)]">Taille (cm)</label>
-          <input
-            type="number"
-            className={fieldClass()}
-            value={heightCm ?? ""}
-            onChange={(e) => onChangeHeight(e.target.value ? Number(e.target.value) : null)}
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-semibold text-[var(--color-text-muted)]">Poids (kg)</label>
-          <input
-            type="number"
-            className={fieldClass()}
-            value={weightKg ?? ""}
-            onChange={(e) => onChangeWeight(e.target.value ? Number(e.target.value) : null)}
-          />
-        </div>
+      <BrianAsks>{composeOnboardingBodyRhythm()}</BrianAsks>
+      <div className="grid grid-cols-2 gap-3">
+        <DragSliderField
+          label="Taille (cm)"
+          unit="cm"
+          value={heightCm}
+          onChange={onChangeHeight}
+          min={120}
+          max={210}
+          orientation="vertical"
+        />
+        <DragSliderField
+          label="Poids (kg)"
+          unit="kg"
+          value={weightKg}
+          onChange={onChangeWeight}
+          min={25}
+          max={110}
+          orientation="horizontal"
+        />
       </div>
       <div className="mt-4">
         <label className="mb-1 block text-xs font-semibold text-[var(--color-text-muted)]">
@@ -424,7 +455,19 @@ function ScreenGabaritRythme({
   );
 }
 
-function ScreenMateriel({ value, onChange }: { value: Equipment[]; onChange: (v: Equipment[]) => void }) {
+function ScreenMateriel({
+  value,
+  onChange,
+  otherNote,
+  onChangeOtherNote,
+}: {
+  value: Equipment[];
+  onChange: (v: Equipment[]) => void;
+  otherNote: string;
+  onChangeOtherNote: (v: string) => void;
+}) {
+  const [otherOpen, setOtherOpen] = useState(otherNote.trim().length > 0);
+
   function toggle(eq: Equipment) {
     if (eq === "NONE") {
       onChange(["NONE"] as Equipment[]);
@@ -440,9 +483,8 @@ function ScreenMateriel({ value, onChange }: { value: Equipment[]; onChange: (v:
 
   return (
     <div>
-      <CardTitle>Ton matériel disponible</CardTitle>
-      <CardSubtitle className="mt-1">Sélectionne tout ce que tu as sous la main.</CardSubtitle>
-      <div className="mt-6 flex flex-wrap gap-2">
+      <BrianAsks>{composeOnboardingEquipment()}</BrianAsks>
+      <div className="flex flex-wrap gap-2">
         {Object.values(Equipment).map((eq) => (
           <button
             key={eq}
@@ -461,7 +503,33 @@ function ScreenMateriel({ value, onChange }: { value: Equipment[]; onChange: (v:
             </Chip>
           </button>
         ))}
+        <button type="button" onClick={() => setOtherOpen((o) => !o)}>
+          <Chip
+            className={
+              otherOpen
+                ? "border-[var(--color-primary)] bg-[var(--color-primary-soft)] text-[var(--color-primary-strong)]"
+                : ""
+            }
+          >
+            ➕ Autre
+          </Chip>
+        </button>
       </div>
+      {otherOpen && (
+        <div className="mt-4">
+          <label className="mb-1 block text-xs font-semibold text-[var(--color-text-muted)]">
+            Tu as autre chose ? Précise, ça nous aide à voir ce qu&apos;on a oublié.
+          </label>
+          <textarea
+            autoFocus
+            className={`${fieldClass()} min-h-16`}
+            placeholder="ex: haies, échelle de rythme, sac lesté..."
+            value={otherNote}
+            onChange={(e) => onChangeOtherNote(e.target.value)}
+            maxLength={140}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -479,8 +547,8 @@ function ScreenObjectif({
 }) {
   return (
     <div>
-      <CardTitle>Ton objectif principal</CardTitle>
-      <div className="mt-6 grid grid-cols-2 gap-2">
+      <BrianAsks>{composeOnboardingObjective()}</BrianAsks>
+      <div className="grid grid-cols-2 gap-2">
         {Object.values(Objective).map((obj) => (
           <button
             key={obj}
@@ -522,9 +590,8 @@ function ScreenRevelation({
 }) {
   return (
     <div className="text-center">
-      <div className="text-4xl">🎉</div>
-      <CardTitle className="mt-3 text-2xl">Ton profil est prêt, {data.firstName || "champion"} !</CardTitle>
-      <div className="mt-4 flex flex-wrap justify-center gap-2">
+      <BrianAsks celebrating>{composeOnboardingRevelation(data.firstName)}</BrianAsks>
+      <div className="flex flex-wrap justify-center gap-2">
         {ageCategoryLabel && <Chip>{ageCategoryLabel}</Chip>}
         {data.position && <Chip>{POSITION_LABELS[data.position]}</Chip>}
         {data.objective && (

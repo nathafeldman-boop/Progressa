@@ -22,6 +22,42 @@ export function composeWelcomeMessage(firstName: string): string {
   return `Salut ${firstName}, moi c'est Brian. Je vais suivre ta progression et t'aider à devenir meilleur, entraînement après entraînement.`;
 }
 
+/**
+ * Brian pose lui-même les questions de l'onboarding — jamais un formulaire
+ * générique. Un ton direct et utile: chaque question dit pourquoi elle sert.
+ */
+export function composeOnboardingIntro(): string {
+  return "Salut, moi c'est Brian, ton coach ici sur Progressa. Je vais t'accompagner à chaque entraînement. On commence par faire connaissance : comment tu t'appelles ?";
+}
+
+export function composeOnboardingBirthYear(firstName: string): string {
+  return `${firstName ? `${firstName}, quelle` : "Quelle"} est ton année de naissance ? Ça me sert à caler ton programme sur ta catégorie d'âge.`;
+}
+
+export function composeOnboardingPosition(): string {
+  return "À quel poste tu joues sur le terrain ?";
+}
+
+export function composeOnboardingCountryLevel(): string {
+  return "Dans quel pays et à quel niveau tu évolues ? Ça m'aide à adapter l'intensité de tes séances.";
+}
+
+export function composeOnboardingBodyRhythm(): string {
+  return "Quelques infos sur ton gabarit et ton rythme au club — tout est facultatif, réponds à ce que tu sais.";
+}
+
+export function composeOnboardingEquipment(): string {
+  return "Qu'est-ce que tu as sous la main pour t'entraîner ? Je construis tes séances avec ce que tu coches.";
+}
+
+export function composeOnboardingObjective(): string {
+  return "Quel est ton objectif principal en ce moment ?";
+}
+
+export function composeOnboardingRevelation(firstName: string): string {
+  return `Ton profil est prêt, ${firstName || "champion"}. Crée ton compte et on commence ton premier entraînement ensemble.`;
+}
+
 export function composeFirstSessionIntro(): string {
   return pick([
     "On va commencer simplement. Fais cet exercice comme tu le ferais normalement, je regarde ta performance pour établir tes premières stats.",

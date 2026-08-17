@@ -4,6 +4,7 @@ import { getCurrentInternalUser } from "@/lib/auth";
 import { getCurrentWeeklyProgram } from "@/lib/programs/get-current-program";
 import { composeFirstSessionIntro, composeWelcomeMessage } from "@/lib/brian/messages";
 import { BrianAvatar } from "@/components/brian/BrianAvatar";
+import { OnboardingBackground } from "@/components/onboarding/OnboardingBackground";
 import { Button } from "@/components/ui/Button";
 
 /**
@@ -15,10 +16,13 @@ export default async function OnboardingBrianPage() {
   const user = await getCurrentInternalUser();
   if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <Link href="/dashboard">
-          <Button>Continuer</Button>
-        </Link>
+      <div className="relative min-h-screen">
+        <OnboardingBackground />
+        <div className="relative z-10 flex min-h-screen items-center justify-center p-4">
+          <Link href="/dashboard">
+            <Button>Continuer</Button>
+          </Link>
+        </div>
       </div>
     );
   }

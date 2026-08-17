@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
+import { OnboardingBackground } from "@/components/onboarding/OnboardingBackground";
 import { clearOnboardingData, clearReferralCode, getReferralCode, loadOnboardingData } from "@/lib/onboarding/storage";
 
 /**
@@ -22,11 +23,20 @@ export default function OnboardingFinishPage() {
     async function finish() {
       const data = loadOnboardingData();
       const referralCode = getReferralCode();
+      // otherEquipmentNote n'a pas sa propre colonne — on le fusionne dans
+      // weakPointNote (seul champ de note libre côté backend) pour ne pas
+      // perdre l'info sans avoir besoin d'une migration de schéma.
+      const weakPointNote = [
+        data.weakPointNote,
+        data.otherEquipmentNote.trim() ? `Matériel supplémentaire : ${data.otherEquipmentNote.trim()}` : null,
+      ]
+        .filter(Boolean)
+        .join(" — ");
       try {
         await fetch("/api/onboarding/complete", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...data, referralCode }),
+          body: JSON.stringify({ ...data, weakPointNote, referralCode }),
         });
       } catch (err) {
         console.error("[onboarding/finish] completion call failed", err);
@@ -47,11 +57,14 @@ export default function OnboardingFinishPage() {
   }, [router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="p-8 text-center">
-        <CardTitle>{status}</CardTitle>
-        <CardSubtitle className="mt-2">On prépare ton premier programme.</CardSubtitle>
-      </Card>
+    <div className="relative min-h-screen">
+      <OnboardingBackground />
+      <div className="relative z-10 flex min-h-screen items-center justify-center p-4">
+        <Card className="p-8 text-center">
+          <CardTitle>{status}</CardTitle>
+          <CardSubtitle className="mt-2">On prépare ton premier programme.</CardSubtitle>
+        </Card>
+      </div>
     </div>
   );
 }

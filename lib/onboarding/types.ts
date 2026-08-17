@@ -13,6 +13,7 @@ export interface OnboardingData {
   clubSessionsPerWeek: number | null;
   matchDay: Weekday | null;
   equipment: Equipment[];
+  otherEquipmentNote: string;
   objective: Objective | null;
   weakPointNote: string;
 }
@@ -30,6 +31,7 @@ export const EMPTY_ONBOARDING_DATA: OnboardingData = {
   clubSessionsPerWeek: null,
   matchDay: null,
   equipment: [],
+  otherEquipmentNote: "",
   objective: null,
   weakPointNote: "",
 };
