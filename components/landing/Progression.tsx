@@ -7,6 +7,15 @@ const TIMELINE = [
   { day: "Jour 30", overall: 78 },
 ];
 
+const FINAL_STATS = [
+  { label: "Vitesse", value: 82 },
+  { label: "Tir", value: 74 },
+  { label: "Passe", value: 79 },
+  { label: "Dribble", value: 85 },
+  { label: "Défense", value: 68 },
+  { label: "Physique", value: 77 },
+];
+
 export function Progression() {
   return (
     <section className="lp-section relative overflow-hidden">
@@ -22,7 +31,51 @@ export function Progression() {
           </p>
         </Reveal>
 
-        <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="lp-progress-card-wrap">
+          <Reveal delayMs={80} className="lp-progress-card">
+            <div
+              aria-hidden
+              className="lp-card relative overflow-hidden border-2 border-[var(--lp-accent-soft)] p-5 text-left shadow-[0_24px_50px_-24px_rgba(26,163,80,0.35)]"
+            >
+              <div className="lp-glow-ring" style={{ width: 160, height: 160, top: -60, right: -60 }} />
+              <div className="relative flex items-start justify-between">
+                <div>
+                  <p className="text-[0.6rem] font-bold uppercase tracking-widest text-[var(--lp-text-dim)]">
+                    Carte à J+30
+                  </p>
+                  <p className="font-display text-xs font-bold uppercase tracking-wide text-[var(--lp-text-muted)]">
+                    Milieu offensif
+                  </p>
+                </div>
+                <span className="lp-card rounded-full px-2.5 py-1 text-[0.65rem] font-bold text-[var(--lp-accent-strong)]">
+                  U16
+                </span>
+              </div>
+
+              <div className="relative mt-2 flex items-baseline gap-2">
+                <span className="font-display text-5xl font-extrabold text-[var(--lp-text)]">78</span>
+                <span className="text-[0.6rem] font-bold uppercase tracking-widest text-[var(--lp-text-dim)]">
+                  Overall
+                </span>
+              </div>
+
+              <div className="relative mt-4 flex flex-col gap-2">
+                {FINAL_STATS.map((stat) => (
+                  <div key={stat.label} className="flex items-center gap-2">
+                    <span className="w-14 shrink-0 text-[0.6rem] font-semibold uppercase tracking-wide text-[var(--lp-text-muted)]">
+                      {stat.label}
+                    </span>
+                    <div className="lp-bar-track flex-1" style={{ ["--bar-w" as string]: `${stat.value}%` }}>
+                      <div className="lp-bar-fill" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Reveal>
+        </div>
+
+        <div className="relative z-10 mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4 md:mt-0">
           {TIMELINE.map((point, i) => (
             <Reveal key={point.day} delayMs={i * 100} className="relative">
               <div className="lp-card flex flex-col items-center gap-1.5 p-5 text-center">

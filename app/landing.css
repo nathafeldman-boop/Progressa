@@ -213,9 +213,103 @@
   width: var(--bar-w, 0%);
 }
 
+/* Progression section — decorative "future card" peeking behind the day tiles */
+.lp-progress-card-wrap {
+  position: relative;
+  z-index: 0;
+  margin-top: 2.5rem;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.lp-progress-card {
+  width: 230px;
+  transform: rotate(-4deg);
+  filter: drop-shadow(0 30px 60px rgba(16, 35, 26, 0.18));
+}
+@media (min-width: 480px) {
+  .lp-progress-card { width: 270px; }
+}
+@media (min-width: 768px) {
+  .lp-progress-card-wrap { justify-content: flex-end; margin-bottom: -4rem; }
+  .lp-progress-card { width: 320px; margin-right: 1.5rem; transform: rotate(-6deg); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lp-bar-fill { transition: none; }
   .lp-reveal { opacity: 1; transform: none; transition: none; }
   .lp-pulse, .lp-float { animation: none; }
   .lp-btn-primary, .lp-btn-secondary { transition: none; }
+}
+
+/* "Comment ça marche" — self-playing HTML storyboard (no video file) */
+@keyframes lp-reel-progress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+@keyframes lp-reel-pop {
+  0% { opacity: 0; transform: scale(0.75); }
+  70% { opacity: 1; transform: scale(1.06); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes lp-reel-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes lp-reel-grow-x {
+  from { width: 0%; }
+  to { width: var(--w, 100%); }
+}
+@keyframes lp-reel-ring-fill {
+  from { stroke-dashoffset: var(--circ); }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes lp-reel-levelup {
+  0% { opacity: 0; transform: scale(0.92); }
+  60% { transform: scale(1.04); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes lp-reel-swap-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-6px); }
+}
+@keyframes lp-reel-swap-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes lp-reel-stage-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-reel-anim { animation: none !important; opacity: 1 !important; transform: none !important; }
+  .lp-reel-bar { animation: none !important; width: var(--w, 100%) !important; }
+  .lp-reel-ring { animation: none !important; stroke-dashoffset: 0 !important; }
+}
+
+/* Gamification — screens mocked up on floating phones */
+.lp-phone-float {
+  animation: lp-float 4.5s ease-in-out infinite;
+}
+
+.lp-phones-viewport {
+  overflow: hidden;
+}
+.lp-phones-track {
+  display: flex;
+  transition: transform 650ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.lp-phones-slide {
+  flex: 0 0 100%;
+  padding: 0 1rem;
+}
+@media (min-width: 768px) {
+  .lp-phones-track { transform: none !important; gap: 1.5rem; }
+  .lp-phones-slide { flex: 1 1 0; padding: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-phone-float { animation: none; }
+  .lp-phones-track { transition: none; }
 }

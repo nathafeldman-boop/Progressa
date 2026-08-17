@@ -50,8 +50,6 @@ export function Hero() {
                 Voir comment ça marche
               </a>
             </div>
-
-            <p className="text-sm font-bold text-[#6bf0ab]">Ton premier entraînement est gratuit</p>
           </div>
         </div>
       </div>
