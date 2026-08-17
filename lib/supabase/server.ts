@@ -11,8 +11,12 @@ const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
  * que de laisser le SDK Supabase lever une exception non interceptée.
  */
 export async function createClient() {
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
+  // cookies() is called unconditionally, even when we're about to return
+  // null below: it's what tells Next.js this render path is dynamic, so
+  // pages using it never get statically prerendered at build time (when
+  // env vars — and DATABASE_URL — aren't available anyway).
   const cookieStore = await cookies();
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
 
   return createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
