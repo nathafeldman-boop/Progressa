@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Barlow_Condensed, Inter } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
 import { PageViewTracker } from "@/components/analytics/PageViewTracker";
 import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
 import { APP_NAME, APP_TAGLINE } from "@/lib/app-config";
@@ -47,14 +46,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <ClerkProvider>
-      <html lang="fr" className={`${display.variable} ${body.variable} h-full antialiased`}>
-        <body className="min-h-full flex flex-col bg-[var(--color-bg)] text-[var(--color-text)]">
-          <PageViewTracker />
-          <ServiceWorkerRegistration />
-          {children}
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="fr" className={`${display.variable} ${body.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col bg-[var(--color-bg)] text-[var(--color-text)]">
+        <PageViewTracker />
+        <ServiceWorkerRegistration />
+        {children}
+      </body>
+    </html>
   );
 }

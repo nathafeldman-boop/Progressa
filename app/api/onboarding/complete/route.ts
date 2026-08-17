@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { syncInternalUser } from "@/lib/auth";
 import { onboardingPayloadSchema } from "@/lib/onboarding/schema";
@@ -14,18 +13,13 @@ import { welcomeEmail } from "@/lib/email/templates";
 
 /**
  * Finalise l'onboarding. Étape critique (doit réussir): synchroniser la
- * ligne User interne — le compte Clerk existe déjà, donc bloquer ici
+ * ligne User interne — le compte Supabase Auth existe déjà, donc bloquer ici
  * priverait le joueur d'un compte qu'il a déjà techniquement créé.
  * Tout le reste (profil, code de parrainage, série, premier programme) est
  * volontairement non-bloquant: chaque étape est isolée dans son propre
  * try/catch et peut être régénérée/complétée plus tard.
  */
 export async function POST(request: Request) {
-  const { userId: clerkUserId } = await auth();
-  if (!clerkUserId) {
-    return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
-  }
-
   let body: unknown;
   try {
     body = await request.json();

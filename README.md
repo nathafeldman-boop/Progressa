@@ -13,8 +13,10 @@ calendrier club.
 
 - **Next.js 16** (App Router, TypeScript strict, Turbopack)
 - **PostgreSQL + Prisma 6** ([`prisma/schema.prisma`](./prisma/schema.prisma))
-- **Clerk** pour l'auth, synchronisée vers une table `User` interne
-  (`lib/auth.ts`) — l'app ne dépend jamais uniquement de l'id du provider
+- **Supabase Auth** (email/mot de passe + Google) pour l'auth, synchronisée
+  vers une table `User` interne (`lib/auth.ts`) — l'app ne dépend jamais
+  uniquement de l'id du provider
+- **Supabase Postgres** comme base de données (accédée via Prisma)
 - **Stripe** (Checkout + Customer Portal + webhooks) — paiement direct, sans
   essai gratuit
 - **API Claude (Anthropic)**, `claude-opus-5`, pour la génération de
@@ -47,7 +49,7 @@ npm run dev
 | Variable | Usage |
 |---|---|
 | `DATABASE_URL` | Connexion PostgreSQL (Prisma) |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` | Auth Clerk |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | Auth + base de données Supabase |
 | `ANTHROPIC_API_KEY` | Génération de programme (Claude API) |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Paiement |
 | `STRIPE_PRICE_ID_MONTHLY`, `STRIPE_PRICE_ID_ANNUAL` | Prix Stripe (les réductions/coupons se configurent côté Stripe, jamais en dur dans le code) |

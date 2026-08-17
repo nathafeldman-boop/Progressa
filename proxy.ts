@@ -1,47 +1,53 @@
-import { NextResponse } from "next/server";
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { updateSession } from "@/lib/supabase/middleware";
 
-// Next.js 16 renamed the `middleware` file convention to `proxy`. Clerk's
-// handler is still a standard Next middleware function under the hood, so
-// it's simply re-exported here as `proxy`.
-const isPublicRoute = createRouteMatcher([
-  "/",
-  "/onboarding(.*)",
-  "/inscription(.*)",
-  "/connexion(.*)",
+// Next.js 16 renamed the `middleware` file convention to `proxy`.
+const PUBLIC_PREFIXES = [
+  "/onboarding",
+  "/inscription",
+  "/connexion",
+  "/auth/callback",
   "/api/track",
-  "/api/webhooks(.*)",
-  "/api/cron(.*)",
-  "/admin(.*)", // protégé par son propre secret, indépendant de Clerk
-  "/api/admin(.*)",
-  "/ressources(.*)",
+  "/api/webhooks",
+  "/api/cron",
+  "/admin", // protégé par son propre secret, indépendant de Supabase
+  "/api/admin",
+  "/ressources",
   "/confidentialite",
   "/avis",
-  "/r/(.*)",
-  "/carte/(.*)", // carte joueur partagée publiquement
-]);
+  "/r/",
+  "/carte/", // carte joueur partagée publiquement (mais pas /carte tout court, privé)
+];
 
-// clerkMiddleware() throws synchronously if NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-// is unset, which would otherwise take down EVERY route (including public
-// ones) the moment this file is loaded — a single missing env var
-// shouldn't 500 the whole site before Clerk is even configured. Fail open
-// instead: skip auth enforcement and log loudly, so the app stays
-// browsable while secrets are being set up.
-const clerkConfigured = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+function isPublicRoute(pathname: string): boolean {
+  if (pathname === "/" || pathname === "/confidentialite" || pathname === "/avis") return true;
+  return PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
 
-if (!clerkConfigured) {
+const supabaseConfigured = !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseConfigured) {
   console.warn(
-    "[proxy] NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is not set — authentication is DISABLED and all routes are being served unprotected. Set Clerk env vars before going live."
+    "[proxy] Supabase env vars are not set — authentication is DISABLED and all routes are being served unprotected. Set NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY before going live."
   );
 }
 
-export const proxy = clerkConfigured
-  ? clerkMiddleware(async (auth, req) => {
-      if (!isPublicRoute(req)) {
-        await auth.protect();
-      }
-    })
-  : () => NextResponse.next();
+export async function proxy(request: NextRequest) {
+  if (!supabaseConfigured) {
+    return NextResponse.next();
+  }
+
+  const { response, user } = await updateSession(request);
+
+  if (!user && !isPublicRoute(request.nextUrl.pathname)) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/connexion";
+    url.searchParams.set("redirect", request.nextUrl.pathname);
+    return NextResponse.redirect(url);
+  }
+
+  return response;
+}
 
 export const config = {
   matcher: ["/((?!_next|.*\\..*).*)", "/api/(.*)"],

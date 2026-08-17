@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useClerk } from "@clerk/nextjs";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 
 const CONFIRM_WORD = "SUPPRIMER";
 
 export function DeleteAccountButton() {
-  const { signOut } = useClerk();
   const [confirming, setConfirming] = useState(false);
   const [typed, setTyped] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -17,7 +16,9 @@ export function DeleteAccountButton() {
     setSubmitting(true);
     try {
       await fetch("/api/account/delete", { method: "DELETE" });
-      await signOut({ redirectUrl: "/" });
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      window.location.href = "/";
     } finally {
       setSubmitting(false);
     }

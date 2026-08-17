@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { UserButton } from "@clerk/nextjs";
+import { UserMenu } from "@/components/auth/UserMenu";
 import { APP_NAME } from "@/lib/app-config";
 
 const NAV_ITEMS = [
@@ -17,7 +17,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <Link href="/dashboard" className="font-display text-lg font-extrabold uppercase tracking-wide">
           {APP_NAME}
         </Link>
-        <UserButton />
+        <UserMenu />
       </header>
 
       <main className="flex-1 pb-20">{children}</main>
