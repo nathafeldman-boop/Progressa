@@ -1,61 +1,51 @@
 import Image from "next/image";
 import Link from "next/link";
-import { StadiumBackdrop } from "./decor";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden pt-16 pb-0 md:pt-20">
-      <StadiumBackdrop className="absolute inset-0" />
-      <div className="lp-glow-ring lp-pulse" style={{ width: 420, height: 420, top: -140, left: -140 }} />
+    <section className="relative overflow-hidden">
+      <div className="relative h-[600px] w-full sm:h-[640px] md:h-[760px]">
+        <Image
+          src="/hero/stadium-player.jpg"
+          alt="Joueur de dos dans un stade, maillot numéro 10"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[62%_center] md:object-[70%_center]"
+        />
 
-      <div className="lp-container relative grid gap-10 px-5 md:grid-cols-2 md:items-center md:gap-6 md:px-6">
-        <div className="flex flex-col items-start gap-6 text-left">
-          <span className="lp-eyebrow">
-            <span aria-hidden>⚽</span> Ton parcours de joueur
-          </span>
+        <div className="lp-container relative z-10 flex h-full items-end px-5 pb-8 sm:items-center sm:pb-0 md:px-6">
+          <div className="w-full max-w-md rounded-[1.5rem] border border-[var(--lp-border)] bg-[var(--lp-bg)]/95 p-6 shadow-[0_30px_60px_-20px_rgba(16,35,26,0.45)] backdrop-blur-sm sm:max-w-lg sm:p-7">
+            <span className="lp-eyebrow">
+              <span aria-hidden>⚽</span> Ton parcours de joueur
+            </span>
 
-          <h1 className="lp-h2 text-[2.6rem] md:text-[3.4rem]">
-            Construis ton joueur.
-            <br />
-            Progresse chaque jour.
-          </h1>
+            <h1 className="lp-h2 mt-3 text-[2.1rem] sm:text-[2.5rem] md:text-[2.9rem]">
+              Construis ton joueur.
+              <br />
+              Progresse chaque jour.
+            </h1>
 
-          <p className="max-w-md text-base text-[var(--lp-text-muted)] md:text-lg">
-            Progressa construit ton parcours d&apos;entraînement, mesure ta progression et fait évoluer ta carte de
-            joueur — semaine après semaine.
-          </p>
+            <p className="mt-4 text-base text-[var(--lp-text-muted)]">
+              Progressa construit ton parcours d&apos;entraînement, mesure ta progression et fait évoluer ta carte
+              de joueur — semaine après semaine.
+            </p>
 
-          <div className="flex w-full flex-col items-start gap-3 sm:flex-row sm:items-center">
-            <Link href="/onboarding" className="lp-btn-primary w-full sm:w-auto">
-              Commencer mon parcours
-            </Link>
-            <a href="#comment-ca-marche" className="lp-btn-secondary w-full sm:w-auto">
-              Voir comment ça marche
-            </a>
+            <div className="mt-5 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+              <Link href="/onboarding" className="lp-btn-primary w-full sm:w-auto sm:whitespace-nowrap">
+                Commencer mon parcours
+              </Link>
+              <a href="#comment-ca-marche" className="lp-btn-secondary w-full sm:w-auto sm:whitespace-nowrap">
+                Voir comment ça marche
+              </a>
+            </div>
+
+            <p className="mt-4 text-sm font-semibold text-[var(--lp-accent-strong)]">
+              Ton premier entraînement est gratuit
+            </p>
           </div>
-
-          <p className="text-sm font-semibold text-[var(--lp-accent-strong)]">
-            Ton premier entraînement est gratuit
-          </p>
-        </div>
-
-        <div className="relative mx-auto h-[340px] w-full max-w-xs overflow-hidden rounded-[1.75rem] shadow-[0_30px_60px_-20px_rgba(16,35,26,0.35)] md:h-[560px] md:max-w-none">
-          <Image
-            src="/hero/stadium-player.jpg"
-            alt="Joueur de dos dans un stade, maillot numéro 10"
-            fill
-            priority
-            sizes="(min-width: 768px) 50vw, 100vw"
-            className="object-cover object-center"
-          />
         </div>
       </div>
-
-      <div
-        className="relative mt-4 h-16 w-full md:h-24"
-        style={{ background: "linear-gradient(180deg, transparent, var(--lp-bg))" }}
-        aria-hidden
-      />
     </section>
   );
 }
