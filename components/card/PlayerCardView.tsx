@@ -19,7 +19,9 @@ export function PlayerCardView({
       </p>
       <h2 className="mt-1 font-display text-3xl font-extrabold uppercase tracking-wide">{firstName}</h2>
       <p className="mt-2 font-display text-6xl font-extrabold text-[var(--color-primary-strong)]">{stats.overall}</p>
-      <p className="text-xs uppercase tracking-widest text-[var(--color-text-muted)]">Note globale</p>
+      <p className="text-xs uppercase tracking-widest text-[var(--color-text-muted)]">
+        Note globale{stats.rankTier ? ` · ${stats.rankTier}` : ""}
+      </p>
 
       <div className="mt-6 grid grid-cols-2 gap-3">
         {Object.entries(stats.skills).map(([skill, score]) => (

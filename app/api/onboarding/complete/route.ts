@@ -10,6 +10,7 @@ import { generateWeeklyProgram } from "@/lib/ai/generate-program";
 import { persistWeeklyProgram } from "@/lib/programs/persist-weekly-program";
 import { sendEmailOnce } from "@/lib/email/send";
 import { welcomeEmail } from "@/lib/email/templates";
+import { composeWelcomeMessage } from "@/lib/brian/messages";
 
 /**
  * Finalise l'onboarding. Étape critique (doit réussir): synchroniser la
@@ -107,6 +108,24 @@ export async function POST(request: Request) {
     });
   } catch (err) {
     console.error("[onboarding/complete] streak state init failed", err);
+  }
+
+  try {
+    await prisma.playerStatState.upsert({
+      where: { userId: user.id },
+      create: { userId: user.id },
+      update: {},
+    });
+    const alreadyWelcomed = await prisma.brianMessage.findFirst({
+      where: { userId: user.id, category: "WELCOME" },
+    });
+    if (!alreadyWelcomed) {
+      await prisma.brianMessage.create({
+        data: { userId: user.id, category: "WELCOME", text: composeWelcomeMessage(payload.firstName) },
+      });
+    }
+  } catch (err) {
+    console.error("[onboarding/complete] Coach Brian init failed", err);
   }
 
   try {

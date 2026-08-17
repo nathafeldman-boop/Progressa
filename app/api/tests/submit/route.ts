@@ -4,16 +4,12 @@ import { EvaluationTestType } from "@prisma/client";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { nextEligibleDate, TEST_PROTOCOLS } from "@/lib/evaluation-tests";
-import { computePlayerCardStats } from "@/lib/player-card";
+import { syncPlayerCard } from "@/lib/player-card";
 
 const bodySchema = z.object({
   testType: z.enum(EvaluationTestType),
   value: z.number().positive(),
 });
-
-function randomShareSlug(): string {
-  return Math.random().toString(36).slice(2, 10);
-}
 
 export async function POST(request: Request) {
   const user = await getCurrentInternalUser();
@@ -69,16 +65,7 @@ export async function POST(request: Request) {
     }
   }
 
-  const allResults = await prisma.evaluationResult.findMany({ where: { userId: user.id } });
-  const stats = computePlayerCardStats(allResults);
-  const statsJson = JSON.parse(JSON.stringify(stats));
-
-  const existingCard = await prisma.playerCard.findUnique({ where: { userId: user.id } });
-  await prisma.playerCard.upsert({
-    where: { userId: user.id },
-    create: { userId: user.id, stats: statsJson, shareSlug: existingCard?.shareSlug ?? randomShareSlug() },
-    update: { stats: statsJson },
-  });
+  const stats = await syncPlayerCard(user.id);
 
   return NextResponse.json({ ok: true, awardedBadges, stats });
 }

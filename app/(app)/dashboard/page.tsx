@@ -7,8 +7,10 @@ import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
 import { Button } from "@/components/ui/Button";
 import { RegenerateButton } from "@/components/dashboard/RegenerateButton";
+import { DailyObjectives } from "@/components/dashboard/DailyObjectives";
 import { POSITION_LABELS, WEEKDAY_LABELS } from "@/lib/labels";
 import { getAgeCategory } from "@/lib/age-category";
+import { ensureTodayObjectives } from "@/lib/brian/daily-objectives";
 
 export default async function DashboardPage() {
   const user = await getCurrentInternalUser();
@@ -27,15 +29,18 @@ export default async function DashboardPage() {
     );
   }
 
-  const [profile, subscription, streak, program] = await Promise.all([
+  const [profile, subscription, streak, program, playerCard, objectives] = await Promise.all([
     prisma.playerProfile.findUnique({ where: { userId: user.id } }),
     prisma.subscription.findUnique({ where: { userId: user.id } }),
     prisma.streakState.findUnique({ where: { userId: user.id } }),
     getCurrentWeeklyProgram(user.id),
+    prisma.playerCard.findUnique({ where: { userId: user.id } }),
+    ensureTodayObjectives(user.id),
   ]);
 
   const premium = isPremiumActive(subscription);
   const ageCategory = profile ? getAgeCategory(profile.birthYear) : null;
+  const cardStats = playerCard?.stats as { overall: number; rankTier?: string } | undefined;
 
   return (
     <div className="mx-auto max-w-md space-y-4 p-4">
@@ -49,6 +54,35 @@ export default async function DashboardPage() {
           </div>
         )}
       </div>
+
+      {cardStats && (
+        <div className="grid grid-cols-2 gap-3">
+          <Link href="/carte">
+            <Card className="flex h-full items-center justify-between gap-2 border-[var(--color-primary)]">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Carte</p>
+                <p className="font-display text-xl font-extrabold text-[var(--color-primary-strong)]">
+                  {cardStats.overall} OVR
+                </p>
+              </div>
+              <span className="text-2xl">🃏</span>
+            </Card>
+          </Link>
+          <Link href="/classement">
+            <Card className="flex h-full items-center justify-between gap-2">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                  Classement
+                </p>
+                <p className="font-display text-sm font-bold text-[var(--color-text)]">Voir</p>
+              </div>
+              <span className="text-2xl">🏆</span>
+            </Card>
+          </Link>
+        </div>
+      )}
+
+      <DailyObjectives objectives={objectives} />
 
       {!premium && (
         <Card className="border-[var(--color-primary)] bg-[var(--color-primary-soft)]">

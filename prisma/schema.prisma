@@ -33,9 +33,9 @@ model User {
   firstName      String
   role           UserRole @default(PLAYER)
 
-  isMinor          Boolean   @default(false)
-  parentEmail      String?
-  parentConsentAt  DateTime?
+  isMinor         Boolean   @default(false)
+  parentEmail     String?
+  parentConsentAt DateTime?
 
   // Anti-spam sur la régénération manuelle du programme.
   lastManualRegenAt DateTime?
@@ -43,30 +43,34 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  profile          PlayerProfile?
-  subscription     Subscription?
-  playerCard       PlayerCard?
-  streak           StreakState?
-  referralCode     ReferralCode?
+  profile      PlayerProfile?
+  subscription Subscription?
+  playerCard   PlayerCard?
+  playerStats  PlayerStatState?
+  streak       StreakState?
+  referralCode ReferralCode?
 
-  weeklyPrograms      WeeklyProgram[]
-  evaluationResults   EvaluationResult[]
-  dailyCheckins       DailyCheckin[]
-  painLogs            PainLog[]
-  growthEntries       GrowthEntry[]
-  matchLogs           MatchLog[]
-  personalGoals       PersonalGoal[]
-  badges              UserBadge[]
-  testimonials        Testimonial[]
-  emailSendLogs       EmailSendLog[]
-  pushSubscriptions   PushSubscription[]
+  weeklyPrograms       WeeklyProgram[]
+  evaluationResults    EvaluationResult[]
+  dailyCheckins        DailyCheckin[]
+  painLogs             PainLog[]
+  growthEntries        GrowthEntry[]
+  matchLogs            MatchLog[]
+  personalGoals        PersonalGoal[]
+  dailyObjectives      DailyObjective[]
+  brianMessages        BrianMessage[]
+  statDeltas           StatDelta[]
+  badges               UserBadge[]
+  testimonials         Testimonial[]
+  emailSendLogs        EmailSendLog[]
+  pushSubscriptions    PushSubscription[]
   microSurveyResponses MicroSurveyResponse[]
 
-  referralsMade    Referral[]        @relation("Referrer")
-  referralReceived Referral?         @relation("Referee")
+  referralsMade    Referral[]       @relation("Referrer")
+  referralReceived Referral?        @relation("Referee")
   referralCredits  ReferralCredit[]
 
-  pageViews  PageView[]
+  pageViews   PageView[]
   clickEvents ClickEvent[]
 
   @@index([email])
@@ -133,18 +137,18 @@ model PlayerProfile {
   birthYear Int
   position  Position
 
-  country String @default("FR") // Country enum value, kept as string for forward compat
+  country    String  @default("FR") // Country enum value, kept as string for forward compat
   // France uniquement: nom de la ligue régionale FFF + district (département).
-  ligue    String?
-  district String?
+  ligue      String?
+  district   String?
   // Libellé de niveau, validé côté app contre lib/geo (FFF pour FR, générique sinon).
   levelLabel String
 
-  heightCm             Int?
-  weightKg             Int?
-  clubSessionsPerWeek  Int?
-  matchDay             Weekday?
-  club                 String?
+  heightCm            Int?
+  weightKg            Int?
+  clubSessionsPerWeek Int?
+  matchDay            Weekday?
+  club                String?
 
   equipment Equipment[]
 
@@ -172,18 +176,18 @@ model Exercise {
   id   String @id @default(cuid())
   slug String @unique
 
-  name        String
-  category    ExerciseCategory
-  emoji       String
-  description String
+  name         String
+  category     ExerciseCategory
+  emoji        String
+  description  String
   matchBenefit String // bénéfice concret en match, pas générique
 
   steps          String[] // étapes d'exécution
   commonMistakes String[] // erreurs fréquentes
   breathingCue   String?
 
-  equipment    Equipment[]
-  spaceFriendly Boolean @default(false) // faisable en espace réduit
+  equipment     Equipment[]
+  spaceFriendly Boolean     @default(false) // faisable en espace réduit
 
   minAge     Int // 13 ou 15
   positions  Position[] // vide = tous postes
@@ -242,14 +246,14 @@ model ProgramSession {
   weeklyProgramId String
   weeklyProgram   WeeklyProgram @relation(fields: [weeklyProgramId], references: [id], onDelete: Cascade)
 
-  dayOfWeek      Weekday
-  order          Int
-  title          String
-  focusObjective Objective?
-  isMatchAdjacent Boolean @default(false) // veille/jour de match: jamais d'intensité
+  dayOfWeek       Weekday
+  order           Int
+  title           String
+  focusObjective  Objective?
+  isMatchAdjacent Boolean    @default(false) // veille/jour de match: jamais d'intensité
 
-  status          SessionStatus @default(PLANNED)
-  completedAt     DateTime?
+  status           SessionStatus @default(PLANNED)
+  completedAt      DateTime?
   difficultyRating Int? // ressenti 1-5, réinjecté dans la génération suivante
   recoveryNote     String?
 
@@ -264,6 +268,25 @@ enum BlockPhase {
   COOLDOWN
 }
 
+// Statut réel d'exécution d'un bloc — distinct de ProgramSession.status qui
+// ne couvrait jusque-là que la séance entière. C'est cette télémétrie par
+// exercice qui alimente Coach Brian: un abandon après 5s sur un exercice de
+// 30s ne doit jamais produire le même gain de stats qu'une exécution complète.
+enum BlockStatus {
+  PLANNED
+  COMPLETED
+  SKIPPED
+  ABANDONED
+}
+
+enum FeltDifficulty {
+  VERY_EASY
+  EASY
+  MEDIUM
+  HARD
+  VERY_HARD
+}
+
 model SessionBlock {
   id               String         @id @default(cuid())
   programSessionId String
@@ -271,15 +294,22 @@ model SessionBlock {
   exerciseId       String
   exercise         Exercise       @relation(fields: [exerciseId], references: [id])
 
-  order  Int
-  phase  BlockPhase
-  sets   Int?
-  reps   String? // "12" ou "30s"
+  order       Int
+  phase       BlockPhase
+  sets        Int?
+  reps        String? // "12" ou "30s"
   restSeconds Int?
 
   // Consigne personnalisée générée par l'IA pour ce bloc précis, jamais
   // seulement la description générique de l'exercice.
   customInstruction String
+
+  // Télémétrie de performance réelle, saisie par le joueur pendant la séance.
+  status                BlockStatus     @default(PLANNED)
+  startedAt             DateTime?
+  completedAt           DateTime?
+  actualDurationSeconds Int?
+  feltDifficulty        FeltDifficulty?
 
   @@index([programSessionId])
 }
@@ -311,9 +341,52 @@ model PlayerCard {
   id        String   @id @default(cuid())
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  stats     Json // ratings dérivés des derniers EvaluationResult
+  stats     Json // snapshot affiché — recalculé depuis PlayerStatState + EvaluationResult
   shareSlug String   @unique
   updatedAt DateTime @updatedAt
+}
+
+// Les 6 statistiques "carte joueur" (esprit jeu vidéo), mises à jour de façon
+// incrémentale par Coach Brian après chaque exercice réellement effectué —
+// jamais générées au hasard. Base neutre à 50/100 tant qu'aucune donnée de
+// performance n'existe encore pour le joueur.
+model PlayerStatState {
+  userId String @id
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  vitesse   Int @default(50)
+  technique Int @default(50)
+  conduite  Int @default(50)
+  endurance Int @default(50)
+  physique  Int @default(50)
+  mental    Int @default(50)
+
+  updatedAt DateTime @updatedAt
+}
+
+enum StatAxis {
+  VITESSE
+  TECHNIQUE
+  CONDUITE
+  ENDURANCE
+  PHYSIQUE
+  MENTAL
+}
+
+// Journal append-only de chaque variation de stat. Nécessaire pour que Coach
+// Brian puisse commenter une vraie tendance ("+4 en vitesse cette semaine")
+// plutôt que de comparer seulement deux snapshots figés.
+model StatDelta {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  axis      StatAxis
+  delta     Int
+  blockId   String?
+  sessionId String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, axis, createdAt])
 }
 
 // ---------------------------------------------------------------------------
@@ -321,9 +394,9 @@ model PlayerCard {
 // ---------------------------------------------------------------------------
 
 model DailyCheckin {
-  id     String @id @default(cuid())
+  id     String   @id @default(cuid())
   userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   date   DateTime @db.Date
 
   sleepHours   Float?
@@ -368,19 +441,19 @@ model GrowthEntry {
 }
 
 model MatchLog {
-  id             String   @id @default(cuid())
-  userId         String
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  date           DateTime
-  opponent       String?
-  competition    String?
-  minutesPlayed  Int?
-  goals          Int?
-  assists        Int?
-  feeling        Int? // ressenti /10
-  note           String?
-  focusNextTime  String?
-  createdAt      DateTime @default(now())
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date          DateTime
+  opponent      String?
+  competition   String?
+  minutesPlayed Int?
+  goals         Int?
+  assists       Int?
+  feeling       Int? // ressenti /10
+  note          String?
+  focusNextTime String?
+  createdAt     DateTime @default(now())
 
   @@index([userId, date])
 }
@@ -398,6 +471,70 @@ model PersonalGoal {
   targetDate DateTime?
   status     GoalStatus @default(IN_PROGRESS)
   createdAt  DateTime   @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Coach Brian — fil rouge de l'app: historique de ses messages et objectifs
+// quotidiens générés par le système (distincts des PersonalGoal, qui sont
+// libres et écrits par le joueur lui-même dans le journal).
+// ---------------------------------------------------------------------------
+
+enum BrianMessageCategory {
+  WELCOME
+  EXERCISE_EXCELLENT
+  EXERCISE_GOOD
+  EXERCISE_AVERAGE
+  EXERCISE_HARD
+  EXERCISE_ABANDONED
+  EXERCISE_PROGRESS
+  EXERCISE_STAGNATION
+  EXERCISE_PERSONAL_RECORD
+  SESSION_SUMMARY
+  DAILY_OBJECTIVE
+  RETENTION
+}
+
+// Historique des messages de Brian. Sert à la fois d'affichage (dernier
+// message contextuel) et de mémoire pour construire des commentaires qui
+// tiennent compte du passé du joueur ("cette semaine tu as gagné 4 points").
+model BrianMessage {
+  id               String               @id @default(cuid())
+  userId           String
+  user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category         BrianMessageCategory
+  text             String
+  relatedSessionId String?
+  relatedBlockId   String?
+  createdAt        DateTime             @default(now())
+
+  @@index([userId, createdAt])
+}
+
+enum ObjectiveKey {
+  COMPLETE_SESSION
+  COMPLETE_ALL_BLOCKS
+  WORK_ON_SPEED
+  WORK_ON_TECHNIQUE
+  WORK_ON_ENDURANCE
+  BEAT_RECORD
+  NO_ABANDON
+}
+
+// Objectifs générés par le système chaque jour (pas écrits par le joueur,
+// contrairement à PersonalGoal). "done" est mis à jour par les mêmes routes
+// qui enregistrent la télémétrie d'exercice/séance.
+model DailyObjective {
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        DateTime     @db.Date
+  key         ObjectiveKey
+  label       String
+  done        Boolean      @default(false)
+  completedAt DateTime?
+  createdAt   DateTime     @default(now())
+
+  @@unique([userId, date, key])
 }
 
 // ---------------------------------------------------------------------------
@@ -426,14 +563,14 @@ model UserBadge {
 }
 
 model StreakState {
-  userId              String    @id
-  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  currentStreak       Int       @default(0)
-  longestStreak       Int       @default(0)
-  lastCompletedAt     DateTime?
-  currentTier         String?
+  userId               String    @id
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentStreak        Int       @default(0)
+  longestStreak        Int       @default(0)
+  lastCompletedAt      DateTime?
+  currentTier          String?
   lastTierCelebratedAt DateTime?
-  updatedAt           DateTime  @updatedAt
+  updatedAt            DateTime  @updatedAt
 }
 
 // ---------------------------------------------------------------------------
@@ -447,16 +584,16 @@ enum TestimonialStatus {
 }
 
 model Testimonial {
-  id               String             @id @default(cuid())
-  userId           String
-  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  rating           Int // 1-5
-  text             String
+  id                String            @id @default(cuid())
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating            Int // 1-5
+  text              String
   firstNameSnapshot String // jamais le nom de famille (RGPD mineurs)
-  status           TestimonialStatus  @default(PENDING)
-  createdAt        DateTime           @default(now())
-  moderatedAt      DateTime?
-  moderatorNote    String?
+  status            TestimonialStatus @default(PENDING)
+  createdAt         DateTime          @default(now())
+  moderatedAt       DateTime?
+  moderatorNote     String?
 }
 
 // ---------------------------------------------------------------------------
@@ -476,24 +613,24 @@ enum SubscriptionPlan {
 }
 
 model Subscription {
-  id                   String              @id @default(cuid())
-  userId               String              @unique
-  user                 User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   // Nullable: un joueur peut recevoir du Premium bonus (parrainage) avant
   // même d'avoir un client Stripe.
-  stripeCustomerId     String?             @unique
-  stripeSubscriptionId String?             @unique
-  status               SubscriptionStatus  @default(NONE)
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  status               SubscriptionStatus @default(NONE)
   plan                 SubscriptionPlan?
   currentPeriodEnd     DateTime?
   // Un mineur ne peut pas payer lui-même: le compte payeur est un parent/tuteur.
-  payerIsParent        Boolean             @default(false)
+  payerIsParent        Boolean            @default(false)
   // Premium offert par le parrainage (viral loop), indépendant de Stripe.
   // isPremiumActive() considère le compte premium si status=ACTIVE OU si
   // cette date est dans le futur.
   bonusPremiumUntil    DateTime?
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime            @updatedAt
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
 }
 
 // ---------------------------------------------------------------------------
@@ -513,13 +650,13 @@ enum ReferralStatus {
 }
 
 model Referral {
-  id         String         @id @default(cuid())
-  referrerId String
-  referrer   User           @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
-  refereeId  String         @unique
-  referee    User           @relation("Referee", fields: [refereeId], references: [id], onDelete: Cascade)
-  status     ReferralStatus @default(ONBOARDED)
-  onboardedAt DateTime      @default(now())
+  id          String         @id @default(cuid())
+  referrerId  String
+  referrer    User           @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  refereeId   String         @unique
+  referee     User           @relation("Referee", fields: [refereeId], references: [id], onDelete: Cascade)
+  status      ReferralStatus @default(ONBOARDED)
+  onboardedAt DateTime       @default(now())
   convertedAt DateTime?
 
   credits ReferralCredit[]
@@ -536,14 +673,14 @@ enum ReferralCreditSource {
 // Le verrou anti double-crédit passe par la contrainte unique ci-dessous,
 // posée dans la même transaction que la mise à jour du webhook Stripe.
 model ReferralCredit {
-  id              String                @id @default(cuid())
-  userId          String // le parrain crédité
-  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  source          ReferralCreditSource
-  weeksGranted    Int
+  id                String               @id @default(cuid())
+  userId            String // le parrain crédité
+  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  source            ReferralCreditSource
+  weeksGranted      Int
   relatedReferralId String?
-  relatedReferral Referral?             @relation(fields: [relatedReferralId], references: [id], onDelete: SetNull)
-  createdAt       DateTime              @default(now())
+  relatedReferral   Referral?            @relation(fields: [relatedReferralId], references: [id], onDelete: SetNull)
+  createdAt         DateTime             @default(now())
 
   // Un même filleul ne peut déclencher qu'un seul crédit "FRIEND_PAID".
   @@unique([relatedReferralId, source])

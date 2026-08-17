@@ -37,6 +37,7 @@ export default async function SeancePage({ params }: { params: Promise<{ session
     reps: block.reps,
     restSeconds: block.restSeconds,
     customInstruction: block.customInstruction,
+    status: block.status,
     exercise: {
       name: block.exercise.name,
       emoji: block.exercise.emoji,

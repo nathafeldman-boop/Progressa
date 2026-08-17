@@ -4,6 +4,7 @@ import { getCurrentInternalUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { updateStreakOnCompletion } from "@/lib/streak";
 import { awardCompletionBadges } from "@/lib/badges";
+import { recordSessionSummary } from "@/lib/brian/service";
 
 const bodySchema = z.object({
   difficultyRating: z.number().int().min(1).max(5),
@@ -43,6 +44,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ ses
     where: { status: "COMPLETED", weeklyProgram: { userId: user.id } },
   });
   const awardedBadges = await awardCompletionBadges(user.id, totalCompleted, streak.currentStreak);
+  const summary = await recordSessionSummary({ userId: user.id, sessionId });
 
-  return NextResponse.json({ streak, awardedBadges, totalCompleted });
+  return NextResponse.json({ streak, awardedBadges, totalCompleted, summary });
 }

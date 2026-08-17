@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import type { StatAxis } from "@prisma/client";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
 import { Button } from "@/components/ui/Button";
 import { MicroSurveyPrompt } from "@/components/session/MicroSurveyPrompt";
+import { BrianMessageCard } from "@/components/brian/BrianMessageCard";
+import { elapsedSeconds, nowMs } from "@/lib/time";
 
 export interface SessionBlockView {
   id: string;
@@ -14,6 +17,7 @@ export interface SessionBlockView {
   reps: string | null;
   restSeconds: number | null;
   customInstruction: string;
+  status: "PLANNED" | "COMPLETED" | "SKIPPED" | "ABANDONED";
   exercise: {
     name: string;
     emoji: string;
@@ -32,6 +36,26 @@ const PHASE_LABELS: Record<SessionBlockView["phase"], string> = {
   MAIN: "Corps de séance",
   COOLDOWN: "Retour au calme",
 };
+
+const DIFFICULTY_OPTIONS: { value: "VERY_EASY" | "EASY" | "MEDIUM" | "HARD" | "VERY_HARD"; label: string }[] = [
+  { value: "VERY_EASY", label: "Très facile" },
+  { value: "EASY", label: "Facile" },
+  { value: "MEDIUM", label: "Moyen" },
+  { value: "HARD", label: "Difficile" },
+  { value: "VERY_HARD", label: "Très difficile" },
+];
+
+type BlockPhaseState = "idle" | "active" | "rating" | "done";
+
+interface BlockLocalState {
+  phase: BlockPhaseState;
+  startedAt: number | null;
+  reaction: { category: string; text: string; deltas: Partial<Record<StatAxis, number>> } | null;
+}
+
+function initialStateFor(block: SessionBlockView): BlockLocalState {
+  return { phase: block.status === "PLANNED" ? "idle" : "done", startedAt: null, reaction: null };
+}
 
 export function SessionPlayer({
   sessionId,
@@ -54,6 +78,59 @@ export function SessionPlayer({
   const [submitting, setSubmitting] = useState(false);
   const [expandedVariant, setExpandedVariant] = useState<Record<string, "easy" | "hard" | null>>({});
   const [pendingSurvey, setPendingSurvey] = useState<{ surveyKey: string; question: string; options: string[] } | null>(null);
+  const [blockStates, setBlockStates] = useState<Record<string, BlockLocalState>>(() =>
+    Object.fromEntries(blocks.map((b) => [b.id, initialStateFor(b)]))
+  );
+  const [sessionSummary, setSessionSummary] = useState<{
+    text: string;
+    deltas: Partial<Record<StatAxis, number>>;
+    totalCompleted: number | undefined;
+  } | null>(null);
+
+  function updateBlock(id: string, patch: Partial<BlockLocalState>) {
+    setBlockStates((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
+  }
+
+  async function postTelemetry(
+    blockId: string,
+    body: { status: "COMPLETED" | "SKIPPED" | "ABANDONED"; feltDifficulty?: string | null; actualDurationSeconds?: number | null }
+  ) {
+    const res = await fetch(`/api/sessions/${sessionId}/blocks/${blockId}/telemetry`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) return null;
+    return res.json();
+  }
+
+  function startBlock(blockId: string) {
+    updateBlock(blockId, { phase: "active", startedAt: nowMs() });
+  }
+
+  async function skipBlock(blockId: string) {
+    updateBlock(blockId, { phase: "done" });
+    const data = await postTelemetry(blockId, { status: "SKIPPED" });
+    if (data) updateBlock(blockId, { reaction: { ...data.brianMessage, deltas: data.deltas } });
+  }
+
+  async function abandonBlock(blockId: string) {
+    const actualDurationSeconds = elapsedSeconds(blockStates[blockId]?.startedAt ?? null);
+    updateBlock(blockId, { phase: "done" });
+    const data = await postTelemetry(blockId, { status: "ABANDONED", actualDurationSeconds });
+    if (data) updateBlock(blockId, { reaction: { ...data.brianMessage, deltas: data.deltas } });
+  }
+
+  function finishBlock(blockId: string) {
+    updateBlock(blockId, { phase: "rating" });
+  }
+
+  async function submitBlockDifficulty(blockId: string, feltDifficulty: string) {
+    const actualDurationSeconds = elapsedSeconds(blockStates[blockId]?.startedAt ?? null);
+    updateBlock(blockId, { phase: "done" });
+    const data = await postTelemetry(blockId, { status: "COMPLETED", feltDifficulty, actualDurationSeconds });
+    if (data) updateBlock(blockId, { reaction: { ...data.brianMessage, deltas: data.deltas } });
+  }
 
   function goToDashboard() {
     router.push("/dashboard");
@@ -72,27 +149,32 @@ export function SessionPlayer({
       if (!res.ok) return;
       const data = await res.json().catch(() => ({}));
       const totalCompleted: number | undefined = data.totalCompleted;
-
-      // Micro-sondages en contexte réel (section 8): à la toute première
-      // séance terminée (tout le monde), puis "pourquoi pas Premium" aux
-      // 2e/3e séances pour les comptes gratuits uniquement.
-      if (totalCompleted === 1) {
-        setPendingSurvey({
-          surveyKey: "comment_connu",
-          question: "Comment as-tu connu [APP] ?",
-          options: ["Un ami", "Réseaux sociaux", "Mon club", "Recherche Google", "Autre"],
-        });
-      } else if (showPremiumBanner && (totalCompleted === 2 || totalCompleted === 3)) {
-        setPendingSurvey({
-          surveyKey: "pourquoi_pas_premium",
-          question: "Pourquoi Premium ne t'intéresse pas (pour l'instant) ?",
-          options: ["Trop cher", "Je veux tester encore", "Pas convaincu par l'utilité", "Je vais demander à mes parents"],
-        });
-      } else {
-        goToDashboard();
+      if (data.summary) {
+        setSessionSummary({ text: data.summary.brianMessage.text, deltas: data.summary.totalDeltas, totalCompleted });
+        return;
       }
+
+      continueAfterCompletion(totalCompleted);
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  function continueAfterCompletion(totalCompleted: number | undefined) {
+    if (totalCompleted === 1) {
+      setPendingSurvey({
+        surveyKey: "comment_connu",
+        question: "Comment as-tu connu [APP] ?",
+        options: ["Un ami", "Réseaux sociaux", "Mon club", "Recherche Google", "Autre"],
+      });
+    } else if (showPremiumBanner && (totalCompleted === 2 || totalCompleted === 3)) {
+      setPendingSurvey({
+        surveyKey: "pourquoi_pas_premium",
+        question: "Pourquoi Premium ne t'intéresse pas (pour l'instant) ?",
+        options: ["Trop cher", "Je veux tester encore", "Pas convaincu par l'utilité", "Je vais demander à mes parents"],
+      });
+    } else {
+      goToDashboard();
     }
   }
 
@@ -100,6 +182,23 @@ export function SessionPlayer({
     return (
       <div className="mx-auto max-w-md p-4">
         <MicroSurveyPrompt {...pendingSurvey} onDone={goToDashboard} />
+      </div>
+    );
+  }
+
+  if (sessionSummary) {
+    return (
+      <div className="mx-auto max-w-md space-y-4 p-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-primary-strong)]">
+            Entraînement terminé
+          </p>
+          <h1 className="mt-1 font-display text-2xl font-extrabold uppercase tracking-wide">Bilan de la séance</h1>
+        </div>
+        <BrianMessageCard category="SESSION_SUMMARY" text={sessionSummary.text} deltas={sessionSummary.deltas} />
+        <Button className="w-full" onClick={() => continueAfterCompletion(sessionSummary.totalCompleted)}>
+          Voir mon tableau de bord
+        </Button>
       </div>
     );
   }
@@ -138,6 +237,8 @@ export function SessionPlayer({
 
       {blocks.map((block) => {
         const variant = expandedVariant[block.id] ?? null;
+        const state = blockStates[block.id];
+
         return (
           <Card key={block.id}>
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
@@ -174,13 +275,62 @@ export function SessionPlayer({
             </div>
             {variant === "easy" && <p className="mt-2 text-sm text-[var(--color-text-muted)]">{block.exercise.easyVariant}</p>}
             {variant === "hard" && <p className="mt-2 text-sm text-[var(--color-text-muted)]">{block.exercise.hardVariant}</p>}
+
+            {!alreadyCompleted && state?.phase === "idle" && (
+              <div className="mt-4 flex gap-2 border-t border-[var(--color-border)] pt-4">
+                <Button variant="ghost" onClick={() => skipBlock(block.id)}>
+                  Passer
+                </Button>
+                <Button className="flex-1" onClick={() => startBlock(block.id)}>
+                  Commencer
+                </Button>
+              </div>
+            )}
+
+            {!alreadyCompleted && state?.phase === "active" && (
+              <div className="mt-4 flex gap-2 border-t border-[var(--color-border)] pt-4">
+                <Button variant="ghost" onClick={() => abandonBlock(block.id)}>
+                  Abandonner
+                </Button>
+                <Button className="flex-1" onClick={() => finishBlock(block.id)}>
+                  Terminé
+                </Button>
+              </div>
+            )}
+
+            {!alreadyCompleted && state?.phase === "rating" && (
+              <div className="mt-4 border-t border-[var(--color-border)] pt-4">
+                <p className="text-sm font-semibold">Comment tu as trouvé l&apos;exercice ?</p>
+                <div className="mt-2 grid grid-cols-5 gap-1">
+                  {DIFFICULTY_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => submitBlockDifficulty(block.id, opt.value)}
+                      className="rounded-[var(--radius-control)] border border-[var(--color-border)] px-1 py-2 text-center text-[0.65rem] font-semibold leading-tight hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-soft)]"
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {state?.phase === "done" && state.reaction && (
+              <BrianMessageCard
+                category={state.reaction.category}
+                text={state.reaction.text}
+                deltas={state.reaction.deltas}
+                className="mt-4 border-none bg-[var(--color-surface-alt)] p-3 shadow-none"
+              />
+            )}
           </Card>
         );
       })}
 
       {!alreadyCompleted && (
         <Card>
-          <CardTitle>Comment c&apos;était ?</CardTitle>
+          <CardTitle>Comment c&apos;était, dans l&apos;ensemble ?</CardTitle>
           <CardSubtitle className="mt-1">Ton ressenti ajuste le programme de la semaine prochaine.</CardSubtitle>
           <div className="mt-3 flex justify-between gap-1">
             {[1, 2, 3, 4, 5].map((n) => (

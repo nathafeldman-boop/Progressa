@@ -3,3 +3,11 @@
 export function isInFuture(date: Date | null | undefined): boolean {
   return !!date && date.getTime() > Date.now();
 }
+
+export function elapsedSeconds(startedAt: number | null): number | null {
+  return startedAt == null ? null : Math.round((Date.now() - startedAt) / 1000);
+}
+
+export function nowMs(): number {
+  return Date.now();
+}

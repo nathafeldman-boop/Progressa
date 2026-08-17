@@ -35,7 +35,7 @@ export default function OnboardingFinishPage() {
           clearOnboardingData();
           clearReferralCode();
           setStatus("C'est parti !");
-          router.replace("/dashboard");
+          router.replace("/onboarding/brian");
         }
       }
     }
