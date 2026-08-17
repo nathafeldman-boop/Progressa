@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { syncInternalUser } from "@/lib/auth";
 import { onboardingPayloadSchema } from "@/lib/onboarding/schema";
 import { isMinor } from "@/lib/age-category";
-import { ensureReferralCode } from "@/lib/referral";
+import { ensureReferralCode, recordReferralOnboarding } from "@/lib/referral";
 import { pickTargetWeekDays } from "@/lib/scheduling";
 import { getCurrentWeekStart } from "@/lib/week";
 import { generateWeeklyProgram } from "@/lib/ai/generate-program";
@@ -97,6 +97,13 @@ export async function POST(request: Request) {
   }
 
   try {
+    const referralCode = typeof (body as Record<string, unknown>)?.referralCode === "string" ? (body as { referralCode: string }).referralCode : null;
+    await recordReferralOnboarding(referralCode, user.id);
+  } catch (err) {
+    console.error("[onboarding/complete] referral credit failed", err);
+  }
+
+  try {
     await prisma.streakState.upsert({
       where: { userId: user.id },
       create: { userId: user.id },
@@ -132,6 +139,7 @@ export async function POST(request: Request) {
         sessionCount: 1, // compte gratuit à la création
         targetWeekDays,
         matchAdjacentDays,
+        isPremium: false,
       });
       await persistWeeklyProgram(user.id, weekStartDate, result.program, result.source, result.rawModelOutput);
     }

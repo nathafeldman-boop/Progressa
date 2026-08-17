@@ -1,0 +1,98 @@
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+import { getCurrentInternalUser } from "@/lib/auth";
+import { getCurrentWeeklyProgram } from "@/lib/programs/get-current-program";
+import { isPremiumActive } from "@/lib/subscription";
+import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
+import { Chip } from "@/components/ui/Chip";
+import { Button } from "@/components/ui/Button";
+import { RegenerateButton } from "@/components/dashboard/RegenerateButton";
+import { POSITION_LABELS, WEEKDAY_LABELS } from "@/lib/labels";
+import { getAgeCategory } from "@/lib/age-category";
+
+export default async function DashboardPage() {
+  const user = await getCurrentInternalUser();
+
+  if (!user) {
+    return (
+      <div className="mx-auto max-w-md p-4">
+        <Card className="p-6 text-center">
+          <CardTitle>Bienvenue !</CardTitle>
+          <CardSubtitle className="mt-2">Finalise ton profil pour débloquer ton premier programme.</CardSubtitle>
+          <Link href="/onboarding" className="mt-4 block">
+            <Button className="w-full">Compléter mon profil</Button>
+          </Link>
+        </Card>
+      </div>
+    );
+  }
+
+  const [profile, subscription, streak, program] = await Promise.all([
+    prisma.playerProfile.findUnique({ where: { userId: user.id } }),
+    prisma.subscription.findUnique({ where: { userId: user.id } }),
+    prisma.streakState.findUnique({ where: { userId: user.id } }),
+    getCurrentWeeklyProgram(user.id),
+  ]);
+
+  const premium = isPremiumActive(subscription);
+  const ageCategory = profile ? getAgeCategory(profile.birthYear) : null;
+
+  return (
+    <div className="mx-auto max-w-md space-y-4 p-4">
+      <div>
+        <h1 className="font-display text-2xl font-extrabold uppercase tracking-wide">Salut {user.firstName} 👋</h1>
+        {profile && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {ageCategory && <Chip>{ageCategory.label}</Chip>}
+            <Chip>{POSITION_LABELS[profile.position]}</Chip>
+            {streak && streak.currentStreak > 0 && <Chip>🔥 Série de {streak.currentStreak}</Chip>}
+          </div>
+        )}
+      </div>
+
+      {!premium && (
+        <Card className="border-[var(--color-primary)] bg-[var(--color-primary-soft)]">
+          <CardTitle className="text-[var(--color-primary-strong)]">Passe Premium</CardTitle>
+          <CardSubtitle className="mt-1 text-[var(--color-primary-strong)]">
+            Jusqu&apos;à 3 séances/semaine, programme 100% personnalisé, tests d&apos;évaluation et carte joueur.
+          </CardSubtitle>
+          <Link href="/parametres/abonnement" className="mt-3 block">
+            <Button className="w-full">Découvrir Premium</Button>
+          </Link>
+        </Card>
+      )}
+
+      <div className="flex items-center justify-between">
+        <h2 className="font-display text-lg font-bold uppercase tracking-wide">Cette semaine</h2>
+        <RegenerateButton />
+      </div>
+
+      {!program || program.sessions.length === 0 ? (
+        <Card className="p-6 text-center">
+          <CardSubtitle>Aucun programme généré pour l&apos;instant.</CardSubtitle>
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          {program.sessions.map((session) => (
+            <Link key={session.id} href={`/seance/${session.id}`}>
+              <Card className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                    {WEEKDAY_LABELS[session.dayOfWeek]}
+                  </p>
+                  <CardTitle className="text-base">{session.title}</CardTitle>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {session.isMatchAdjacent && <Chip>🩹 Séance légère</Chip>}
+                    {session.status === "COMPLETED" && <Chip>✅ Terminée</Chip>}
+                    {session.status === "SKIPPED" && <Chip>⏭️ Sautée</Chip>}
+                  </div>
+                </div>
+                <span className="text-2xl">▶️</span>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

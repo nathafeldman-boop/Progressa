@@ -37,6 +37,9 @@ model User {
   parentEmail      String?
   parentConsentAt  DateTime?
 
+  // Anti-spam sur la régénération manuelle du programme.
+  lastManualRegenAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -476,15 +479,19 @@ model Subscription {
   id                   String              @id @default(cuid())
   userId               String              @unique
   user                 User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  stripeCustomerId     String              @unique
+  // Nullable: un joueur peut recevoir du Premium bonus (parrainage) avant
+  // même d'avoir un client Stripe.
+  stripeCustomerId     String?             @unique
   stripeSubscriptionId String?             @unique
   status               SubscriptionStatus  @default(NONE)
   plan                 SubscriptionPlan?
   currentPeriodEnd     DateTime?
   // Un mineur ne peut pas payer lui-même: le compte payeur est un parent/tuteur.
   payerIsParent        Boolean             @default(false)
-  // Bonus de parrainage accumulé (en jours), consommé avant la facturation Stripe.
-  bonusDaysBanked      Int                 @default(0)
+  // Premium offert par le parrainage (viral loop), indépendant de Stripe.
+  // isPremiumActive() considère le compte premium si status=ACTIVE OU si
+  // cette date est dans le futur.
+  bonusPremiumUntil    DateTime?
   createdAt            DateTime            @default(now())
   updatedAt            DateTime            @updatedAt
 }

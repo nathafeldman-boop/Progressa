@@ -217,6 +217,32 @@ test("the fallback template itself always satisfies the business rules", async (
   assert.equal(check.valid, true);
 });
 
+test("free-tier accounts (isPremium: false) can still generate a valid fallback program for every objective", async () => {
+  const catalogBySlug = new Map(EXERCISE_CATALOG.map((e) => [e.slug, e]));
+
+  for (const objective of Object.values(Objective)) {
+    const freeInput: GenerateProgramInput = { ...baseInput, objective, isPremium: false };
+    const result = await generateWeeklyProgram(freeInput, {
+      callModel: async () => ({ text: "invalid", refused: false }),
+    });
+
+    assert.equal(result.source, "FALLBACK_TEMPLATE");
+    for (const session of result.program.sessions) {
+      for (const block of session.blocks) {
+        const exercise = catalogBySlug.get(block.exerciseSlug)!;
+        assert.equal(exercise.isFreeTier, true, `${block.exerciseSlug} is not part of the freemium subset`);
+      }
+    }
+
+    const check = validateProgramBusinessRules(result.program, {
+      catalogBySlug,
+      expectedSessionCount: freeInput.sessionCount,
+      playerObjective: objective,
+    });
+    assert.deepEqual(check.errors, [], `objective ${objective} should still produce a valid free-tier program`);
+  }
+});
+
 test("a premium 3-session week generates three distinct days via the fallback template", async () => {
   const premiumInput: GenerateProgramInput = {
     ...baseInput,

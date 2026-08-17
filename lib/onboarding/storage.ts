@@ -4,6 +4,7 @@ import { EMPTY_ONBOARDING_DATA, type OnboardingData } from "@/lib/onboarding/typ
 
 const DATA_KEY = "app_onboarding_data";
 const ANON_ID_KEY = "app_anon_id";
+const REFERRAL_CODE_KEY = "app_referral_code";
 
 /**
  * L'id anonyme est généré dès le tout premier écran, AVANT la création du
@@ -39,4 +40,19 @@ export function saveOnboardingData(data: OnboardingData): void {
 export function clearOnboardingData(): void {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(DATA_KEY);
+}
+
+export function setReferralCode(code: string): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(REFERRAL_CODE_KEY, code);
+}
+
+export function getReferralCode(): string | null {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(REFERRAL_CODE_KEY);
+}
+
+export function clearReferralCode(): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(REFERRAL_CODE_KEY);
 }

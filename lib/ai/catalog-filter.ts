@@ -9,6 +9,8 @@ export interface CatalogFilterInput {
   /** Parties du corps avec une douleur non résolue: on écarte les exercices qui les sollicitent. */
   unresolvedPainBodyParts?: string[];
   referenceDate?: Date;
+  /** Compte gratuit: restreint au sous-ensemble freemium (~15% du catalogue, section 3). */
+  isPremium?: boolean;
 }
 
 const equipmentSet = (equipment: Equipment[]) => new Set(equipment.length ? equipment : [Equipment.NONE]);
@@ -30,6 +32,8 @@ export function filterCatalogForProfile(input: CatalogFilterInput): ExerciseSeed
 
     const equipmentOk = exercise.equipment.every((eq) => eq === Equipment.NONE || available.has(eq));
     if (!equipmentOk) return false;
+
+    if (input.isPremium === false && !exercise.isFreeTier) return false;
 
     return true;
   });

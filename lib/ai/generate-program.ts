@@ -29,6 +29,7 @@ export interface GenerateProgramInput {
   matchAdjacentDays: Weekday[];
   referenceDate?: Date;
   weekSeed?: number;
+  isPremium?: boolean;
 }
 
 export interface GenerateProgramResult {
@@ -87,6 +88,7 @@ export async function generateWeeklyProgram(
     position: input.position,
     equipment: input.equipment,
     referenceDate,
+    isPremium: input.isPremium,
   });
   const filteredCatalog = excludePainfulAreas(
     baseCatalog,

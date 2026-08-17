@@ -10,7 +10,7 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { getAgeCategory } from "@/lib/age-category";
 import { COUNTRY_LABELS, FRANCE_LIGUES, getDistrictsForLigue, getNiveauxForCountry } from "@/lib/geo";
 import { EQUIPMENT_EMOJI, EQUIPMENT_LABELS, OBJECTIVE_EMOJI, OBJECTIVE_LABELS, POSITION_LABELS, WEEKDAY_LABELS } from "@/lib/labels";
-import { getOrCreateAnonId, loadOnboardingData, saveOnboardingData } from "@/lib/onboarding/storage";
+import { getOrCreateAnonId, loadOnboardingData, saveOnboardingData, setReferralCode } from "@/lib/onboarding/storage";
 import { ONBOARDING_SCREEN_KEYS, EMPTY_ONBOARDING_DATA, type OnboardingData } from "@/lib/onboarding/types";
 import { trackClick, trackOnboardingFunnel } from "@/lib/analytics/track";
 
@@ -29,6 +29,8 @@ export function OnboardingWizard() {
   useEffect(() => {
     setAnonId(getOrCreateAnonId());
     setData(loadOnboardingData());
+    const ref = new URLSearchParams(window.location.search).get("ref");
+    if (ref) setReferralCode(ref);
   }, []);
 
   useEffect(() => {

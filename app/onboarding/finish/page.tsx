@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
-import { clearOnboardingData, loadOnboardingData } from "@/lib/onboarding/storage";
+import { clearOnboardingData, clearReferralCode, getReferralCode, loadOnboardingData } from "@/lib/onboarding/storage";
 
 /**
  * Étape charnière: le compte Clerk existe déjà (redirection après
@@ -21,17 +21,19 @@ export default function OnboardingFinishPage() {
 
     async function finish() {
       const data = loadOnboardingData();
+      const referralCode = getReferralCode();
       try {
         await fetch("/api/onboarding/complete", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
+          body: JSON.stringify({ ...data, referralCode }),
         });
       } catch (err) {
         console.error("[onboarding/finish] completion call failed", err);
       } finally {
         if (!cancelled) {
           clearOnboardingData();
+          clearReferralCode();
           setStatus("C'est parti !");
           router.replace("/dashboard");
         }
