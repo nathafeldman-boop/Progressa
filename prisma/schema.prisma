@@ -1,0 +1,635 @@
+// [APP] — schema Prisma
+//
+// Note: la base de données de production et le système d'affiliation créateurs
+// existent déjà ailleurs et seront réimportés tel quel (migration de données,
+// hors périmètre de ce schéma). Ce fichier ne modélise donc PAS les tables
+// d'affiliation externe (liens créateurs, commissions, offres de lancement) —
+// seulement le parrainage joueur-à-joueur (viral loop), qui est natif à l'app.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Identité & profil joueur
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  PLAYER
+  ADMIN
+}
+
+model User {
+  id             String   @id @default(cuid())
+  // Id du provider d'auth (Clerk). Nullable: un compte peut exister avant la
+  // fin de la synchronisation auth (cf. onboarding non-bloquant).
+  externalAuthId String?  @unique
+  email          String   @unique
+  firstName      String
+  role           UserRole @default(PLAYER)
+
+  isMinor          Boolean   @default(false)
+  parentEmail      String?
+  parentConsentAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile          PlayerProfile?
+  subscription     Subscription?
+  playerCard       PlayerCard?
+  streak           StreakState?
+  referralCode     ReferralCode?
+
+  weeklyPrograms      WeeklyProgram[]
+  evaluationResults   EvaluationResult[]
+  dailyCheckins       DailyCheckin[]
+  painLogs            PainLog[]
+  growthEntries       GrowthEntry[]
+  matchLogs           MatchLog[]
+  personalGoals       PersonalGoal[]
+  badges              UserBadge[]
+  testimonials        Testimonial[]
+  emailSendLogs       EmailSendLog[]
+  pushSubscriptions   PushSubscription[]
+  microSurveyResponses MicroSurveyResponse[]
+
+  referralsMade    Referral[]        @relation("Referrer")
+  referralReceived Referral?         @relation("Referee")
+  referralCredits  ReferralCredit[]
+
+  pageViews  PageView[]
+  clickEvents ClickEvent[]
+
+  @@index([email])
+}
+
+enum Position {
+  GOALKEEPER
+  CENTER_BACK
+  FULLBACK
+  DEFENSIVE_MID
+  ATTACKING_MID
+  WINGER
+  STRIKER
+}
+
+enum Objective {
+  SPEED_EXPLOSIVENESS
+  TECHNIQUE_DRIBBLING
+  PHYSICAL_DUELS
+  ENDURANCE
+  SHOOTING
+  ALL_ROUND
+}
+
+enum Country {
+  FR
+  BE
+  CH
+  LU
+  MA
+  DZ
+  TN
+  SN
+  CI
+  CM
+  CA_QC
+  OTHER
+}
+
+enum Equipment {
+  BALL
+  CONES
+  WALL
+  STREET_PITCH
+  RESISTANCE_BAND
+  NONE
+}
+
+enum Weekday {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model PlayerProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  birthYear Int
+  position  Position
+
+  country String @default("FR") // Country enum value, kept as string for forward compat
+  // France uniquement: nom de la ligue régionale FFF + district (département).
+  ligue    String?
+  district String?
+  // Libellé de niveau, validé côté app contre lib/geo (FFF pour FR, générique sinon).
+  levelLabel String
+
+  heightCm             Int?
+  weightKg             Int?
+  clubSessionsPerWeek  Int?
+  matchDay             Weekday?
+  club                 String?
+
+  equipment Equipment[]
+
+  objective     Objective
+  weakPointNote String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Catalogue d'exercices — source unique de vérité pour l'IA (aucune invention)
+// ---------------------------------------------------------------------------
+
+enum ExerciseCategory {
+  TECHNIQUE
+  STRENGTH
+  EXPLOSIVENESS
+  CARDIO
+  PREVENTION
+  GOALKEEPER
+}
+
+model Exercise {
+  id   String @id @default(cuid())
+  slug String @unique
+
+  name        String
+  category    ExerciseCategory
+  emoji       String
+  description String
+  matchBenefit String // bénéfice concret en match, pas générique
+
+  steps          String[] // étapes d'exécution
+  commonMistakes String[] // erreurs fréquentes
+  breathingCue   String?
+
+  equipment    Equipment[]
+  spaceFriendly Boolean @default(false) // faisable en espace réduit
+
+  minAge     Int // 13 ou 15
+  positions  Position[] // vide = tous postes
+  objectives Objective[] // objectifs onboarding couverts par cet exercice
+
+  easyVariant String
+  hardVariant String
+
+  durationMinutes Int
+  isFreeTier      Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  blocks SessionBlock[]
+
+  @@index([category])
+  @@index([minAge])
+}
+
+// ---------------------------------------------------------------------------
+// Programme hebdomadaire généré par IA
+// ---------------------------------------------------------------------------
+
+enum ProgramSource {
+  AI
+  FALLBACK_TEMPLATE
+  MANUAL_REGEN
+}
+
+model WeeklyProgram {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekStartDate DateTime
+  source        ProgramSource
+
+  // Sortie JSON validée par le schéma Zod, conservée pour audit/debug.
+  rawModelOutput Json?
+
+  createdAt DateTime @default(now())
+
+  sessions ProgramSession[]
+
+  @@unique([userId, weekStartDate])
+}
+
+enum SessionStatus {
+  PLANNED
+  COMPLETED
+  SKIPPED
+}
+
+model ProgramSession {
+  id              String        @id @default(cuid())
+  weeklyProgramId String
+  weeklyProgram   WeeklyProgram @relation(fields: [weeklyProgramId], references: [id], onDelete: Cascade)
+
+  dayOfWeek      Weekday
+  order          Int
+  title          String
+  focusObjective Objective?
+  isMatchAdjacent Boolean @default(false) // veille/jour de match: jamais d'intensité
+
+  status          SessionStatus @default(PLANNED)
+  completedAt     DateTime?
+  difficultyRating Int? // ressenti 1-5, réinjecté dans la génération suivante
+  recoveryNote     String?
+
+  blocks SessionBlock[]
+
+  @@index([weeklyProgramId])
+}
+
+enum BlockPhase {
+  WARMUP
+  MAIN
+  COOLDOWN
+}
+
+model SessionBlock {
+  id               String         @id @default(cuid())
+  programSessionId String
+  programSession   ProgramSession @relation(fields: [programSessionId], references: [id], onDelete: Cascade)
+  exerciseId       String
+  exercise         Exercise       @relation(fields: [exerciseId], references: [id])
+
+  order  Int
+  phase  BlockPhase
+  sets   Int?
+  reps   String? // "12" ou "30s"
+  restSeconds Int?
+
+  // Consigne personnalisée générée par l'IA pour ce bloc précis, jamais
+  // seulement la description générique de l'exercice.
+  customInstruction String
+
+  @@index([programSessionId])
+}
+
+// ---------------------------------------------------------------------------
+// Tests d'évaluation & carte joueur
+// ---------------------------------------------------------------------------
+
+enum EvaluationTestType {
+  JUGGLING
+  SHUTTLE_5X10
+  PLANK
+  SPRINT_20M
+}
+
+model EvaluationResult {
+  id         String             @id @default(cuid())
+  userId     String
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testType   EvaluationTestType
+  value      Float
+  unit       String
+  recordedAt DateTime           @default(now())
+
+  @@index([userId, testType, recordedAt])
+}
+
+model PlayerCard {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stats     Json // ratings dérivés des derniers EvaluationResult
+  shareSlug String   @unique
+  updatedAt DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Suivi santé & progression
+// ---------------------------------------------------------------------------
+
+model DailyCheckin {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date   DateTime @db.Date
+
+  sleepHours   Float?
+  sleepQuality Int // 1-5
+  energy       Int // 1-5
+  soreness     Int // 1-5
+  mood         Int // 1-5
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, date])
+}
+
+enum PainStatus {
+  UNRESOLVED
+  RESOLVED
+}
+
+model PainLog {
+  id         String     @id @default(cuid())
+  userId     String
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bodyPart   String
+  intensity  Int // 1-5
+  note       String?
+  status     PainStatus @default(UNRESOLVED)
+  createdAt  DateTime   @default(now())
+  resolvedAt DateTime?
+
+  @@index([userId, status])
+}
+
+model GrowthEntry {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date     DateTime @db.Date
+  heightCm Int?
+  weightKg Int?
+
+  @@index([userId, date])
+}
+
+model MatchLog {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date           DateTime
+  opponent       String?
+  competition    String?
+  minutesPlayed  Int?
+  goals          Int?
+  assists        Int?
+  feeling        Int? // ressenti /10
+  note           String?
+  focusNextTime  String?
+  createdAt      DateTime @default(now())
+
+  @@index([userId, date])
+}
+
+enum GoalStatus {
+  IN_PROGRESS
+  DONE
+}
+
+model PersonalGoal {
+  id         String     @id @default(cuid())
+  userId     String
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title      String
+  targetDate DateTime?
+  status     GoalStatus @default(IN_PROGRESS)
+  createdAt  DateTime   @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Gamification
+// ---------------------------------------------------------------------------
+
+model Badge {
+  id          String @id @default(cuid())
+  slug        String @unique
+  name        String
+  emoji       String
+  description String
+
+  earnedBy UserBadge[]
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId  String
+  badge    Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  earnedAt DateTime @default(now())
+
+  @@unique([userId, badgeId])
+}
+
+model StreakState {
+  userId              String    @id
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentStreak       Int       @default(0)
+  longestStreak       Int       @default(0)
+  lastCompletedAt     DateTime?
+  currentTier         String?
+  lastTierCelebratedAt DateTime?
+  updatedAt           DateTime  @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Avis / témoignages
+// ---------------------------------------------------------------------------
+
+enum TestimonialStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Testimonial {
+  id               String             @id @default(cuid())
+  userId           String
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating           Int // 1-5
+  text             String
+  firstNameSnapshot String // jamais le nom de famille (RGPD mineurs)
+  status           TestimonialStatus  @default(PENDING)
+  createdAt        DateTime           @default(now())
+  moderatedAt      DateTime?
+  moderatorNote    String?
+}
+
+// ---------------------------------------------------------------------------
+// Abonnement (Stripe)
+// ---------------------------------------------------------------------------
+
+enum SubscriptionStatus {
+  NONE
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+enum SubscriptionPlan {
+  MONTHLY
+  ANNUAL
+}
+
+model Subscription {
+  id                   String              @id @default(cuid())
+  userId               String              @unique
+  user                 User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeCustomerId     String              @unique
+  stripeSubscriptionId String?             @unique
+  status               SubscriptionStatus  @default(NONE)
+  plan                 SubscriptionPlan?
+  currentPeriodEnd     DateTime?
+  // Un mineur ne peut pas payer lui-même: le compte payeur est un parent/tuteur.
+  payerIsParent        Boolean             @default(false)
+  // Bonus de parrainage accumulé (en jours), consommé avant la facturation Stripe.
+  bonusDaysBanked      Int                 @default(0)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Parrainage joueur-à-joueur (viral loop natif — distinct de l'affiliation
+// créateurs externes, qui vit dans le système existant réimporté à part)
+// ---------------------------------------------------------------------------
+
+model ReferralCode {
+  userId String @id
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code   String @unique
+}
+
+enum ReferralStatus {
+  ONBOARDED
+  CONVERTED_PAYING
+}
+
+model Referral {
+  id         String         @id @default(cuid())
+  referrerId String
+  referrer   User           @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  refereeId  String         @unique
+  referee    User           @relation("Referee", fields: [refereeId], references: [id], onDelete: Cascade)
+  status     ReferralStatus @default(ONBOARDED)
+  onboardedAt DateTime      @default(now())
+  convertedAt DateTime?
+
+  credits ReferralCredit[]
+
+  @@index([referrerId, status])
+}
+
+enum ReferralCreditSource {
+  THREE_FRIENDS_ONBOARDED
+  FRIEND_PAID
+}
+
+// Grand livre de crédits: chaque ligne est une source de vérité idempotente.
+// Le verrou anti double-crédit passe par la contrainte unique ci-dessous,
+// posée dans la même transaction que la mise à jour du webhook Stripe.
+model ReferralCredit {
+  id              String                @id @default(cuid())
+  userId          String // le parrain crédité
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  source          ReferralCreditSource
+  weeksGranted    Int
+  relatedReferralId String?
+  relatedReferral Referral?             @relation(fields: [relatedReferralId], references: [id], onDelete: SetNull)
+  createdAt       DateTime              @default(now())
+
+  // Un même filleul ne peut déclencher qu'un seul crédit "FRIEND_PAID".
+  @@unique([relatedReferralId, source])
+}
+
+// ---------------------------------------------------------------------------
+// Analytics first-party
+// ---------------------------------------------------------------------------
+
+model PageView {
+  id        String   @id @default(cuid())
+  anonId    String
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  path      String
+  referrer  String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId])
+  @@index([anonId])
+}
+
+model ClickEvent {
+  id        String   @id @default(cuid())
+  anonId    String
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  label     String
+  path      String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([label])
+}
+
+enum FunnelAction {
+  VIEWED
+  COMPLETED
+  SKIPPED
+  ABANDONED
+}
+
+// Suivi de l'onboarding AVANT création de compte (anonId généré côté client
+// dès le premier écran) — permet de mesurer l'abandon écran par écran.
+model OnboardingFunnelEvent {
+  id        String       @id @default(cuid())
+  anonId    String
+  screen    Int
+  screenKey String
+  action    FunnelAction
+  createdAt DateTime     @default(now())
+
+  @@index([anonId])
+  @@index([screen, action])
+}
+
+// Micro-sondage contextuel. "Passer" compte comme répondu (skipped=true) pour
+// ne jamais reposer la même question. Une réponse déjà donnée n'est jamais
+// écrasée (contrainte unique + upsert conditionnel côté app).
+model MicroSurveyResponse {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  surveyKey String
+  question  String
+  answer    String?
+  skipped   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, surveyKey])
+}
+
+// ---------------------------------------------------------------------------
+// Emails & notifications
+// ---------------------------------------------------------------------------
+
+model EmailSendLog {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailKey String // "welcome" | "j1_reminder" | "j3_premium_pitch" | ...
+  sentAt   DateTime @default(now())
+
+  @@unique([userId, emailKey])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+}
