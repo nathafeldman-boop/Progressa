@@ -5,38 +5,32 @@ import { createClient } from "@/lib/supabase/client";
 import { GoogleButton } from "@/components/auth/GoogleButton";
 import { Button } from "@/components/ui/Button";
 
-export function SignUpForm({ redirectTo }: { redirectTo: string }) {
-  const [firstName, setFirstName] = useState("");
+/**
+ * Connexion unifiée: email + code à 6 chiffres, ou Google. Pas de mot de
+ * passe, pas d'écran "créer un compte" séparé — avec l'OTP, se connecter
+ * pour la première fois EST la création de compte.
+ */
+export function EmailAuthForm({ redirectTo }: { redirectTo: string }) {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [resent, setResent] = useState(false);
   const [awaitingCode, setAwaitingCode] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSendCode(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     const supabase = createClient();
     if (!supabase) {
-      setError("Création de compte indisponible pour le moment.");
+      setError("Connexion indisponible pour le moment.");
       return;
     }
     setLoading(true);
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { first_name: firstName } },
-    });
+    const { error: otpError } = await supabase.auth.signInWithOtp({ email });
     setLoading(false);
-    if (signUpError) {
-      setError(signUpError.message === "User already registered" ? "Un compte existe déjà avec cet email." : "Impossible de créer le compte.");
-      return;
-    }
-    // Si la confirmation email est désactivée, une session est déjà ouverte.
-    if (data.session) {
-      window.location.href = redirectTo;
+    if (otpError) {
+      setError("Impossible d'envoyer le code pour l'instant.");
       return;
     }
     setAwaitingCode(true);
@@ -51,7 +45,7 @@ export function SignUpForm({ redirectTo }: { redirectTo: string }) {
       return;
     }
     setLoading(true);
-    const { error: verifyError } = await supabase.auth.verifyOtp({ email, token: code, type: "signup" });
+    const { error: verifyError } = await supabase.auth.verifyOtp({ email, token: code, type: "email" });
     setLoading(false);
     if (verifyError) {
       setError("Code invalide ou expiré.");
@@ -64,7 +58,7 @@ export function SignUpForm({ redirectTo }: { redirectTo: string }) {
     setError(null);
     const supabase = createClient();
     if (!supabase) return;
-    const { error: resendError } = await supabase.auth.resend({ type: "signup", email });
+    const { error: resendError } = await supabase.auth.signInWithOtp({ email });
     if (resendError) {
       setError("Impossible de renvoyer le code pour l'instant.");
       return;
@@ -76,8 +70,7 @@ export function SignUpForm({ redirectTo }: { redirectTo: string }) {
     return (
       <div className="w-full max-w-sm space-y-4">
         <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 text-sm">
-          On vient de t&apos;envoyer un code à 6 chiffres à <strong>{email}</strong>. Entre-le ci-dessous pour activer ton
-          compte.
+          On vient de t&apos;envoyer un code à 6 chiffres à <strong>{email}</strong>.
         </div>
         <form onSubmit={handleVerify} className="space-y-3">
           <input
@@ -118,35 +111,19 @@ export function SignUpForm({ redirectTo }: { redirectTo: string }) {
         <span className="h-px flex-1 bg-[var(--color-border)]" />
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <input
-          type="text"
-          required
-          placeholder="Prénom"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-4 py-2"
-        />
+      <form onSubmit={handleSendCode} className="space-y-3">
         <input
           type="email"
           required
-          placeholder="Email"
+          autoFocus
+          placeholder="Ton email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-4 py-2"
         />
-        <input
-          type="password"
-          required
-          minLength={8}
-          placeholder="Mot de passe (8 caractères min.)"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-4 py-2"
-        />
         {error && <p className="text-sm text-[var(--color-danger)]">{error}</p>}
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Création..." : "Créer mon compte"}
+          {loading ? "Envoi..." : "Recevoir mon code"}
         </Button>
       </form>
     </div>
