@@ -127,6 +127,19 @@ export function DragSliderField({
           )}
         </div>
       </div>
+      <input
+        type="number"
+        inputMode="numeric"
+        min={min}
+        max={max}
+        value={value ?? ""}
+        onChange={(e) => {
+          const v = e.target.value ? Number(e.target.value) : null;
+          if (v !== null && !Number.isNaN(v)) onChange(Math.min(max, Math.max(min, v)));
+        }}
+        placeholder="ou tape la valeur"
+        className="mt-2 w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-center text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]"
+      />
     </div>
   );
 }
