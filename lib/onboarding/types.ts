@@ -1,12 +1,12 @@
-import type { Country, Equipment, Objective, Position, Weekday } from "@prisma/client";
+import type { Equipment, Objective, Position, Weekday } from "@prisma/client";
 
 export interface OnboardingData {
   firstName: string;
   birthYear: number | null;
   position: Position | null;
-  country: Country;
-  ligue: string | null; // France uniquement
-  district: string | null; // France uniquement
+  country: string;
+  ligue: string | null; // France uniquement — dérivée du département, jamais choisie directement
+  district: string | null; // France uniquement — en réalité le département, présenté comme tel à l'écran
   levelLabel: string | null;
   heightCm: number | null;
   weightKg: number | null;
@@ -22,7 +22,7 @@ export const EMPTY_ONBOARDING_DATA: OnboardingData = {
   firstName: "",
   birthYear: null,
   position: null,
-  country: "FR",
+  country: "France",
   ligue: null,
   district: null,
   levelLabel: null,

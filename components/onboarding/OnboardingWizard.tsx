@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { Equipment, Objective, Position, Weekday, type Country } from "@prisma/client";
+import { Equipment, Objective, Position, Weekday } from "@prisma/client";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
@@ -12,7 +12,7 @@ import { DragSliderField } from "@/components/onboarding/DragSliderField";
 import { OnboardingBackground } from "@/components/onboarding/OnboardingBackground";
 import { SuggestField } from "@/components/onboarding/SuggestField";
 import { getAgeCategory } from "@/lib/age-category";
-import { COUNTRY_LABELS, FRANCE_LIGUES, getDistrictsForLigue, getNiveauxForCountry } from "@/lib/geo";
+import { ALL_FRANCE_DEPARTMENTS, FRANCOPHONE_COUNTRIES, getLigueForDepartment, getNiveauxForCountry } from "@/lib/geo";
 import { EQUIPMENT_EMOJI, EQUIPMENT_LABELS, OBJECTIVE_EMOJI, OBJECTIVE_LABELS, POSITION_LABELS, WEEKDAY_LABELS } from "@/lib/labels";
 import {
   composeOnboardingBirthYear,
@@ -83,8 +83,9 @@ export function OnboardingWizard() {
       case "poste":
         return data.position ? null : "Choisis ton poste.";
       case "pays_niveau": {
+        if (!data.country) return "Choisis ton pays.";
         if (!data.levelLabel) return "Choisis ton niveau de jeu.";
-        if (data.country === "FR" && (!data.ligue || !data.district)) return "Choisis ta ligue et ton district.";
+        if (data.country === "France" && !data.district) return "Choisis ton département.";
         return null;
       }
       case "gabarit_rythme":
@@ -141,12 +142,12 @@ export function OnboardingWizard() {
         {ONBOARDING_SCREEN_KEYS[step] === "pays_niveau" && (
           <ScreenPaysNiveau
             country={data.country}
-            ligue={data.ligue}
-            district={data.district}
+            department={data.district}
             levelLabel={data.levelLabel}
             onChangeCountry={(v) => setData((prev) => ({ ...prev, country: v, ligue: null, district: null, levelLabel: null }))}
-            onChangeLigue={(v) => setData((prev) => ({ ...prev, ligue: v, district: null }))}
-            onChangeDistrict={(v) => update("district", v)}
+            onChangeDepartment={(v) =>
+              setData((prev) => ({ ...prev, district: v, ligue: getLigueForDepartment(v) }))
+            }
             onChangeLevel={(v) => update("levelLabel", v)}
           />
         )}
@@ -325,58 +326,34 @@ function ScreenPoste({ value, onChange }: { value: Position | null; onChange: (v
 
 function ScreenPaysNiveau({
   country,
-  ligue,
-  district,
+  department,
   levelLabel,
   onChangeCountry,
-  onChangeLigue,
-  onChangeDistrict,
+  onChangeDepartment,
   onChangeLevel,
 }: {
-  country: Country;
-  ligue: string | null;
-  district: string | null;
+  country: string;
+  department: string | null;
   levelLabel: string | null;
-  onChangeCountry: (v: Country) => void;
-  onChangeLigue: (v: string) => void;
-  onChangeDistrict: (v: string) => void;
+  onChangeCountry: (v: string) => void;
+  onChangeDepartment: (v: string) => void;
   onChangeLevel: (v: string) => void;
 }) {
   const niveaux = getNiveauxForCountry(country);
-  const countryLabels = Object.values(COUNTRY_LABELS);
-  const ligueNames = FRANCE_LIGUES.map((l) => l.name);
 
   return (
     <div>
       <BrianAsks>{composeOnboardingCountryLevel()}</BrianAsks>
       <div className="flex flex-col gap-4">
-        <SuggestField
-          value={COUNTRY_LABELS[country]}
-          onChange={(label) => {
-            const code = Object.entries(COUNTRY_LABELS).find(([, l]) => l === label)?.[0] as Country | undefined;
-            if (code) onChangeCountry(code);
-          }}
-          options={countryLabels}
-          placeholder="Cherche ton pays"
-        />
+        <SuggestField value={country} onChange={onChangeCountry} options={FRANCOPHONE_COUNTRIES} placeholder="Cherche ton pays" />
 
-        {country === "FR" && (
-          <>
-            <SuggestField
-              value={ligue}
-              onChange={onChangeLigue}
-              options={ligueNames}
-              placeholder="Cherche ta ligue régionale"
-            />
-            {ligue && (
-              <SuggestField
-                value={district}
-                onChange={onChangeDistrict}
-                options={getDistrictsForLigue(ligue)}
-                placeholder="Cherche ton district"
-              />
-            )}
-          </>
+        {country === "France" && (
+          <SuggestField
+            value={department}
+            onChange={onChangeDepartment}
+            options={ALL_FRANCE_DEPARTMENTS}
+            placeholder="Cherche ton département"
+          />
         )}
 
         <SuggestField value={levelLabel} onChange={onChangeLevel} options={niveaux} placeholder="Cherche ton niveau de jeu" />
