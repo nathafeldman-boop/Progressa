@@ -15,6 +15,10 @@ const PUBLIC_PREFIXES = [
   "/ressources",
   "/confidentialite",
   "/avis",
+  "/tarifs",
+  "/contact",
+  "/cgu",
+  "/mentions-legales",
   "/r/",
   "/carte/", // carte joueur partagée publiquement (mais pas /carte tout court, privé)
 ];
