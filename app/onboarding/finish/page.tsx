@@ -4,7 +4,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { OnboardingBackground } from "@/components/onboarding/OnboardingBackground";
+import { BrianAvatar } from "@/components/brian/BrianAvatar";
 import { clearOnboardingData, clearReferralCode, getReferralCode, loadOnboardingData } from "@/lib/onboarding/storage";
+
+const GENERATION_STEPS = [
+  "Analyse de ton profil...",
+  "Sélection des exercices adaptés...",
+  "Calibrage selon ton niveau...",
+  "Organisation de ta semaine...",
+];
 
 /**
  * Étape charnière: le compte Clerk existe déjà (redirection après
@@ -15,7 +23,16 @@ import { clearOnboardingData, clearReferralCode, getReferralCode, loadOnboarding
  */
 export default function OnboardingFinishPage() {
   const router = useRouter();
-  const [status, setStatus] = useState("Finalisation de ton profil...");
+  const [stepIndex, setStepIndex] = useState(0);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    if (done) return;
+    const timer = window.setInterval(() => {
+      setStepIndex((i) => (i + 1) % GENERATION_STEPS.length);
+    }, 1400);
+    return () => window.clearInterval(timer);
+  }, [done]);
 
   useEffect(() => {
     let cancelled = false;
@@ -44,7 +61,7 @@ export default function OnboardingFinishPage() {
         if (!cancelled) {
           clearOnboardingData();
           clearReferralCode();
-          setStatus("C'est parti !");
+          setDone(true);
           router.replace("/onboarding/brian");
         }
       }
@@ -60,9 +77,27 @@ export default function OnboardingFinishPage() {
     <div className="relative min-h-screen">
       <OnboardingBackground />
       <div className="relative z-10 flex min-h-screen items-center justify-center p-4">
-        <Card className="p-8 text-center">
-          <CardTitle>{status}</CardTitle>
-          <CardSubtitle className="mt-2">On prépare ton premier programme.</CardSubtitle>
+        <Card className="flex flex-col items-center gap-4 p-8 text-center">
+          <BrianAvatar state={done ? "celebrating" : "talking"} size={88} />
+          <div>
+            <CardTitle>{done ? "C'est parti !" : "Coach Brian prépare ton programme"}</CardTitle>
+            <CardSubtitle className="mt-2 transition-opacity duration-300">
+              {done ? "Ton premier programme est prêt." : GENERATION_STEPS[stepIndex]}
+            </CardSubtitle>
+          </div>
+          {!done && (
+            <div className="flex gap-1.5" aria-hidden="true">
+              {GENERATION_STEPS.map((_, i) => (
+                <span
+                  key={i}
+                  className="h-1.5 w-1.5 rounded-full transition-colors duration-300"
+                  style={{
+                    background: i === stepIndex ? "var(--color-primary)" : "var(--color-border)",
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </Card>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Reveal } from "./reveal";
 import { StadiumBackdrop } from "./decor";
+import { BrianAvatar } from "@/components/brian/BrianAvatar";
 
 export function CtaBand({ variant = "mid" }: { variant?: "mid" | "final" }) {
   const isFinal = variant === "final";
@@ -14,6 +15,7 @@ export function CtaBand({ variant = "mid" }: { variant?: "mid" | "final" }) {
       />
 
       <Reveal className="lp-container relative flex flex-col items-center gap-5 text-center">
+        {isFinal && <BrianAvatar state="encouraging" size={72} />}
         <h2 className={`lp-h2 ${isFinal ? "text-[2.6rem] md:text-[3.6rem]" : ""}`}>
           {isFinal ? "Prêt à construire ton joueur ?" : "Ton parcours peut commencer aujourd'hui."}
         </h2>

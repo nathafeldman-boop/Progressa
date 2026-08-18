@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { BrianAvatar } from "@/components/brian/BrianAvatar";
 
 export function Hero() {
   return (
@@ -27,6 +28,13 @@ export function Hero() {
             <span className="lp-eyebrow text-white/90">
               <span aria-hidden>⚽</span> Ton parcours de joueur
             </span>
+
+            <div className="flex items-center gap-2.5 rounded-full bg-white/10 py-1.5 pl-1.5 pr-4 backdrop-blur-sm ring-1 ring-white/20">
+              <BrianAvatar state="idle" size={32} />
+              <span className="text-sm font-semibold text-white">
+                Coach Brian t&apos;accompagne à chaque séance
+              </span>
+            </div>
 
             <h1 className="lp-h2 text-[2.3rem] text-white sm:text-[2.7rem] md:text-[3.3rem]">
               Construis ton joueur.

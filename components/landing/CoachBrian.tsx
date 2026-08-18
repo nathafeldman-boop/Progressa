@@ -22,7 +22,7 @@ export function CoachBrian() {
               alt="Coach Brian"
               width={420}
               height={670}
-              className="lp-float relative z-0 -mr-10 h-52 w-auto shrink-0 drop-shadow-[0_16px_24px_rgba(16,35,26,0.15)] sm:h-64"
+              className="lp-float relative z-0 -mr-10 h-64 w-auto shrink-0 drop-shadow-[0_16px_24px_rgba(16,35,26,0.15)] sm:h-80"
               priority={false}
             />
             <div className="lp-card relative z-10 flex w-full max-w-[15.5rem] flex-col gap-3 overflow-hidden p-4 sm:max-w-[16.5rem]">
