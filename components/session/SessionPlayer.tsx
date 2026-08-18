@@ -8,6 +8,8 @@ import { Chip } from "@/components/ui/Chip";
 import { Button } from "@/components/ui/Button";
 import { MicroSurveyPrompt } from "@/components/session/MicroSurveyPrompt";
 import { BrianMessageCard } from "@/components/brian/BrianMessageCard";
+import { PlayerCardView } from "@/components/card/PlayerCardView";
+import type { PlayerCardStats } from "@/lib/player-card";
 import { elapsedSeconds, nowMs } from "@/lib/time";
 
 export interface SessionBlockView {
@@ -85,6 +87,13 @@ export function SessionPlayer({
     text: string;
     deltas: Partial<Record<StatAxis, number>>;
     totalCompleted: number | undefined;
+    overallBefore: number;
+    overallAfter: number;
+    rankedUp: boolean;
+    rankTierAfter: string;
+    card: PlayerCardStats | null;
+    firstName: string;
+    positionLabel: string;
   } | null>(null);
 
   function updateBlock(id: string, patch: Partial<BlockLocalState>) {
@@ -150,7 +159,18 @@ export function SessionPlayer({
       const data = await res.json().catch(() => ({}));
       const totalCompleted: number | undefined = data.totalCompleted;
       if (data.summary) {
-        setSessionSummary({ text: data.summary.brianMessage.text, deltas: data.summary.totalDeltas, totalCompleted });
+        setSessionSummary({
+          text: data.summary.brianMessage.text,
+          deltas: data.summary.totalDeltas,
+          totalCompleted,
+          overallBefore: data.summary.overallBefore,
+          overallAfter: data.summary.overallAfter,
+          rankedUp: data.summary.rankedUp,
+          rankTierAfter: data.summary.rankTierAfter,
+          card: data.card ?? null,
+          firstName: data.firstName ?? "",
+          positionLabel: data.positionLabel ?? "",
+        });
         return;
       }
 
@@ -195,7 +215,32 @@ export function SessionPlayer({
           </p>
           <h1 className="mt-1 font-display text-2xl font-extrabold uppercase tracking-wide">Bilan de la séance</h1>
         </div>
+
         <BrianMessageCard category="SESSION_SUMMARY" text={sessionSummary.text} deltas={sessionSummary.deltas} />
+
+        {sessionSummary.card && (
+          <div className="space-y-3">
+            {sessionSummary.rankedUp && (
+              <div className="animate-[pulse_1.6s_ease-in-out_2] rounded-[var(--radius-control)] border border-[var(--color-primary)] bg-[var(--color-primary-soft)] p-3 text-center text-sm font-bold text-[var(--color-primary-strong)]">
+                🎉 Nouveau rang débloqué : {sessionSummary.rankTierAfter} !
+              </div>
+            )}
+            <div className="flex items-center justify-center gap-3">
+              <span className="text-sm font-semibold text-[var(--color-text-muted)]">Note générale</span>
+              <span className="font-display text-lg font-extrabold text-[var(--color-primary-strong)]">
+                {sessionSummary.overallBefore} → {sessionSummary.overallAfter}
+              </span>
+            </div>
+            <PlayerCardView
+              firstName={sessionSummary.firstName}
+              positionLabel={sessionSummary.positionLabel}
+              ageCategoryLabel={null}
+              stats={sessionSummary.card}
+              animateFromOverall={sessionSummary.overallBefore}
+            />
+          </div>
+        )}
+
         <Button className="w-full" onClick={() => continueAfterCompletion(sessionSummary.totalCompleted)}>
           Voir mon tableau de bord
         </Button>

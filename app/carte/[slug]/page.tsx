@@ -23,6 +23,9 @@ export default async function PublicPlayerCardPage({ params }: { params: Promise
         firstName={card.user.firstName}
         positionLabel={profile ? POSITION_LABELS[profile.position] : ""}
         ageCategoryLabel={ageCategory?.label ?? null}
+        country={profile?.country ?? null}
+        department={profile?.district ?? null}
+        niveauLabel={profile?.levelLabel ?? null}
         stats={card.stats as unknown as PlayerCardStats}
       />
       <p className="text-xs text-[var(--color-text-muted)]">Carte joueur générée sur {APP_NAME}</p>

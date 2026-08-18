@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { updateStreakOnCompletion } from "@/lib/streak";
 import { awardCompletionBadges } from "@/lib/badges";
 import { recordSessionSummary } from "@/lib/brian/service";
+import { POSITION_LABELS } from "@/lib/labels";
 
 const bodySchema = z.object({
   difficultyRating: z.number().int().min(1).max(5),
@@ -46,5 +47,20 @@ export async function POST(request: Request, { params }: { params: Promise<{ ses
   const awardedBadges = await awardCompletionBadges(user.id, totalCompleted, streak.currentStreak);
   const summary = await recordSessionSummary({ userId: user.id, sessionId });
 
-  return NextResponse.json({ streak, awardedBadges, totalCompleted, summary });
+  // recordBlockTelemetry a déjà resynchronisé PlayerCard après chaque bloc de
+  // cette séance — on relit juste l'état final, pas de recalcul ici.
+  const [card, profile] = await Promise.all([
+    prisma.playerCard.findUnique({ where: { userId: user.id } }),
+    prisma.playerProfile.findUnique({ where: { userId: user.id } }),
+  ]);
+
+  return NextResponse.json({
+    streak,
+    awardedBadges,
+    totalCompleted,
+    summary,
+    card: card?.stats ?? null,
+    firstName: user.firstName,
+    positionLabel: profile ? POSITION_LABELS[profile.position] : "",
+  });
 }

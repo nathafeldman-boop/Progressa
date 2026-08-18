@@ -3,27 +3,28 @@ import { STAT_AXES } from "./types";
 import type { StatAxisValues } from "./types";
 
 /**
- * Comment un delta se répartit entre les 6 axes selon la catégorie de
- * l'exercice — c'est la seule source de "quel exercice muscle quelle stat".
- * Ne couvre jamais MENTAL: cet axe reflète la discipline (régularité,
- * exercices menés à terme), pas un type d'exercice — voir MENTAL_BONUS.
+ * Comment un delta se répartit entre les 6 axes de la carte (VIT/TIR/PAS/
+ * DRI/DEF/PHY) selon la catégorie de l'exercice — c'est la seule source de
+ * "quel exercice muscle quelle stat" (section 5 du cahier des charges
+ * carte joueur). Étendre cette table est le seul endroit à toucher pour
+ * faire contribuer une nouvelle catégorie d'exercice à un axe.
  */
 const CATEGORY_WEIGHTS: Record<ExerciseCategory, Partial<Record<StatAxis, number>>> = {
-  TECHNIQUE: { CONDUITE: 0.6, TECHNIQUE: 0.4 },
+  TECHNIQUE: { CONDUITE: 0.7, PASSE: 0.3 },
   STRENGTH: { PHYSIQUE: 1 },
   EXPLOSIVENESS: { VITESSE: 0.8, PHYSIQUE: 0.2 },
-  CARDIO: { ENDURANCE: 1 },
-  PREVENTION: { PHYSIQUE: 0.7, MENTAL: 0.3 },
-  GOALKEEPER: { TECHNIQUE: 0.6, CONDUITE: 0.4 },
+  CARDIO: { PHYSIQUE: 1 },
+  PREVENTION: { PHYSIQUE: 1 },
+  GOALKEEPER: { DEFENSE: 0.5, CONDUITE: 0.3, PHYSIQUE: 0.2 },
 };
 
 const OBJECTIVE_WEIGHTS: Record<Objective, Partial<Record<StatAxis, number>>> = {
   SPEED_EXPLOSIVENESS: { VITESSE: 1 },
-  TECHNIQUE_DRIBBLING: { CONDUITE: 0.6, TECHNIQUE: 0.4 },
-  PHYSICAL_DUELS: { PHYSIQUE: 1 },
-  ENDURANCE: { ENDURANCE: 1 },
-  SHOOTING: { TECHNIQUE: 0.7, CONDUITE: 0.3 },
-  ALL_ROUND: { VITESSE: 0.2, TECHNIQUE: 0.2, CONDUITE: 0.2, ENDURANCE: 0.2, PHYSIQUE: 0.2 },
+  TECHNIQUE_DRIBBLING: { CONDUITE: 0.7, PASSE: 0.3 },
+  PHYSICAL_DUELS: { PHYSIQUE: 0.6, DEFENSE: 0.4 },
+  ENDURANCE: { PHYSIQUE: 1 },
+  SHOOTING: { TIR: 1 },
+  ALL_ROUND: { VITESSE: 1 / 6, TIR: 1 / 6, PASSE: 1 / 6, CONDUITE: 1 / 6, DEFENSE: 1 / 6, PHYSIQUE: 1 / 6 },
 };
 
 const PHASE_BASE_DELTA: Record<BlockPhase, number> = {
@@ -70,7 +71,13 @@ export function qualityMultiplier(
   return multiplier;
 }
 
-const MENTAL_BONUS_BY_DIFFICULTY: Partial<Record<FeltDifficulty, number>> = {
+/**
+ * Petit bonus PHYSIQUE pour la discipline (aller au bout d'un exercice
+ * difficile plutôt que le fuir) — l'ancien axe MENTAL (retiré des 6 axes de
+ * la carte) jouait ce rôle ; on le replie sur PHYSIQUE plutôt que de perdre
+ * l'incitatif.
+ */
+const DISCIPLINE_BONUS_BY_DIFFICULTY: Partial<Record<FeltDifficulty, number>> = {
   HARD: 2,
   VERY_HARD: 3,
 };
@@ -114,8 +121,8 @@ export function computeBlockStatDeltas(input: BlockDeltaInput): Partial<Record<S
   }
 
   if (input.status === "COMPLETED") {
-    const mentalBonus = MENTAL_BONUS_BY_DIFFICULTY[input.feltDifficulty ?? "MEDIUM"] ?? 1;
-    deltas.MENTAL = (deltas.MENTAL ?? 0) + mentalBonus;
+    const disciplineBonus = DISCIPLINE_BONUS_BY_DIFFICULTY[input.feltDifficulty ?? "MEDIUM"];
+    if (disciplineBonus) deltas.PHYSIQUE = (deltas.PHYSIQUE ?? 0) + disciplineBonus;
   }
 
   return deltas;
@@ -173,21 +180,32 @@ export function computeOverall(stats: StatAxisValues): number {
 }
 
 export interface RankTier {
+  key: string;
   min: number;
   label: string;
 }
 
+/**
+ * Les 8 rangs de la carte joueur (section 9 du cahier des charges).
+ * Seuils centralisés ICI et nulle part ailleurs — un composant qui a
+ * besoin du rang d'un joueur appelle rankTierForOverall(), il ne
+ * recalcule jamais un seuil lui-même. `key` est stable (utilisé par
+ * l'identité visuelle de la carte, cf. lib/card/rank-styles.ts) — `label`
+ * peut changer sans casser le style associé.
+ */
 export const RANK_TIERS: RankTier[] = [
-  { min: 85, label: "Pro" },
-  { min: 75, label: "Élite" },
-  { min: 65, label: "Avancé" },
-  { min: 50, label: "Confirmé" },
-  { min: 35, label: "Amateur" },
-  { min: 0, label: "Débutant" },
+  { key: "elite_supreme", min: 90, label: "Élite Suprême" },
+  { key: "elite", min: 80, label: "Élite" },
+  { key: "pro", min: 70, label: "Pro" },
+  { key: "espoir", min: 60, label: "Espoir" },
+  { key: "confirme", min: 50, label: "Confirmé" },
+  { key: "avance", min: 40, label: "Avancé" },
+  { key: "intermediaire", min: 30, label: "Intermédiaire" },
+  { key: "debutant", min: 0, label: "Débutant" },
 ];
 
-export function rankTierForOverall(overall: number): string {
-  return (RANK_TIERS.find((tier) => overall >= tier.min) ?? RANK_TIERS[RANK_TIERS.length - 1]).label;
+export function rankTierForOverall(overall: number): RankTier {
+  return RANK_TIERS.find((tier) => overall >= tier.min) ?? RANK_TIERS[RANK_TIERS.length - 1];
 }
 
 export function expectedDurationSeconds(exercise: Pick<Exercise, "durationMinutes">): number {

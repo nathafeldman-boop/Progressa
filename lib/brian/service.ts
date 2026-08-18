@@ -8,28 +8,47 @@ import { markObjectiveDone } from "./daily-objectives";
 
 const DEFAULT_STATS: StatAxisValues = {
   VITESSE: 50,
-  TECHNIQUE: 50,
+  TIR: 50,
+  PASSE: 50,
   CONDUITE: 50,
-  ENDURANCE: 50,
+  DEFENSE: 50,
   PHYSIQUE: 50,
+  TECHNIQUE: 50,
+  ENDURANCE: 50,
   MENTAL: 50,
 };
 
-function toAxisValues(state: { vitesse: number; technique: number; conduite: number; endurance: number; physique: number; mental: number }): StatAxisValues {
+function toAxisValues(state: {
+  vitesse: number;
+  tir: number;
+  passe: number;
+  conduite: number;
+  defense: number;
+  physique: number;
+  technique: number;
+  endurance: number;
+  mental: number;
+}): StatAxisValues {
   return {
     VITESSE: state.vitesse,
-    TECHNIQUE: state.technique,
+    TIR: state.tir,
+    PASSE: state.passe,
     CONDUITE: state.conduite,
-    ENDURANCE: state.endurance,
+    DEFENSE: state.defense,
     PHYSIQUE: state.physique,
+    TECHNIQUE: state.technique,
+    ENDURANCE: state.endurance,
     MENTAL: state.mental,
   };
 }
 
+// WORK_ON_TECHNIQUE / WORK_ON_ENDURANCE datent du modèle à 6 axes précédent
+// (TECHNIQUE/ENDURANCE retirés de la carte) — reciblés sur les axes les plus
+// proches plutôt que de casser ces objectifs quotidiens existants.
 const OBJECTIVE_KEY_FOR_AXIS: Partial<Record<StatAxis, "WORK_ON_SPEED" | "WORK_ON_TECHNIQUE" | "WORK_ON_ENDURANCE">> = {
   VITESSE: "WORK_ON_SPEED",
-  TECHNIQUE: "WORK_ON_TECHNIQUE",
-  ENDURANCE: "WORK_ON_ENDURANCE",
+  CONDUITE: "WORK_ON_TECHNIQUE",
+  PHYSIQUE: "WORK_ON_ENDURANCE",
 };
 
 export interface BlockTelemetryResult {
@@ -144,16 +163,19 @@ export async function recordBlockTelemetry(input: {
   await syncPlayerCard(input.userId);
 
   const overall = computeOverall(updated);
-  return { deltas, isPersonalRecord, brianMessage: { category, text }, overall, rankTier: rankTierForOverall(overall) };
+  return { deltas, isPersonalRecord, brianMessage: { category, text }, overall, rankTier: rankTierForOverall(overall).label };
 }
 
 function toFieldObject(values: StatAxisValues) {
   return {
     vitesse: values.VITESSE,
-    technique: values.TECHNIQUE,
+    tir: values.TIR,
+    passe: values.PASSE,
     conduite: values.CONDUITE,
-    endurance: values.ENDURANCE,
+    defense: values.DEFENSE,
     physique: values.PHYSIQUE,
+    technique: values.TECHNIQUE,
+    endurance: values.ENDURANCE,
     mental: values.MENTAL,
   };
 }
@@ -163,13 +185,25 @@ export interface SessionSummaryResult {
   exercisesCompleted: number;
   exercisesTotal: number;
   brianMessage: { category: string; text: string };
+  overallBefore: number;
+  overallAfter: number;
+  rankTierBefore: string;
+  rankTierAfter: string;
+  rankedUp: boolean;
 }
 
-/** Bilan de fin de séance: agrège les gains de tous les blocs de la séance et fait réagir Brian sur l'ensemble. */
+/**
+ * Bilan de fin de séance: agrège les gains de tous les blocs de la séance et
+ * fait réagir Brian sur l'ensemble. PlayerStatState reflète déjà l'état
+ * "après" (chaque bloc l'a mis à jour au fil de la séance) — l'état "avant"
+ * s'obtient donc en retranchant les deltas de cette séance, sans snapshot
+ * séparé à maintenir.
+ */
 export async function recordSessionSummary(input: { userId: string; sessionId: string }): Promise<SessionSummaryResult> {
-  const [blocks, deltaRows] = await Promise.all([
+  const [blocks, deltaRows, currentState] = await Promise.all([
     prisma.sessionBlock.findMany({ where: { programSessionId: input.sessionId } }),
     prisma.statDelta.findMany({ where: { userId: input.userId, sessionId: input.sessionId } }),
+    prisma.playerStatState.findUnique({ where: { userId: input.userId } }),
   ]);
 
   const totalDeltas: Partial<Record<StatAxis, number>> = {};
@@ -201,5 +235,26 @@ export async function recordSessionSummary(input: { userId: string; sessionId: s
     await markObjectiveDone(input.userId, "COMPLETE_ALL_BLOCKS");
   }
 
-  return { totalDeltas, exercisesCompleted, exercisesTotal, brianMessage: { category: "SESSION_SUMMARY", text } };
+  const afterValues = currentState ? toAxisValues(currentState) : DEFAULT_STATS;
+  const beforeValues: StatAxisValues = { ...afterValues };
+  for (const axis of STAT_AXES) {
+    const delta = totalDeltas[axis];
+    if (delta) beforeValues[axis] = Math.max(0, beforeValues[axis] - delta);
+  }
+  const overallBefore = computeOverall(beforeValues);
+  const overallAfter = computeOverall(afterValues);
+  const tierBefore = rankTierForOverall(overallBefore);
+  const tierAfter = rankTierForOverall(overallAfter);
+
+  return {
+    totalDeltas,
+    exercisesCompleted,
+    exercisesTotal,
+    brianMessage: { category: "SESSION_SUMMARY", text },
+    overallBefore,
+    overallAfter,
+    rankTierBefore: tierBefore.label,
+    rankTierAfter: tierAfter.label,
+    rankedUp: tierAfter.key !== tierBefore.key,
+  };
 }

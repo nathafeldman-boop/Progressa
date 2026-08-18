@@ -49,6 +49,19 @@ export async function POST(request: Request) {
   }
 
   try {
+    // syncInternalUser() ne connaît le prénom que via Supabase user_metadata
+    // (absent avec le flux OTP actuel — pas de mot de passe, donc pas de
+    // formulaire d'inscription séparé qui l'aurait renseigné), d'où le
+    // "Joueur" par défaut. L'onboarding est la vraie source du prénom.
+    if (payload.firstName && payload.firstName !== user.firstName) {
+      await prisma.user.update({ where: { id: user.id }, data: { firstName: payload.firstName } });
+      user.firstName = payload.firstName; // pour que le reste de cette requête (email, message Brian) utilise le bon prénom
+    }
+  } catch (err) {
+    console.error("[onboarding/complete] firstName update failed", err);
+  }
+
+  try {
     await prisma.playerProfile.upsert({
       where: { userId: user.id },
       create: {

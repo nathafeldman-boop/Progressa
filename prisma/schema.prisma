@@ -355,22 +355,28 @@ model PlayerStatState {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   vitesse   Int @default(50)
-  technique Int @default(50)
+  technique Int @default(50) // déprécié — conservé pour compat, plus alimenté (voir StatAxis)
   conduite  Int @default(50)
-  endurance Int @default(50)
+  endurance Int @default(50) // déprécié — conservé pour compat, plus alimenté (voir StatAxis)
   physique  Int @default(50)
-  mental    Int @default(50)
+  mental    Int @default(50) // déprécié — conservé pour compat, plus alimenté (voir StatAxis)
+  tir       Int @default(50)
+  passe     Int @default(50)
+  defense   Int @default(50)
 
   updatedAt DateTime @updatedAt
 }
 
 enum StatAxis {
   VITESSE
-  TECHNIQUE
+  TECHNIQUE // déprécié — conservé pour compat avec les StatDelta déjà en base
   CONDUITE
-  ENDURANCE
+  ENDURANCE // déprécié — conservé pour compat avec les StatDelta déjà en base
   PHYSIQUE
-  MENTAL
+  MENTAL // déprécié — conservé pour compat avec les StatDelta déjà en base
+  TIR
+  PASSE
+  DEFENSE
 }
 
 // Journal append-only de chaque variation de stat. Nécessaire pour que Coach

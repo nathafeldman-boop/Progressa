@@ -25,9 +25,10 @@ function normalize(value: number, type: EvaluationTestType): number {
 export interface PlayerCardStats {
   overall: number;
   skills: Record<string, number>;
-  // Absent sur les cartes créées avant l'introduction de Coach Brian —
-  // toujours présent sur toute carte recalculée via syncPlayerCard().
+  // Absents sur les cartes créées avant l'introduction de Coach Brian —
+  // toujours présents sur toute carte recalculée via syncPlayerCard().
   rankTier?: string;
+  rankKey?: string;
   lastUpdated: string;
 }
 
@@ -58,18 +59,26 @@ export function computePlayerCardStats(results: EvaluationResult[]): PlayerCardS
 
 const DEFAULT_STAT_VALUES: StatAxisValues = {
   VITESSE: 50,
-  TECHNIQUE: 50,
+  TIR: 50,
+  PASSE: 50,
   CONDUITE: 50,
-  ENDURANCE: 50,
+  DEFENSE: 50,
   PHYSIQUE: 50,
+  TECHNIQUE: 50,
+  ENDURANCE: 50,
   MENTAL: 50,
 };
 
-/** Quel axe Coach Brian un test d'évaluation vient affiner (pas les 4 tests ne couvrent pas les 6 axes). */
+/**
+ * Quel axe carte un test d'évaluation vient affiner — les 4 tests actuels
+ * ne couvrent pas les 6 axes (TIR/PASSE n'ont pour l'instant aucun test
+ * dédié, ils progressent uniquement via les séances). Ajouter un test pour
+ * un axe non couvert est le seul endroit à toucher ici.
+ */
 const TEST_AXIS: Partial<Record<EvaluationTestType, StatAxis>> = {
   SPRINT_20M: "VITESSE",
-  JUGGLING: "TECHNIQUE",
-  SHUTTLE_5X10: "CONDUITE",
+  JUGGLING: "CONDUITE",
+  SHUTTLE_5X10: "DEFENSE",
   PLANK: "PHYSIQUE",
 };
 
@@ -77,10 +86,13 @@ function statStateToAxisValues(statState: PlayerStatState | null): StatAxisValue
   if (!statState) return { ...DEFAULT_STAT_VALUES };
   return {
     VITESSE: statState.vitesse,
-    TECHNIQUE: statState.technique,
+    TIR: statState.tir,
+    PASSE: statState.passe,
     CONDUITE: statState.conduite,
-    ENDURANCE: statState.endurance,
+    DEFENSE: statState.defense,
     PHYSIQUE: statState.physique,
+    TECHNIQUE: statState.technique,
+    ENDURANCE: statState.endurance,
     MENTAL: statState.mental,
   };
 }
@@ -122,8 +134,9 @@ export function buildUnifiedPlayerCardStats(
   for (const axis of STAT_AXES) skills[STAT_LABELS[axis]] = blended[axis];
 
   const overall = computeOverall(blended);
+  const tier = rankTierForOverall(overall);
 
-  return { overall, skills, rankTier: rankTierForOverall(overall), lastUpdated: new Date().toISOString() };
+  return { overall, skills, rankTier: tier.label, rankKey: tier.key, lastUpdated: new Date().toISOString() };
 }
 
 function randomShareSlug(): string {

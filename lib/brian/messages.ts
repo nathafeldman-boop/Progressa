@@ -58,6 +58,15 @@ export function composeOnboardingRevelation(firstName: string): string {
   return `Ton profil est prêt, ${firstName || "champion"}. Crée ton compte et on commence ton premier entraînement ensemble.`;
 }
 
+/** Montré juste avant le tout premier test, à côté de la carte "à calibrer". */
+export function composeCardIntroMessage(): string {
+  return "Cette carte va évoluer avec toi.";
+}
+
+export function composeTestPrompt(): string {
+  return "Passe ton test de départ pour découvrir ton niveau.";
+}
+
 export function composeFirstSessionIntro(): string {
   return pick([
     "On va commencer simplement. Fais cet exercice comme tu le ferais normalement, je regarde ta performance pour établir tes premières stats.",

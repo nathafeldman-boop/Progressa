@@ -60,6 +60,9 @@ export default async function CartePage() {
         firstName={user.firstName}
         positionLabel={profile ? POSITION_LABELS[profile.position] : ""}
         ageCategoryLabel={ageCategory?.label ?? null}
+        country={profile?.country ?? null}
+        department={profile?.district ?? null}
+        niveauLabel={profile?.levelLabel ?? null}
         stats={card.stats as unknown as PlayerCardStats}
       />
       <ShareCardButton shareSlug={card.shareSlug} firstName={user.firstName} />
