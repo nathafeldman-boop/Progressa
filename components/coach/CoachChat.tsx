@@ -15,14 +15,18 @@ interface ChatMessage {
 }
 
 /**
- * Pas de conversation libre: aucun LLM n'est branché derrière Coach Brian
- * pour l'instant (point d'extension prévu — voir lib/brian/messages.ts).
- * Les questions rapides déclenchent de vraies réponses calculées sur les
- * données du joueur (lib/brian/coach-qa.ts), jamais un texte inventé.
+ * Discussion libre branchée sur Mistral (lib/brian/coach-chat.ts), avec le
+ * contexte réel du joueur (stats, séances, série) injecté côté serveur —
+ * jamais de donnée inventée. Si MISTRAL_API_KEY n'est pas configurée côté
+ * serveur, l'API répond avec un message de repli honnête plutôt que de
+ * planter. Les questions rapides restent branchées sur de vraies réponses
+ * calculées (lib/brian/coach-qa.ts), sans appel modèle.
  */
 export function CoachChat({ initialMessages }: { initialMessages: ChatMessage[] }) {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [pending, setPending] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -47,6 +51,35 @@ export function CoachChat({ initialMessages }: { initialMessages: ChatMessage[] 
       }
     } finally {
       setPending(null);
+    }
+  }
+
+  async function sendFreeText(e: React.FormEvent) {
+    e.preventDefault();
+    const text = draft.trim();
+    if (!text || sending) return;
+    setSending(true);
+    setDraft("");
+    const history = messages
+      .filter((m) => m.id !== "welcome")
+      .slice(-10)
+      .map((m) => ({ role: (m.fromPlayer ? "user" : "assistant") as "user" | "assistant", text: m.text }));
+    setMessages((prev) => [
+      ...prev,
+      { id: `u-${Date.now()}`, category: "RETENTION", text, fromPlayer: true, createdAt: new Date().toISOString() },
+    ]);
+    try {
+      const res = await fetch("/api/coach/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, history }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMessages((prev) => [...prev, { id: data.id, category: "RETENTION", text: data.text, createdAt: data.createdAt }]);
+      }
+    } finally {
+      setSending(false);
     }
   }
 
@@ -90,6 +123,25 @@ export function CoachChat({ initialMessages }: { initialMessages: ChatMessage[] 
           ))}
         </div>
       </div>
+
+      <form onSubmit={sendFreeText} className="mt-2 flex items-center gap-2">
+        <input
+          type="text"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          disabled={sending}
+          placeholder="Écris à Coach Brian…"
+          className="flex-1 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)] disabled:opacity-50"
+        />
+        <button
+          type="submit"
+          disabled={sending || !draft.trim()}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] disabled:opacity-50"
+          aria-label="Envoyer"
+        >
+          {sending ? "…" : "➤"}
+        </button>
+      </form>
     </div>
   );
 }
