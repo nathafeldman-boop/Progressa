@@ -134,3 +134,117 @@ export const FRANCOPHONE_COUNTRIES: string[] = [
 export function getNiveauxForCountry(country: string): readonly string[] {
   return country === "France" ? FRANCE_NIVEAUX : GENERIC_NIVEAUX;
 }
+
+// Régions/provinces de premier niveau pour les pays francophones autres que
+// la France (qui utilise déjà son propre système de départements/ligues
+// ci-dessus). Purement informatif — contrairement au département français,
+// aucune ligue n'est déduite de ce choix. Pas d'entrée pour Monaco (pas de
+// subdivision administrative) ni "Autre" (aucune liste possible).
+export const REGIONS_BY_COUNTRY: Record<string, string[]> = {
+  Belgique: [
+    "Anvers", "Brabant flamand", "Brabant wallon", "Bruxelles-Capitale", "Flandre occidentale",
+    "Flandre orientale", "Hainaut", "Liège", "Limbourg", "Luxembourg (Belgique)", "Namur",
+  ],
+  Suisse: [
+    "Argovie", "Appenzell Rhodes-Extérieures", "Appenzell Rhodes-Intérieures", "Bâle-Campagne", "Bâle-Ville",
+    "Berne", "Fribourg", "Genève", "Glaris", "Grisons", "Jura", "Lucerne", "Neuchâtel", "Nidwald", "Obwald",
+    "Schaffhouse", "Schwytz", "Soleure", "Saint-Gall", "Tessin", "Thurgovie", "Uri", "Valais", "Vaud", "Zoug", "Zurich",
+  ],
+  Luxembourg: [
+    "Capellen", "Clervaux", "Diekirch", "Echternach", "Esch-sur-Alzette", "Grevenmacher",
+    "Luxembourg", "Mersch", "Redange", "Remich", "Vianden", "Wiltz",
+  ],
+  "Canada (Québec)": [
+    "Bas-Saint-Laurent", "Saguenay–Lac-Saint-Jean", "Capitale-Nationale", "Mauricie", "Estrie", "Montréal",
+    "Outaouais", "Abitibi-Témiscamingue", "Côte-Nord", "Nord-du-Québec", "Gaspésie–Îles-de-la-Madeleine",
+    "Chaudière-Appalaches", "Laval", "Lanaudière", "Laurentides", "Montérégie", "Centre-du-Québec",
+  ],
+  Maroc: [
+    "Tanger-Tétouan-Al Hoceïma", "Oriental", "Fès-Meknès", "Rabat-Salé-Kénitra", "Béni Mellal-Khénifra",
+    "Casablanca-Settat", "Marrakech-Safi", "Drâa-Tafilalet", "Souss-Massa", "Guelmim-Oued Noun",
+    "Laâyoune-Sakia El Hamra", "Dakhla-Oued Ed-Dahab",
+  ],
+  Algérie: [
+    "Adrar", "Chlef", "Laghouat", "Oum El Bouaghi", "Batna", "Béjaïa", "Biskra", "Béchar", "Blida", "Bouira",
+    "Tamanrasset", "Tébessa", "Tlemcen", "Tiaret", "Tizi Ouzou", "Alger", "Djelfa", "Jijel", "Sétif", "Saïda",
+    "Skikda", "Sidi Bel Abbès", "Annaba", "Guelma", "Constantine", "Médéa", "Mostaganem", "M'Sila", "Mascara",
+    "Ouargla", "Oran", "El Bayadh", "Illizi", "Bordj Bou Arréridj", "Boumerdès", "El Tarf", "Tindouf",
+    "Tissemsilt", "El Oued", "Khenchela", "Souk Ahras", "Tipaza", "Mila", "Aïn Defla", "Naâma", "Aïn Témouchent",
+    "Ghardaïa", "Relizane",
+  ],
+  Tunisie: [
+    "Ariana", "Béja", "Ben Arous", "Bizerte", "Gabès", "Gafsa", "Jendouba", "Kairouan", "Kasserine", "Kébili",
+    "Le Kef", "Mahdia", "La Manouba", "Médenine", "Monastir", "Nabeul", "Sfax", "Sidi Bouzid", "Siliana",
+    "Sousse", "Tataouine", "Tozeur", "Tunis", "Zaghouan",
+  ],
+  Sénégal: [
+    "Dakar", "Diourbel", "Fatick", "Kaffrine", "Kaolack", "Kédougou", "Kolda", "Louga", "Matam",
+    "Saint-Louis", "Sédhiou", "Tambacounda", "Thiès", "Ziguinchor",
+  ],
+  "Côte d'Ivoire": [
+    "Abidjan", "Agnéby-Tiassa", "Bafing", "Bagoué", "Bas-Sassandra", "Bélier", "Béré", "Bounkani", "Cavally",
+    "Folon", "Gbêkê", "Gbôklé", "Gôh", "Gontougo", "Grands-Ponts", "Guémon", "Hambol", "Haut-Sassandra",
+    "Iffou", "Indénié-Djuablin", "Kabadougou", "San-Pédro", "Lôh-Djiboua", "Marahoué", "Moronou", "N'zi",
+    "Nawa", "Poro", "Sud-Comoé", "Tchologo", "Tonkpi", "Worodougou", "Yamoussoukro",
+  ],
+  Cameroun: ["Adamaoua", "Centre", "Est", "Extrême-Nord", "Littoral", "Nord", "Nord-Ouest", "Ouest", "Sud", "Sud-Ouest"],
+  Mali: [
+    "Kayes", "Koulikoro", "Sikasso", "Ségou", "Mopti", "Tombouctou", "Gao", "Kidal", "Taoudénit", "Ménaka", "Bamako",
+  ],
+  "République démocratique du Congo": [
+    "Bas-Uélé", "Équateur", "Haut-Katanga", "Haut-Lomami", "Haut-Uélé", "Ituri", "Kasaï", "Kasaï central",
+    "Kasaï oriental", "Kinshasa", "Kongo central", "Kwango", "Kwilu", "Lomami", "Lualaba", "Mai-Ndombe",
+    "Maniema", "Mongala", "Nord-Kivu", "Nord-Ubangi", "Sankuru", "Sud-Kivu", "Sud-Ubangi", "Tanganyika",
+    "Tshopo", "Tshuapa",
+  ],
+  Congo: [
+    "Bouenza", "Cuvette", "Cuvette-Ouest", "Kouilou", "Lékoumou", "Likouala", "Niari", "Plateaux", "Pool",
+    "Sangha", "Brazzaville", "Pointe-Noire",
+  ],
+  Gabon: ["Estuaire", "Haut-Ogooué", "Moyen-Ogooué", "Ngounié", "Nyanga", "Ogooué-Ivindo", "Ogooué-Lolo", "Ogooué-Maritime", "Woleu-Ntem"],
+  "Burkina Faso": [
+    "Boucle du Mouhoun", "Cascades", "Centre", "Centre-Est", "Centre-Nord", "Centre-Ouest", "Centre-Sud",
+    "Est", "Hauts-Bassins", "Nord", "Plateau-Central", "Sahel", "Sud-Ouest",
+  ],
+  Guinée: ["Boké", "Conakry", "Faranah", "Kankan", "Kindia", "Labé", "Mamou", "N'Zérékoré"],
+  Bénin: [
+    "Alibori", "Atacora", "Atlantique", "Borgou", "Collines", "Couffo", "Donga", "Littoral",
+    "Mono", "Ouémé", "Plateau", "Zou",
+  ],
+  Togo: ["Maritime", "Plateaux", "Centrale", "Kara", "Savanes"],
+  Niger: ["Agadez", "Diffa", "Dosso", "Maradi", "Niamey", "Tahoua", "Tillabéri", "Zinder"],
+  Tchad: [
+    "Batha", "Borkou", "Chari-Baguirmi", "Ennedi-Est", "Ennedi-Ouest", "Guéra", "Hadjer-Lamis", "Kanem",
+    "Lac", "Logone occidental", "Logone oriental", "Mandoul", "Mayo-Kebbi Est", "Mayo-Kebbi Ouest",
+    "Moyen-Chari", "N'Djamena", "Ouaddaï", "Salamat", "Sila", "Tandjilé", "Tibesti", "Wadi Fira",
+  ],
+  Madagascar: [
+    "Analamanga", "Vakinankaratra", "Itasy", "Bongolava", "Haute Matsiatra", "Amoron'i Mania", "Vatovavy",
+    "Fitovinany", "Atsimo-Atsinanana", "Ihorombe", "Atsinanana", "Analanjirofo", "Alaotra-Mangoro", "Boeny",
+    "Sofia", "Betsiboka", "Melaky", "Atsimo-Andrefana", "Androy", "Anosy", "Menabe", "Diana", "Sava",
+  ],
+  Maurice: ["Port-Louis", "Pamplemousses", "Rivière du Rempart", "Flacq", "Grand Port", "Savanne", "Plaines Wilhems", "Moka", "Black River"],
+  Mauritanie: [
+    "Hodh Ech Chargui", "Hodh El Gharbi", "Assaba", "Gorgol", "Brakna", "Trarza", "Adrar",
+    "Dakhlet Nouadhibou", "Tagant", "Guidimaka", "Tiris Zemmour", "Inchiri", "Nouakchott-Nord",
+    "Nouakchott-Ouest", "Nouakchott-Sud",
+  ],
+  Rwanda: ["Ville de Kigali", "Nord", "Sud", "Est", "Ouest"],
+  Burundi: [
+    "Bubanza", "Bujumbura Mairie", "Bujumbura Rural", "Bururi", "Cankuzo", "Cibitoke", "Gitega", "Karuzi",
+    "Kayanza", "Kirundo", "Makamba", "Muramvya", "Muyinga", "Mwaro", "Ngozi", "Rumonge", "Rutana", "Ruyigi",
+  ],
+  "République centrafricaine": [
+    "Bamingui-Bangoran", "Bangui", "Basse-Kotto", "Haute-Kotto", "Haut-Mbomou", "Kémo", "Lobaye", "Mambéré-Kadéï",
+    "Mbomou", "Nana-Grébizi", "Nana-Mambéré", "Ombella-M'Poko", "Ouaka", "Ouham", "Ouham-Pendé", "Sangha-Mbaéré", "Vakaga",
+  ],
+  Comores: ["Grande Comore", "Anjouan", "Mohéli"],
+  Djibouti: ["Djibouti (ville)", "Ali Sabieh", "Dikhil", "Tadjourah", "Obock", "Arta"],
+  Haïti: [
+    "Ouest", "Sud-Est", "Nord", "Nord-Est", "Artibonite", "Centre", "Sud", "Grand'Anse", "Nord-Ouest", "Nippes",
+  ],
+};
+
+export function getRegionsForCountry(country: string): string[] {
+  return REGIONS_BY_COUNTRY[country] ?? [];
+}

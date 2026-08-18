@@ -12,7 +12,13 @@ import { DragSliderField } from "@/components/onboarding/DragSliderField";
 import { OnboardingBackground } from "@/components/onboarding/OnboardingBackground";
 import { SuggestField } from "@/components/onboarding/SuggestField";
 import { getAgeCategory } from "@/lib/age-category";
-import { ALL_FRANCE_DEPARTMENTS, FRANCOPHONE_COUNTRIES, getLigueForDepartment, getNiveauxForCountry } from "@/lib/geo";
+import {
+  ALL_FRANCE_DEPARTMENTS,
+  FRANCOPHONE_COUNTRIES,
+  getLigueForDepartment,
+  getNiveauxForCountry,
+  getRegionsForCountry,
+} from "@/lib/geo";
 import { EQUIPMENT_EMOJI, EQUIPMENT_LABELS, OBJECTIVE_EMOJI, OBJECTIVE_LABELS, POSITION_LABELS, WEEKDAY_LABELS } from "@/lib/labels";
 import {
   composeOnboardingBirthYear,
@@ -340,6 +346,7 @@ function ScreenPaysNiveau({
   onChangeLevel: (v: string) => void;
 }) {
   const niveaux = getNiveauxForCountry(country);
+  const regions = getRegionsForCountry(country);
 
   return (
     <div>
@@ -353,6 +360,15 @@ function ScreenPaysNiveau({
             onChange={onChangeDepartment}
             options={ALL_FRANCE_DEPARTMENTS}
             placeholder="Cherche ton département"
+          />
+        )}
+
+        {country !== "France" && regions.length > 0 && (
+          <SuggestField
+            value={department}
+            onChange={onChangeDepartment}
+            options={regions}
+            placeholder="Cherche ta région (facultatif)"
           />
         )}
 

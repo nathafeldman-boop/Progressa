@@ -6,7 +6,7 @@ export interface OnboardingData {
   position: Position | null;
   country: string;
   ligue: string | null; // France uniquement — dérivée du département, jamais choisie directement
-  district: string | null; // France uniquement — en réalité le département, présenté comme tel à l'écran
+  district: string | null; // département (France) ou région/province (autres pays) — jamais "district" à l'écran
   levelLabel: string | null;
   heightCm: number | null;
   weightKg: number | null;
