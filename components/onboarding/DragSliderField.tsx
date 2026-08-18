@@ -128,14 +128,14 @@ export function DragSliderField({
         </div>
       </div>
       <input
-        type="number"
+        type="text"
         inputMode="numeric"
-        min={min}
-        max={max}
+        pattern="[0-9]*"
         value={value ?? ""}
         onChange={(e) => {
-          const v = e.target.value ? Number(e.target.value) : null;
-          if (v !== null && !Number.isNaN(v)) onChange(Math.min(max, Math.max(min, v)));
+          const digits = e.target.value.replace(/[^0-9]/g, "").slice(0, 3);
+          if (digits === "") return;
+          onChange(Math.min(max, Math.max(min, Number(digits))));
         }}
         placeholder="ou tape la valeur"
         className="mt-2 w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-center text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]"

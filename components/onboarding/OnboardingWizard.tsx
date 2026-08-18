@@ -431,12 +431,19 @@ function ScreenGabaritRythme({
           Entraînements club par semaine
         </label>
         <input
-          type="number"
-          min={0}
-          max={10}
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
           className={fieldClass()}
           value={clubSessionsPerWeek ?? ""}
-          onChange={(e) => onChangeSessions(e.target.value ? Number(e.target.value) : null)}
+          onChange={(e) => {
+            const digits = e.target.value.replace(/[^0-9]/g, "").slice(0, 2);
+            if (digits === "") {
+              onChangeSessions(null);
+              return;
+            }
+            onChangeSessions(Math.min(10, Number(digits)));
+          }}
         />
       </div>
       <div className="mt-4">
