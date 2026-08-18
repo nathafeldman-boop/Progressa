@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { OnboardingBackground } from "@/components/onboarding/OnboardingBackground";
 import { BrianAvatar } from "@/components/brian/BrianAvatar";
+import { BrianJuggling } from "@/components/brian/BrianJuggling";
 import { clearOnboardingData, clearReferralCode, getReferralCode, loadOnboardingData } from "@/lib/onboarding/storage";
 
 const GENERATION_STEPS = [
@@ -78,7 +79,7 @@ export default function OnboardingFinishPage() {
       <OnboardingBackground />
       <div className="relative z-10 flex min-h-screen items-center justify-center p-4">
         <Card className="flex flex-col items-center gap-4 p-8 text-center">
-          <BrianAvatar state={done ? "celebrating" : "talking"} size={88} />
+          {done ? <BrianAvatar state="celebrating" size={88} /> : <BrianJuggling width={140} />}
           <div>
             <CardTitle>{done ? "C'est parti !" : "Coach Brian prépare ton programme"}</CardTitle>
             <CardSubtitle className="mt-2 transition-opacity duration-300">
