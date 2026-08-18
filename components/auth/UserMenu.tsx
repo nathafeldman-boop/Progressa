@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 export function UserMenu() {
@@ -26,12 +27,12 @@ export function UserMenu() {
       </button>
       {open && (
         <div className="absolute right-0 top-11 z-20 w-44 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-1 shadow-lg">
-          <a
+          <Link
             href="/parametres"
             className="block rounded-[var(--radius-control)] px-3 py-2 text-sm hover:bg-[var(--color-surface-alt)]"
           >
             Réglages
-          </a>
+          </Link>
           <button
             type="button"
             onClick={handleSignOut}

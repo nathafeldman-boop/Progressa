@@ -107,6 +107,41 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* Instant tap feedback on every clickable element — fires immediately on
+   press, independent of network latency, so taps never feel unacknowledged. */
+a,
+button,
+[role="button"] {
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+a:active,
+button:not(:disabled):active,
+[role="button"]:active {
+  transform: scale(0.96);
+  opacity: 0.85;
+}
+@media (prefers-reduced-motion: reduce) {
+  a:active,
+  button:active,
+  [role="button"]:active {
+    transform: none;
+    opacity: 0.85;
+  }
+}
+
+/* Route-change spinner (loading.tsx) */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.page-spinner {
+  animation: spin 0.7s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-spinner {
+    animation-duration: 1.6s;
+  }
+}
+
 /* Coach Brian — micro-animations. Subtle by design: he should read as
    present, not as a mascot bouncing around the screen. */
 @keyframes brian-breathe {

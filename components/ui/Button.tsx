@@ -20,7 +20,7 @@ export function Button({ className, variant = "primary", ...props }: ButtonProps
   return (
     <button
       className={cn(
-        "font-display inline-flex items-center justify-center gap-2 rounded-[var(--radius-control)] px-5 py-3 text-base font-bold uppercase tracking-wide transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+        "font-display inline-flex items-center justify-center gap-2 rounded-[var(--radius-control)] px-5 py-3 text-base font-bold uppercase tracking-wide transition-[background-color,transform] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100",
         variants[variant],
         className
       )}
