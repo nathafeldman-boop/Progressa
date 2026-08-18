@@ -128,6 +128,12 @@ export function OnboardingWizard() {
     <div className="relative min-h-screen">
       <OnboardingBackground />
       <div className="relative z-10 mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 p-4">
+        <Link
+          href="/connexion"
+          className="self-end text-xs font-semibold text-[var(--color-text-muted)] underline underline-offset-2"
+        >
+          Tu as déjà un compte ? Connecte-toi
+        </Link>
         <ProgressBar value={((step + 1) / TOTAL_SCREENS) * 100} />
 
       <Card className="p-6">

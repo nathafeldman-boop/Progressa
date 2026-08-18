@@ -2,6 +2,7 @@ import { isAdminAuthenticated } from "@/lib/admin/auth";
 import { getFeatureUsage, getGlobalStats, getOnboardingFunnel, getOnlineNow } from "@/lib/admin/queries";
 import { AdminLoginForm } from "@/components/admin/AdminLoginForm";
 import { TestimonialModeration } from "@/components/admin/TestimonialModeration";
+import { SeedCatalogButton } from "@/components/admin/SeedCatalogButton";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { prisma } from "@/lib/prisma";
 
@@ -22,6 +23,13 @@ export default async function AdminPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-4">
       <h1 className="font-display text-2xl font-extrabold uppercase tracking-wide">Dashboard admin</h1>
+
+      <section>
+        <h2 className="mb-2 font-display text-sm font-bold uppercase tracking-wide text-[var(--color-text-muted)]">
+          Catalogue
+        </h2>
+        <SeedCatalogButton />
+      </section>
 
       <section>
         <h2 className="mb-2 font-display text-sm font-bold uppercase tracking-wide text-[var(--color-text-muted)]">

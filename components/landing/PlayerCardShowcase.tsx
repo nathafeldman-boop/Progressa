@@ -1,13 +1,18 @@
-import { Reveal, AnimatedNumber } from "./reveal";
+import { Reveal } from "./reveal";
+import { PlayerCardView } from "@/components/card/PlayerCardView";
 
-const STATS = [
-  { label: "Vitesse", value: 74 },
-  { label: "Tir", value: 61 },
-  { label: "Passe", value: 67 },
-  { label: "Dribble", value: 78 },
-  { label: "Défense", value: 54 },
-  { label: "Physique", value: 69 },
-];
+/**
+ * Carte de démonstration — mêmes composant et styles de rang que la vraie
+ * carte joueur de l'app (components/card/PlayerCardView.tsx), pour que la
+ * LP montre le vrai visuel plutôt qu'une maquette approximative.
+ */
+const DEMO_STATS = {
+  overall: 68,
+  skills: { Vitesse: 74, Tir: 61, Passe: 67, Dribble: 78, Défense: 54, Physique: 69 },
+  rankTier: "Espoir",
+  rankKey: "espoir",
+  lastUpdated: new Date().toISOString(),
+};
 
 const MILESTONES = [
   { week: "Semaine 1", overall: 68 },
@@ -49,44 +54,12 @@ export function PlayerCardShowcase() {
         </Reveal>
 
         <Reveal delayMs={120} className="mx-auto w-full max-w-sm">
-          <div className="lp-card relative overflow-hidden border-2 border-[var(--lp-accent-soft)] p-6 shadow-[0_24px_50px_-24px_rgba(26,163,80,0.35)]">
-            <div className="lp-glow-ring" style={{ width: 220, height: 220, top: -80, right: -80 }} />
-            <div className="relative flex items-start justify-between">
-              <div>
-                <p className="text-[0.65rem] font-bold uppercase tracking-widest text-[var(--lp-text-dim)]">
-                  Carte de départ
-                </p>
-                <p className="font-display text-sm font-bold uppercase tracking-wide text-[var(--lp-text-muted)]">
-                  Milieu offensif
-                </p>
-              </div>
-              <span className="lp-card rounded-full px-3 py-1 text-xs font-bold text-[var(--lp-accent-strong)]">
-                U16
-              </span>
-            </div>
-
-            <div className="relative mt-3 flex items-baseline gap-2">
-              <AnimatedNumber
-                value={68}
-                className="font-display text-6xl font-extrabold text-[var(--lp-text)]"
-              />
-              <span className="text-xs font-bold uppercase tracking-widest text-[var(--lp-text-dim)]">Overall</span>
-            </div>
-
-            <div className="relative mt-6 flex flex-col gap-3">
-              {STATS.map((stat) => (
-                <div key={stat.label} className="flex items-center gap-3">
-                  <span className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-[var(--lp-text-muted)]">
-                    {stat.label}
-                  </span>
-                  <div className="lp-bar-track flex-1" style={{ ["--bar-w" as string]: `${stat.value}%` }}>
-                    <div className="lp-bar-fill" />
-                  </div>
-                  <span className="w-7 text-right text-xs font-bold text-[var(--lp-text)]">{stat.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <PlayerCardView
+            firstName="Toi"
+            positionLabel="Milieu offensif"
+            ageCategoryLabel="U16"
+            stats={DEMO_STATS}
+          />
         </Reveal>
       </div>
     </section>
