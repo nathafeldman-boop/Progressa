@@ -1,27 +1,10 @@
-import { PrismaClient } from "@prisma/client";
-import { EXERCISE_CATALOG } from "../lib/exercises/catalog-data";
-import { BADGE_CATALOG } from "../lib/badges-data";
-
-const prisma = new PrismaClient();
+import { prisma } from "../lib/prisma";
+import { seedCatalog } from "../lib/exercises/seed-catalog";
 
 async function main() {
-  for (const exercise of EXERCISE_CATALOG) {
-    await prisma.exercise.upsert({
-      where: { slug: exercise.slug },
-      create: exercise,
-      update: exercise,
-    });
-  }
-  console.log(`Catalogue d'exercices: ${EXERCISE_CATALOG.length} exercices synchronisés.`);
-
-  for (const badge of BADGE_CATALOG) {
-    await prisma.badge.upsert({
-      where: { slug: badge.slug },
-      create: badge,
-      update: badge,
-    });
-  }
-  console.log(`Badges: ${BADGE_CATALOG.length} badges synchronisés.`);
+  const result = await seedCatalog({ force: true });
+  console.log(`Catalogue d'exercices: ${result.exercisesSynced} exercices synchronisés.`);
+  console.log(`Badges: ${result.badgesSynced} badges synchronisés.`);
 }
 
 main()
