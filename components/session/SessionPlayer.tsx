@@ -12,6 +12,7 @@ import { BrianAvatar, type BrianState } from "@/components/brian/BrianAvatar";
 import { PlayerCardView } from "@/components/card/PlayerCardView";
 import type { PlayerCardStats } from "@/lib/player-card";
 import { elapsedSeconds, nowMs } from "@/lib/time";
+import { EXERCISE_VIDEO } from "@/lib/exercises/exercise-media";
 
 /** Re-render chaque seconde tant que `active` — sert au minuteur en direct. */
 function useTicker(active: boolean) {
@@ -38,6 +39,7 @@ export interface SessionBlockView {
   customInstruction: string;
   status: "PLANNED" | "COMPLETED" | "SKIPPED" | "ABANDONED";
   exercise: {
+    slug: string;
     name: string;
     emoji: string;
     description: string;
@@ -492,7 +494,19 @@ function ActiveExerciseScreen({
 
       <div className="flex-1 overflow-y-auto p-4">
         <div className="relative mx-auto aspect-square w-full max-w-xs overflow-hidden rounded-[var(--radius-card)] bg-[var(--color-surface-alt)]">
-          <div className="flex h-full items-center justify-center text-8xl">{block.exercise.emoji}</div>
+          {EXERCISE_VIDEO[block.exercise.slug] ? (
+            <video
+              key={block.exercise.slug}
+              src={EXERCISE_VIDEO[block.exercise.slug]}
+              className="h-full w-full object-cover"
+              autoPlay
+              muted
+              loop
+              playsInline
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center text-8xl">{block.exercise.emoji}</div>
+          )}
           <div className="absolute bottom-2 right-2">
             <BrianAvatar state={BRIAN_STATE_FOR_PHASE[state.phase]} size={56} className="ring-2 ring-[var(--color-surface)]" />
           </div>

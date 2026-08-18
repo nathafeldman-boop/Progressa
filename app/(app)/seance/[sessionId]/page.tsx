@@ -39,6 +39,7 @@ export default async function SeancePage({ params }: { params: Promise<{ session
     customInstruction: block.customInstruction,
     status: block.status,
     exercise: {
+      slug: block.exercise.slug,
       name: block.exercise.name,
       emoji: block.exercise.emoji,
       description: block.exercise.description,
