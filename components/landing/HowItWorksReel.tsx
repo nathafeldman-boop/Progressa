@@ -9,12 +9,12 @@ function SceneCreate() {
     <div className="flex h-full flex-col items-center justify-center gap-5">
       <div
         className="lp-reel-anim relative flex h-16 w-16 items-center justify-center rounded-full bg-[var(--lp-accent-soft)] text-3xl"
-        style={{ animation: "lp-reel-pop 500ms cubic-bezier(0.16,1,0.3,1) both" }}
+        style={{ animation: "lp-reel-pop 500ms cubic-bezier(0.16,1,0.3,1) both, lp-float 3.4s ease-in-out 500ms infinite" }}
       >
         🧑
         <span
           className="lp-reel-anim absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--lp-accent)] text-xs text-white shadow"
-          style={{ animation: "lp-reel-pop 250ms cubic-bezier(0.16,1,0.3,1) 500ms both" }}
+          style={{ animation: "lp-reel-pop 250ms cubic-bezier(0.16,1,0.3,1) 500ms both, lp-pulse 2s ease-in-out 750ms infinite" }}
         >
           ✓
         </span>
@@ -76,7 +76,9 @@ function SceneTrain() {
               </svg>
               <span
                 className="lp-reel-anim absolute inset-0 flex items-center justify-center rounded-full bg-[var(--lp-accent)] text-xs font-bold text-white"
-                style={{ animation: `lp-reel-pop 200ms cubic-bezier(0.16,1,0.3,1) ${delay + 470}ms both` }}
+                style={{
+                  animation: `lp-reel-pop 200ms cubic-bezier(0.16,1,0.3,1) ${delay + 470}ms both, lp-pulse 2s ease-in-out ${delay + 700}ms infinite`,
+                }}
               >
                 ✓
               </span>
@@ -135,12 +137,12 @@ function SceneCard() {
   return (
     <div className="relative flex h-full flex-col items-center justify-center">
       <div
-        className="lp-glow-ring lp-reel-anim"
-        style={{ width: 140, height: 140, animation: "lp-reel-pop 400ms cubic-bezier(0.16,1,0.3,1) both" }}
+        className="lp-glow-ring lp-reel-anim lp-pulse"
+        style={{ width: 140, height: 140, animation: "lp-reel-pop 400ms cubic-bezier(0.16,1,0.3,1) both, lp-pulse 2.4s ease-in-out 400ms infinite" }}
       />
       <div
-        className="lp-reel-anim lp-card relative flex w-40 flex-col items-center gap-2 border-2 border-[var(--lp-accent-soft)] p-4 text-center"
-        style={{ animation: "lp-reel-levelup 750ms cubic-bezier(0.16,1,0.3,1) 140ms both" }}
+        className="lp-reel-anim lp-card lp-float relative flex w-40 flex-col items-center gap-2 border-2 border-[var(--lp-accent-soft)] p-4 text-center"
+        style={{ animation: "lp-reel-levelup 750ms cubic-bezier(0.16,1,0.3,1) 140ms both, lp-float 3.6s ease-in-out 890ms infinite" }}
       >
         <span className="text-3xl" aria-hidden>
           🃏
@@ -176,39 +178,47 @@ const STEPS: {
     n: "01",
     title: "Crée ton joueur",
     caption: "Poste, âge, objectifs — ta fiche joueur en une minute.",
-    durationMs: 2200,
+    durationMs: 2600,
     Scene: SceneCreate,
   },
   {
     n: "02",
     title: "Fais ton premier entraînement",
     caption: "Une séance guidée, exercice par exercice, avec Coach Brian.",
-    durationMs: 2200,
+    durationMs: 2600,
     Scene: SceneTrain,
   },
   {
     n: "03",
     title: "Gagne des stats",
     caption: "Chaque exercice réussi fait progresser tes statistiques réelles.",
-    durationMs: 2100,
+    durationMs: 2500,
     Scene: SceneStats,
   },
   {
     n: "04",
     title: "Fais évoluer ta carte",
     caption: "Ta carte change de rang à chaque vraie progression.",
-    durationMs: 2000,
+    durationMs: 2400,
     Scene: SceneCard,
   },
 ];
 
+/**
+ * Carrousel défilable au doigt (scroll-snap natif — pas de librairie).
+ * Défile aussi tout seul quand la section est visible, s'interrompt dès
+ * que le joueur touche l'écran pour swiper manuellement.
+ */
 export function HowItWorksReel() {
   const [active, setActive] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [userInteracting, setUserInteracting] = useState(false);
   const [reduceMotion] = useState(
     () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
   );
   const containerRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const resumeTimer = useRef<number | null>(null);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -220,15 +230,43 @@ export function HowItWorksReel() {
     return () => observer.disconnect();
   }, []);
 
+  // Auto-avance en scrollant le carrousel vers la vignette suivante.
   useEffect(() => {
-    if (!playing || reduceMotion) return;
+    if (!playing || reduceMotion || userInteracting) return;
     const id = setTimeout(() => {
-      setActive((i) => (i + 1) % STEPS.length);
+      const next = (active + 1) % STEPS.length;
+      const track = trackRef.current;
+      if (track) {
+        track.scrollTo({ left: next * track.clientWidth, behavior: "smooth" });
+      }
+      setActive(next);
     }, STEPS[active].durationMs);
     return () => clearTimeout(id);
-  }, [active, playing, reduceMotion]);
+  }, [active, playing, reduceMotion, userInteracting]);
 
-  const ActiveScene = STEPS[active].Scene;
+  // Le joueur qui swipe manuellement met l'auto-avance en pause un moment.
+  function handlePointerDown() {
+    setUserInteracting(true);
+    if (resumeTimer.current) window.clearTimeout(resumeTimer.current);
+  }
+
+  function handleScrollEnd() {
+    const track = trackRef.current;
+    if (!track) return;
+    const i = Math.round(track.scrollLeft / track.clientWidth);
+    setActive(Math.min(STEPS.length - 1, Math.max(0, i)));
+    if (resumeTimer.current) window.clearTimeout(resumeTimer.current);
+    resumeTimer.current = window.setTimeout(() => setUserInteracting(false), 1200);
+  }
+
+  function goTo(i: number) {
+    const track = trackRef.current;
+    if (track) track.scrollTo({ left: i * track.clientWidth, behavior: "smooth" });
+    setActive(i);
+    setUserInteracting(true);
+    if (resumeTimer.current) window.clearTimeout(resumeTimer.current);
+    resumeTimer.current = window.setTimeout(() => setUserInteracting(false), 1200);
+  }
 
   return (
     <div ref={containerRef} className="lp-card mx-auto w-full max-w-md overflow-hidden p-5 sm:p-6">
@@ -237,17 +275,17 @@ export function HowItWorksReel() {
           <button
             key={step.n}
             type="button"
-            onClick={() => setActive(i)}
+            onClick={() => goTo(i)}
             className="h-1 flex-1 overflow-hidden rounded-full bg-[var(--lp-surface-2)]"
             aria-label={`Étape ${step.n} : ${step.title}`}
           >
             {i < active && <span className="block h-full w-full rounded-full bg-[var(--lp-accent)]" />}
             {i === active && (
               <span
-                key={active}
+                key={`${active}-${userInteracting}`}
                 className="block h-full rounded-full bg-[var(--lp-accent)]"
                 style={
-                  playing && !reduceMotion
+                  playing && !reduceMotion && !userInteracting
                     ? { animation: `lp-reel-progress ${STEPS[i].durationMs}ms linear forwards` }
                     : { width: "100%" }
                 }
@@ -261,11 +299,26 @@ export function HowItWorksReel() {
         <span className="lp-reel-jumbotron-dot" />
         <span className="lp-reel-jumbotron-dot" />
         <div
-          key={`stage-${active}`}
-          className="lp-reel-anim flex h-56 items-center justify-center rounded-xl bg-[var(--lp-surface-2)] sm:h-64"
-          style={{ animation: "lp-reel-stage-in 320ms ease both" }}
+          ref={trackRef}
+          onPointerDown={handlePointerDown}
+          onScroll={handleScrollEnd}
+          className="lp-reel-track flex h-56 snap-x snap-mandatory overflow-x-auto sm:h-64"
         >
-          <ActiveScene />
+          {STEPS.map((step, i) => {
+            const Scene = step.Scene;
+            const isActive = i === active;
+            return (
+              <div key={step.n} className="flex h-full w-full shrink-0 snap-center items-center justify-center rounded-xl bg-[var(--lp-surface-2)]">
+                <div
+                  key={isActive ? `stage-${step.n}-${active}` : `stage-${step.n}`}
+                  className={isActive ? "lp-reel-anim h-full w-full" : "h-full w-full"}
+                  style={isActive ? { animation: "lp-reel-stage-in 320ms ease both" } : undefined}
+                >
+                  <Scene />
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
