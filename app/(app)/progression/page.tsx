@@ -10,6 +10,8 @@ import { PlayerCardView } from "@/components/card/PlayerCardView";
 import { CalibratingCardTeaser } from "@/components/card/CalibratingCardTeaser";
 import { ShareCardButton } from "@/components/card/ShareCardButton";
 import { TargetedTrainingPicker } from "@/components/dashboard/TargetedTrainingPicker";
+import { BrianMessageCard } from "@/components/brian/BrianMessageCard";
+import { composeZeroOverallMessage } from "@/lib/brian/messages";
 import type { PlayerCardStats } from "@/lib/player-card";
 
 /**
@@ -87,6 +89,7 @@ export default async function ProgressionPage() {
           </div>
         ) : (
           <div className="space-y-3">
+            <BrianMessageCard category="RETENTION" text={composeZeroOverallMessage(user.firstName)} />
             <CalibratingCardTeaser firstName={user.firstName} />
             <Link href="/tests">
               <Button className="w-full">Passer mon test de départ</Button>

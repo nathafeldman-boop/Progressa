@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { BrianFab } from "@/components/brian/BrianFab";
 import { BrianAvatar } from "@/components/brian/BrianAvatar";
@@ -15,7 +16,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-surface)]/90 px-4 py-3 backdrop-blur">
-        <Link href="/dashboard" className="font-display text-lg font-extrabold uppercase tracking-wide">
+        <Link href="/dashboard" className="flex items-center gap-2 font-display text-lg font-extrabold uppercase tracking-wide">
+          <Image src="/logo-mark.png" alt="" width={28} height={28} className="h-7 w-7" priority />
           {APP_NAME}
         </Link>
         <UserMenu />

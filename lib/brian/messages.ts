@@ -67,6 +67,11 @@ export function composeTestPrompt(): string {
   return "Passe ton test de départ pour découvrir ton niveau.";
 }
 
+/** Explique pourquoi la carte affiche 0 partout avant le premier test — jamais laisser un 0 sans explication. */
+export function composeZeroOverallMessage(firstName: string): string {
+  return `${firstName ? `${firstName}, tu` : "Tu"} es à 0 partout pour l'instant — c'est normal, tu n'as pas encore passé ton test de départ. Fais-le et je calcule tes vraies stats.`;
+}
+
 export function composeFirstSessionIntro(): string {
   return pick([
     "On va commencer simplement. Fais cet exercice comme tu le ferais normalement, je regarde ta performance pour établir tes premières stats.",

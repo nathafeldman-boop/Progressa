@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { APP_NAME } from "@/lib/app-config";
 
 const LINKS = [
@@ -16,7 +17,10 @@ export function LandingFooter() {
   return (
     <footer className="relative border-t border-[var(--lp-border)] px-5 py-10 md:px-6">
       <div className="lp-container flex flex-col items-center gap-6 text-center">
-        <span className="font-display text-xl font-extrabold uppercase tracking-wide">{APP_NAME}</span>
+        <span className="flex items-center gap-2 font-display text-xl font-extrabold uppercase tracking-wide">
+          <Image src="/logo-mark.png" alt="" width={32} height={32} className="h-8 w-8" />
+          {APP_NAME}
+        </span>
         <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-[var(--lp-text-muted)]">
           {LINKS.map((link) => (
             <Link key={link.href} href={link.href} className="transition-colors hover:text-[var(--lp-text)]">
