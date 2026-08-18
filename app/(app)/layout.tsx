@@ -4,9 +4,8 @@ import { APP_NAME } from "@/lib/app-config";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Séances", emoji: "🏋️" },
-  { href: "/tests", label: "Tests", emoji: "📊" },
-  { href: "/carte", label: "Carte", emoji: "🃏" },
-  { href: "/journal", label: "Journal", emoji: "📓" },
+  { href: "/coach", label: "Coach", emoji: "🧑‍🏫" },
+  { href: "/progression", label: "Progression", emoji: "📈" },
   { href: "/parametres", label: "Réglages", emoji: "⚙️" },
 ];
 

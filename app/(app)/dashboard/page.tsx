@@ -57,7 +57,7 @@ export default async function DashboardPage() {
 
       {cardStats && (
         <div className="grid grid-cols-2 gap-3">
-          <Link href="/carte">
+          <Link href="/progression">
             <Card className="flex h-full items-center justify-between gap-2 border-[var(--color-primary)]">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Carte</p>
