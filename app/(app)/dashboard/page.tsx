@@ -8,6 +8,7 @@ import { Chip } from "@/components/ui/Chip";
 import { Button } from "@/components/ui/Button";
 import { RegenerateButton } from "@/components/dashboard/RegenerateButton";
 import { DailyObjectives } from "@/components/dashboard/DailyObjectives";
+import { TargetedTrainingPicker } from "@/components/dashboard/TargetedTrainingPicker";
 import { POSITION_LABELS, WEEKDAY_LABELS } from "@/lib/labels";
 import { getAgeCategory } from "@/lib/age-category";
 import { ensureTodayObjectives } from "@/lib/brian/daily-objectives";
@@ -83,6 +84,8 @@ export default async function DashboardPage() {
       )}
 
       <DailyObjectives objectives={objectives} />
+
+      <TargetedTrainingPicker />
 
       {!premium && (
         <Card className="border-[var(--color-primary)] bg-[var(--color-primary-soft)]">

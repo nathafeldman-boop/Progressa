@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { UserMenu } from "@/components/auth/UserMenu";
+import { BrianFab } from "@/components/brian/BrianFab";
 import { APP_NAME } from "@/lib/app-config";
 
 const NAV_ITEMS = [
@@ -20,6 +21,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </header>
 
       <main className="flex-1 pb-20">{children}</main>
+
+      <BrianFab />
 
       <nav className="fixed inset-x-0 bottom-0 z-10 flex justify-around border-t border-[var(--color-border)] bg-[var(--color-surface)] py-2 [padding-bottom:env(safe-area-inset-bottom)]">
         {NAV_ITEMS.map((item) => (

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { PlayerCardView } from "@/components/card/PlayerCardView";
 import { CalibratingCardTeaser } from "@/components/card/CalibratingCardTeaser";
 import { ShareCardButton } from "@/components/card/ShareCardButton";
+import { TargetedTrainingPicker } from "@/components/dashboard/TargetedTrainingPicker";
 import type { PlayerCardStats } from "@/lib/player-card";
 
 /**
@@ -93,6 +94,12 @@ export default async function ProgressionPage() {
           </div>
         )}
       </div>
+
+      <Link href="/dashboard" className="block">
+        <Button className="w-full">Retour à mes séances</Button>
+      </Link>
+
+      <TargetedTrainingPicker />
 
       <div className="grid grid-cols-2 gap-3">
         <Link href="/classement">
