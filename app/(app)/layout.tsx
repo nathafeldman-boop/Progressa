@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { BrianFab } from "@/components/brian/BrianFab";
+import { BrianAvatar } from "@/components/brian/BrianAvatar";
 import { APP_NAME } from "@/lib/app-config";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Séances", emoji: "🏋️" },
-  { href: "/coach", label: "Coach", emoji: "🧑‍🏫" },
+  { href: "/coach", label: "Coach", emoji: null },
   { href: "/progression", label: "Progression", emoji: "📈" },
   { href: "/parametres", label: "Réglages", emoji: "⚙️" },
 ];
@@ -31,7 +32,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             href={item.href}
             className="flex flex-col items-center gap-0.5 px-2 py-1 text-xs font-semibold text-[var(--color-text-muted)]"
           >
-            <span className="text-lg">{item.emoji}</span>
+            {item.emoji ? (
+              <span className="text-lg">{item.emoji}</span>
+            ) : (
+              <BrianAvatar state="idle" size={22} />
+            )}
             {item.label}
           </Link>
         ))}
