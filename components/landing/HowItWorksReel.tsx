@@ -224,7 +224,7 @@ export function HowItWorksReel() {
     const el = containerRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(([entry]) => setPlaying(entry.isIntersecting), {
-      threshold: 0.35,
+      threshold: 0.15,
     });
     observer.observe(el);
     return () => observer.disconnect();
@@ -245,9 +245,14 @@ export function HowItWorksReel() {
   }, [active, playing, reduceMotion, userInteracting]);
 
   // Le joueur qui swipe manuellement met l'auto-avance en pause un moment.
+  // Un simple toucher qui ne déclenche jamais de scroll horizontal (ex: un
+  // scroll vertical de la page qui passe sur le carrousel) ne doit pas
+  // bloquer l'auto-avance indéfiniment — on programme toujours une reprise,
+  // que handleScrollEnd viendra reprogrammer si un vrai swipe a eu lieu.
   function handlePointerDown() {
     setUserInteracting(true);
     if (resumeTimer.current) window.clearTimeout(resumeTimer.current);
+    resumeTimer.current = window.setTimeout(() => setUserInteracting(false), 900);
   }
 
   function handleScrollEnd() {
