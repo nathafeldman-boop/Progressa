@@ -1,10 +1,11 @@
 import { Reveal, AnimatedNumber } from "./reveal";
+import { ExerciseChipDemo } from "./ExerciseChipDemo";
 
 const FLOW = [
-  { emoji: "⚽", label: "Exercice" },
+  { emoji: null, label: "Exercice" },
   { emoji: "⏱️", label: "Performance" },
   { emoji: "📊", label: "Stats" },
-  { emoji: "🃏", label: "Carte" },
+  { emoji: null, label: "Carte" },
 ];
 
 const DELTAS = [
@@ -29,7 +30,14 @@ export function FirstTraining() {
             {FLOW.map((step, i) => (
               <div key={step.label} className="flex items-center gap-2">
                 <span className="lp-card flex items-center gap-2 px-3 py-2 text-sm font-semibold">
-                  <span aria-hidden>{step.emoji}</span> {step.label}
+                  {step.label === "Exercice" ? (
+                    <ExerciseChipDemo />
+                  ) : step.label === "Carte" ? (
+                    <span aria-hidden className="h-4 w-3 shrink-0 rounded-sm bg-[var(--lp-accent)]" />
+                  ) : (
+                    <span aria-hidden>{step.emoji}</span>
+                  )}
+                  {step.label}
                 </span>
                 {i < FLOW.length - 1 && (
                   <span className="text-[var(--lp-text-dim)]" aria-hidden>

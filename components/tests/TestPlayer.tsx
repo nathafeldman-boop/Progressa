@@ -9,6 +9,14 @@ import { BrianTip } from "@/components/brian/BrianTip";
 import { ConeTimer } from "@/components/tests/ConeTimer";
 import { composeTestFlowIntro } from "@/lib/brian/messages";
 import { elapsedSeconds, nowMs } from "@/lib/time";
+import { EXERCISE_FRAMES } from "@/lib/exercises/exercise-frames";
+import { ExerciseFrameViewer } from "@/components/exercises/ExerciseFrameViewer";
+
+/** Test d'évaluation -> même séquence de poses Coach Brian que l'exercice équivalent en séance, quand elle existe. */
+const TEST_FRAMES_SLUG: Partial<Record<string, string>> = {
+  JUGGLING: "jonglages-progressifs",
+  PLANK: "gainage-planche-ventrale",
+};
 
 export interface TestFlowEntry {
   type: string;
@@ -204,6 +212,8 @@ export function TestPlayer({ tests, firstName }: { tests: TestFlowEntry[]; first
 
   // screen === "test"
   const liveSeconds = timerPhase === "running" ? elapsedSeconds(startedAt) ?? 0 : frozenSeconds;
+  const frames = TEST_FRAMES_SLUG[current.type] ? EXERCISE_FRAMES[TEST_FRAMES_SLUG[current.type]!] : undefined;
+  const showFrameIntro = !!frames && timerPhase === "idle";
 
   return (
     <div className="mx-auto max-w-md space-y-4 p-4">
@@ -219,22 +229,37 @@ export function TestPlayer({ tests, firstName }: { tests: TestFlowEntry[]; first
         )}
       </div>
 
-      <BrianTip
-        tipKey="tests-flow-intro"
-        text="Lis les étapes, lance le chrono quand tu es prêt à commencer l'exercice, arrête-le à la fin et entre ton résultat."
-      />
+      {showFrameIntro ? (
+        <div>
+          <ExerciseFrameViewer sequence={frames} onReady={startTimer} />
+          <button
+            type="button"
+            onClick={skipCurrentTest}
+            className="mx-auto mt-3 block text-xs font-semibold text-[var(--color-text-muted)] underline"
+          >
+            Passer ce test
+          </button>
+        </div>
+      ) : (
+        <>
+          <BrianTip
+            tipKey="tests-flow-intro"
+            text="Lis les étapes, lance le chrono quand tu es prêt à commencer l'exercice, arrête-le à la fin et entre ton résultat."
+          />
 
-      <Card>
-        <ul className="list-disc space-y-1 pl-5 text-sm text-[var(--color-text)]">
-          {current.protocol.map((step, i) => (
-            <li key={i}>{step}</li>
-          ))}
-        </ul>
-      </Card>
+          <Card>
+            <ul className="list-disc space-y-1 pl-5 text-sm text-[var(--color-text)]">
+              {current.protocol.map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ul>
+          </Card>
+        </>
+      )}
 
-      <ConeTimer seconds={liveSeconds} running={timerPhase === "running"} />
+      {!showFrameIntro && <ConeTimer seconds={liveSeconds} running={timerPhase === "running"} />}
 
-      {timerPhase !== "stopped" ? (
+      {showFrameIntro ? null : timerPhase !== "stopped" ? (
         <div className="flex gap-2">
           <Button variant="ghost" onClick={skipCurrentTest}>
             Passer
