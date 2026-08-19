@@ -20,6 +20,11 @@ export async function POST(request: Request) {
   if (!parsed.success) return NextResponse.json({ error: "invalid_payload" }, { status: 400 });
 
   const history: CoachChatTurn[] = parsed.data.history ?? [];
+
+  await prisma.brianMessage.create({
+    data: { userId: user.id, category: "RETENTION", text: parsed.data.message, fromPlayer: true },
+  });
+
   const text = await answerFreeQuestion(user.id, user.firstName, parsed.data.message, history);
 
   const saved = await prisma.brianMessage.create({

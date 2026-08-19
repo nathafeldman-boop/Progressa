@@ -3,20 +3,30 @@ import Image from "next/image";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { BrianFab } from "@/components/brian/BrianFab";
 import { BrianAvatar, type BrianState } from "@/components/brian/BrianAvatar";
+import { CoachNavLink } from "@/components/coach/CoachNavLink";
 import { APP_NAME } from "@/lib/app-config";
+import { getCurrentInternalUser } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 /**
  * Une pose Coach Brian fixe par onglet (jamais d'emoji, jamais aléatoire —
  * toujours la même pose pour un même onglet).
  */
 const NAV_ITEMS: { href: string; label: string; brianState: BrianState }[] = [
-  { href: "/dashboard", label: "Séances", brianState: "motivated" },
-  { href: "/coach", label: "Coach", brianState: "idle" },
   { href: "/progression", label: "Progression", brianState: "confident" },
   { href: "/parametres", label: "Réglages", brianState: "thinking" },
 ];
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentInternalUser();
+  const latestBrianMessage = user
+    ? await prisma.brianMessage.findFirst({
+        where: { userId: user.id, fromPlayer: false },
+        orderBy: { createdAt: "desc" },
+        select: { createdAt: true },
+      })
+    : null;
+
   return (
     <div className="app-pitch-bg flex min-h-screen flex-col">
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-surface)]/90 px-4 py-3 backdrop-blur">
@@ -32,6 +42,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <BrianFab />
 
       <nav className="fixed inset-x-0 bottom-0 z-10 flex justify-around border-t border-[var(--color-border)] bg-[var(--color-surface)] py-2 [padding-bottom:env(safe-area-inset-bottom)]">
+        <Link
+          href="/dashboard"
+          className="flex flex-col items-center gap-0.5 px-2 py-1 text-xs font-semibold text-[var(--color-text-muted)]"
+        >
+          <BrianAvatar state="motivated" size={22} />
+          Séances
+        </Link>
+        <CoachNavLink latestBrianMessageAt={latestBrianMessage?.createdAt.toISOString() ?? null} />
         {NAV_ITEMS.map((item) => (
           <Link
             key={item.href}

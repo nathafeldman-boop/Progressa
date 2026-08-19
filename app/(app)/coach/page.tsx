@@ -15,7 +15,13 @@ export default async function CoachPage() {
   });
 
   const initialMessages = messages.length
-    ? messages.map((m) => ({ id: m.id, category: m.category, text: m.text, createdAt: m.createdAt.toISOString() }))
+    ? messages.map((m) => ({
+        id: m.id,
+        category: m.category,
+        text: m.text,
+        fromPlayer: m.fromPlayer,
+        createdAt: m.createdAt.toISOString(),
+      }))
     : [
         {
           id: "welcome",

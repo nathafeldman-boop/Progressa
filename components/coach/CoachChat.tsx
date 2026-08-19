@@ -33,6 +33,10 @@ export function CoachChat({ initialMessages }: { initialMessages: ChatMessage[] 
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  useEffect(() => {
+    window.localStorage.setItem("progressa:coach-last-viewed", new Date().toISOString());
+  }, []);
+
   async function ask(questionKey: string, label: string) {
     setPending(questionKey);
     setMessages((prev) => [
@@ -85,7 +89,7 @@ export function CoachChat({ initialMessages }: { initialMessages: ChatMessage[] 
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
-      <div className="flex-1 space-y-3 overflow-y-auto pb-3">
+      <div className="flex-1 space-y-3 overflow-y-auto pb-3 pt-2">
         {messages.map((m) =>
           m.fromPlayer ? (
             <div key={m.id} className="flex justify-end">
@@ -105,11 +109,11 @@ export function CoachChat({ initialMessages }: { initialMessages: ChatMessage[] 
         <div ref={bottomRef} />
       </div>
 
-      <div className="border-t border-[var(--color-border)] pt-3">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+      <div className="mx-auto w-full max-w-sm border-t border-[var(--color-border)] pt-3">
+        <p className="mb-2 text-center text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
           Questions rapides
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap justify-center gap-2">
           {QUICK_QUESTIONS.map((q) => (
             <button
               key={q.key}
@@ -122,26 +126,26 @@ export function CoachChat({ initialMessages }: { initialMessages: ChatMessage[] 
             </button>
           ))}
         </div>
-      </div>
 
-      <form onSubmit={sendFreeText} className="mt-2 flex items-center gap-2">
-        <input
-          type="text"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          disabled={sending}
-          placeholder="Écris à Coach Brian…"
-          className="flex-1 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)] disabled:opacity-50"
-        />
-        <button
-          type="submit"
-          disabled={sending || !draft.trim()}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] disabled:opacity-50"
-          aria-label="Envoyer"
-        >
-          {sending ? "…" : "➤"}
-        </button>
-      </form>
+        <form onSubmit={sendFreeText} className="mt-3 flex items-center gap-2">
+          <input
+            type="text"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            disabled={sending}
+            placeholder="Écris à Coach Brian…"
+            className="flex-1 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)] disabled:opacity-50"
+          />
+          <button
+            type="submit"
+            disabled={sending || !draft.trim()}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] disabled:opacity-50"
+            aria-label="Envoyer"
+          >
+            {sending ? "…" : "➤"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

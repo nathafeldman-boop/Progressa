@@ -15,6 +15,13 @@ export async function POST(request: Request) {
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: "invalid_payload" }, { status: 400 });
 
+  const question = QUICK_QUESTIONS.find((q) => q.key === parsed.data.questionKey);
+  if (question) {
+    await prisma.brianMessage.create({
+      data: { userId: user.id, category: "RETENTION", text: question.label, fromPlayer: true },
+    });
+  }
+
   const text = await answerQuickQuestion(user.id, parsed.data.questionKey);
 
   const message = await prisma.brianMessage.create({

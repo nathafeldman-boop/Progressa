@@ -511,6 +511,7 @@ model BrianMessage {
   user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   category         BrianMessageCategory
   text             String
+  fromPlayer       Boolean              @default(false)
   relatedSessionId String?
   relatedBlockId   String?
   createdAt        DateTime             @default(now())
