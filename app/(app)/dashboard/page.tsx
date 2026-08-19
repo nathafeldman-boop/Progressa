@@ -9,11 +9,10 @@ import { Button } from "@/components/ui/Button";
 import { RegenerateButton } from "@/components/dashboard/RegenerateButton";
 import { DailyObjectives } from "@/components/dashboard/DailyObjectives";
 import { TargetedTrainingPicker } from "@/components/dashboard/TargetedTrainingPicker";
+import { DashboardHero } from "@/components/dashboard/DashboardHero";
 import { POSITION_LABELS } from "@/lib/labels";
 import { getAgeCategory } from "@/lib/age-category";
 import { ensureTodayObjectives } from "@/lib/brian/daily-objectives";
-import { BrianAvatar } from "@/components/brian/BrianAvatar";
-import { BrianTip } from "@/components/brian/BrianTip";
 import { RankCardBadge } from "@/components/card/RankCardBadge";
 import { todayAsWeekday } from "@/lib/week";
 
@@ -50,77 +49,40 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-md space-y-4 p-4">
-      <div>
-        <h1 className="flex items-center gap-2 font-display text-2xl font-extrabold uppercase tracking-wide">
-          Salut {user.firstName} <BrianAvatar state="happy" size={28} />
+      <div className="flex items-center justify-between">
+        <h1 className="font-display text-base font-bold uppercase tracking-wide text-[var(--color-text-muted)]">
+          Salut {user.firstName}
         </h1>
         {profile && (
-          <div className="mt-2 flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {ageCategory && <Chip>{ageCategory.label}</Chip>}
             <Chip>{POSITION_LABELS[profile.position]}</Chip>
-            {streak && streak.currentStreak > 0 && <Chip>🔥 Série de {streak.currentStreak}</Chip>}
           </div>
         )}
       </div>
 
-      {cardStats && (
-        <div className="grid grid-cols-2 gap-3">
-          <Link href="/progression">
-            <Card className="flex h-full items-center justify-between gap-2 border-[var(--color-primary)]">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Carte</p>
-                <p className="font-display text-xl font-extrabold text-[var(--color-primary-strong)]">
-                  {cardStats.overall} OVR
-                </p>
-              </div>
-              <RankCardBadge rankKey={cardStats.rankKey} size={26} />
-            </Card>
-          </Link>
-          <Link href="/classement">
-            <Card className="flex h-full items-center justify-between gap-2">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
-                  Classement
-                </p>
-                <p className="font-display text-sm font-bold text-[var(--color-text)]">Voir</p>
-              </div>
-              <BrianAvatar state="confident" size={32} />
-            </Card>
-          </Link>
-        </div>
-      )}
-
-      <BrianTip
-        tipKey="dashboard-intro"
-        text="Ta séance du jour est ici, adaptée à ce que tu dois travailler. Une nouvelle génération se débloque chaque jour à 8h si tu veux la changer."
+      <DashboardHero
+        todaySession={todaySession}
+        cardStats={cardStats ? { overall: cardStats.overall, rankTier: cardStats.rankTier } : null}
+        streakCount={streak?.currentStreak ?? 0}
+        hasProgram={!!program}
       />
 
-      <div className="flex items-center justify-between">
-        <h2 className="font-display text-lg font-bold uppercase tracking-wide">Aujourd&apos;hui</h2>
+      <div className="flex items-center justify-between px-1">
+        <div className="flex gap-4">
+          {cardStats && (
+            <Link href="/progression" className="flex items-center gap-1.5 text-sm font-semibold text-[var(--color-text)]">
+              <RankCardBadge rankKey={cardStats.rankKey} size={18} />
+              Ma carte
+            </Link>
+          )}
+          <Link href="/classement" className="flex items-center gap-1.5 text-sm font-semibold text-[var(--color-text)]">
+            <span aria-hidden className="h-[18px] w-[18px] rounded-full bg-[var(--color-primary-soft)]" />
+            Classement
+          </Link>
+        </div>
         <RegenerateButton />
       </div>
-
-      {!todaySession ? (
-        <Card className="p-6 text-center">
-          <CardSubtitle>
-            {program ? "Pas de séance prévue aujourd'hui — jour de repos." : "Aucun programme généré pour l'instant."}
-          </CardSubtitle>
-        </Card>
-      ) : (
-        <Link href={`/seance/${todaySession.id}`}>
-          <Card className="flex items-center justify-between gap-3">
-            <div>
-              <CardTitle className="text-base">{todaySession.title}</CardTitle>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {todaySession.isMatchAdjacent && <Chip>🩹 Séance légère</Chip>}
-                {todaySession.status === "COMPLETED" && <Chip>✅ Terminée</Chip>}
-                {todaySession.status === "SKIPPED" && <Chip>⏭️ Sautée</Chip>}
-              </div>
-            </div>
-            <BrianAvatar state="motivated" size={32} />
-          </Card>
-        </Link>
-      )}
 
       <DailyObjectives objectives={objectives} />
 

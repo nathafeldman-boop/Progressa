@@ -198,6 +198,55 @@ button:not(:disabled):active,
   animation: brian-juggle-frame-b 700ms steps(1) infinite;
 }
 
+/* App shell: fond très clair avec un terrain de foot très subtil en
+   arrière-plan (lignes + halo vert) plutôt qu'un blanc plat — lisible
+   sans jamais concurrencer le contenu. */
+.app-pitch-bg {
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(circle at 50% 8%, transparent 128px, rgba(26, 163, 80, 0.09) 129px, rgba(26, 163, 80, 0.09) 131px, transparent 132px),
+    radial-gradient(60% 42% at 50% 0%, rgba(26, 163, 80, 0.1), transparent 72%),
+    repeating-linear-gradient(180deg, rgba(26, 163, 80, 0.035) 0px, rgba(26, 163, 80, 0.035) 1px, transparent 1px, transparent 46px);
+  background-attachment: fixed, fixed, fixed;
+}
+
+/* Bouton CTA "Mission du jour": volumétrie + lueur verte pulsée, pensé
+   pour se démarquer nettement des boutons secondaires de l'app. */
+@keyframes cta-glow-pulse {
+  0%, 100% {
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 -3px 0 rgba(0, 0, 0, 0.14) inset,
+      0 10px 26px -8px rgba(6, 30, 16, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
+  50% {
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 -3px 0 rgba(0, 0, 0, 0.14) inset,
+      0 12px 34px -6px rgba(6, 30, 16, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.14);
+  }
+}
+.cta-primary {
+  background: linear-gradient(180deg, #34d67a, #0e7a3c 70%);
+  animation: cta-glow-pulse 2.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cta-primary {
+    animation: none;
+  }
+}
+
+/* Particules discrètes flottant dans le bloc "Mission du jour". */
+@keyframes hero-particle-float {
+  0% { transform: translateY(6px) scale(0.85); opacity: 0; }
+  30% { opacity: 0.9; }
+  100% { transform: translateY(-46px) scale(1); opacity: 0; }
+}
+.hero-particle {
+  animation: hero-particle-float 3.6s ease-in infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-particle {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .brian-breathe, .brian-talk, .brian-pop, .brian-juggle-bounce {
     animation: none;

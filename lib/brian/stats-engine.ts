@@ -208,6 +208,17 @@ export function rankTierForOverall(overall: number): RankTier {
   return RANK_TIERS.find((tier) => overall >= tier.min) ?? RANK_TIERS[RANK_TIERS.length - 1];
 }
 
+/** Progression réelle (0-100) vers le rang suivant — null au rang maximum (rien au-dessus). */
+export function nextRankProgress(overall: number): { percent: number; nextLabel: string; pointsToGo: number } | null {
+  const currentIndex = RANK_TIERS.findIndex((tier) => overall >= tier.min);
+  const current = RANK_TIERS[currentIndex];
+  const next = RANK_TIERS[currentIndex - 1];
+  if (!next) return null;
+  const span = next.min - current.min;
+  const percent = span > 0 ? Math.min(100, Math.max(0, ((overall - current.min) / span) * 100)) : 100;
+  return { percent, nextLabel: next.label, pointsToGo: Math.max(0, next.min - overall) };
+}
+
 export function expectedDurationSeconds(exercise: Pick<Exercise, "durationMinutes">): number {
   return exercise.durationMinutes * 60;
 }

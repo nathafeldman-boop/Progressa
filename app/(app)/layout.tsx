@@ -18,7 +18,7 @@ const NAV_ITEMS: { href: string; label: string; brianState: BrianState }[] = [
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="app-pitch-bg flex min-h-screen flex-col">
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-surface)]/90 px-4 py-3 backdrop-blur">
         <Link href="/dashboard" className="flex items-center gap-2 font-display text-lg font-extrabold uppercase tracking-wide">
           <Image src="/logo-mark.png" alt="" width={28} height={28} className="h-7 w-7" priority />

@@ -2,8 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button } from "@/components/ui/Button";
-import { BrianAvatar } from "@/components/brian/BrianAvatar";
 
 export function RegenerateButton() {
   const router = useRouter();
@@ -40,12 +38,16 @@ export function RegenerateButton() {
   }
 
   return (
-    <div>
-      <Button variant="secondary" onClick={handleClick} disabled={pending} className="flex items-center gap-2">
-        <BrianAvatar state="thinking" size={22} />
-        {pending ? "Régénération..." : "Régénérer ma séance du jour"}
-      </Button>
-      {message && <p className="mt-2 text-xs text-[var(--color-text-muted)]">{message}</p>}
+    <div className="text-right">
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={pending}
+        className="text-xs font-semibold text-[var(--color-text-muted)] underline disabled:opacity-50"
+      >
+        {pending ? "Régénération..." : "Régénérer"}
+      </button>
+      {message && <p className="mt-1 max-w-[10rem] text-[0.65rem] text-[var(--color-text-muted)]">{message}</p>}
     </div>
   );
 }
