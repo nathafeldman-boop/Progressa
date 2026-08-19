@@ -3,7 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardTitle, CardSubtitle } from "@/components/ui/Card";
-import { THEME_EMOJI, THEME_LABELS, TRAINING_THEMES, type TrainingTheme } from "@/lib/programs/build-targeted-session";
+import { BrianAvatar, type BrianState } from "@/components/brian/BrianAvatar";
+import { THEME_LABELS, TRAINING_THEMES, type TrainingTheme } from "@/lib/programs/build-targeted-session";
+
+const THEME_BRIAN_STATE: Record<TrainingTheme, BrianState> = {
+  motricite: "motivated",
+  ballon: "confident",
+  muscu: "encouraging",
+};
 
 export function TargetedTrainingPicker() {
   const router = useRouter();
@@ -47,8 +54,8 @@ export function TargetedTrainingPicker() {
               aria-hidden
               className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:repeating-linear-gradient(0deg,#fff_0,#fff_2px,transparent_2px,transparent_10px),repeating-linear-gradient(90deg,#fff_0,#fff_2px,transparent_2px,transparent_10px)]"
             />
-            <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white text-lg shadow-inner">
-              {loading === theme ? "…" : THEME_EMOJI[theme]}
+            <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-inner">
+              {loading === theme ? "…" : <BrianAvatar state={THEME_BRIAN_STATE[theme]} size={30} />}
             </span>
             <span className="relative text-[0.7rem] font-extrabold uppercase leading-tight tracking-wide text-white">
               {THEME_LABELS[theme]}

@@ -3,9 +3,8 @@ import { generateWeeklyProgram } from "@/lib/ai/generate-program";
 import { getCurrentWeekStart } from "@/lib/week";
 import { isPremiumActive, sessionCountForTier } from "@/lib/subscription";
 import { pickTargetWeekDays } from "@/lib/scheduling";
+import { isDailyRegenAvailable, nextAllowedRegenAt } from "@/lib/programs/daily-cooldown";
 import type { Weekday } from "@prisma/client";
-
-const REGEN_COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes anti-spam
 
 export type RegenerateResult =
   | { ok: true }
@@ -21,11 +20,9 @@ export async function regenerateWeeklyProgram(userId: string): Promise<Regenerat
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) return { ok: false, reason: "no_profile" };
 
-  if (user.lastManualRegenAt) {
-    const elapsed = Date.now() - user.lastManualRegenAt.getTime();
-    if (elapsed < REGEN_COOLDOWN_MS) {
-      return { ok: false, reason: "cooldown", retryAfterMs: REGEN_COOLDOWN_MS - elapsed };
-    }
+  if (!isDailyRegenAvailable(user.lastManualRegenAt)) {
+    const retryAfterMs = nextAllowedRegenAt(user.lastManualRegenAt!).getTime() - Date.now();
+    return { ok: false, reason: "cooldown", retryAfterMs };
   }
 
   const [profile, subscription, unresolvedPain] = await Promise.all([

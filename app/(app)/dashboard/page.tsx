@@ -9,10 +9,11 @@ import { Button } from "@/components/ui/Button";
 import { RegenerateButton } from "@/components/dashboard/RegenerateButton";
 import { DailyObjectives } from "@/components/dashboard/DailyObjectives";
 import { TargetedTrainingPicker } from "@/components/dashboard/TargetedTrainingPicker";
-import { POSITION_LABELS, WEEKDAY_LABELS } from "@/lib/labels";
+import { POSITION_LABELS } from "@/lib/labels";
 import { getAgeCategory } from "@/lib/age-category";
 import { ensureTodayObjectives } from "@/lib/brian/daily-objectives";
 import { BrianAvatar } from "@/components/brian/BrianAvatar";
+import { todayAsWeekday } from "@/lib/week";
 
 export default async function DashboardPage() {
   const user = await getCurrentInternalUser();
@@ -43,6 +44,7 @@ export default async function DashboardPage() {
   const premium = isPremiumActive(subscription);
   const ageCategory = profile ? getAgeCategory(profile.birthYear) : null;
   const cardStats = playerCard?.stats as { overall: number; rankTier?: string } | undefined;
+  const todaySession = program?.sessions.find((s) => s.dayOfWeek === todayAsWeekday()) ?? null;
 
   return (
     <div className="mx-auto max-w-md space-y-4 p-4">
@@ -86,6 +88,33 @@ export default async function DashboardPage() {
         </div>
       )}
 
+      <div className="flex items-center justify-between">
+        <h2 className="font-display text-lg font-bold uppercase tracking-wide">Aujourd&apos;hui</h2>
+        <RegenerateButton />
+      </div>
+
+      {!todaySession ? (
+        <Card className="p-6 text-center">
+          <CardSubtitle>
+            {program ? "Pas de séance prévue aujourd'hui — jour de repos." : "Aucun programme généré pour l'instant."}
+          </CardSubtitle>
+        </Card>
+      ) : (
+        <Link href={`/seance/${todaySession.id}`}>
+          <Card className="flex items-center justify-between gap-3">
+            <div>
+              <CardTitle className="text-base">{todaySession.title}</CardTitle>
+              <div className="mt-1 flex flex-wrap gap-1">
+                {todaySession.isMatchAdjacent && <Chip>🩹 Séance légère</Chip>}
+                {todaySession.status === "COMPLETED" && <Chip>✅ Terminée</Chip>}
+                {todaySession.status === "SKIPPED" && <Chip>⏭️ Sautée</Chip>}
+              </div>
+            </div>
+            <BrianAvatar state="motivated" size={32} />
+          </Card>
+        </Link>
+      )}
+
       <DailyObjectives objectives={objectives} />
 
       <TargetedTrainingPicker />
@@ -100,38 +129,6 @@ export default async function DashboardPage() {
             <Button className="w-full">Découvrir Premium</Button>
           </Link>
         </Card>
-      )}
-
-      <div className="flex items-center justify-between">
-        <h2 className="font-display text-lg font-bold uppercase tracking-wide">Cette semaine</h2>
-        <RegenerateButton />
-      </div>
-
-      {!program || program.sessions.length === 0 ? (
-        <Card className="p-6 text-center">
-          <CardSubtitle>Aucun programme généré pour l&apos;instant.</CardSubtitle>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {program.sessions.map((session) => (
-            <Link key={session.id} href={`/seance/${session.id}`}>
-              <Card className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
-                    {WEEKDAY_LABELS[session.dayOfWeek]}
-                  </p>
-                  <CardTitle className="text-base">{session.title}</CardTitle>
-                  <div className="mt-1 flex flex-wrap gap-1">
-                    {session.isMatchAdjacent && <Chip>🩹 Séance légère</Chip>}
-                    {session.status === "COMPLETED" && <Chip>✅ Terminée</Chip>}
-                    {session.status === "SKIPPED" && <Chip>⏭️ Sautée</Chip>}
-                  </div>
-                </div>
-                <span className="text-2xl">▶️</span>
-              </Card>
-            </Link>
-          ))}
-        </div>
       )}
     </div>
   );

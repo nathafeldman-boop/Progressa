@@ -6,3 +6,10 @@ export function getCurrentWeekStart(referenceDate: Date = new Date()): Date {
   date.setUTCDate(date.getUTCDate() + diffToMonday);
   return date;
 }
+
+const WEEKDAY_ORDER = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"] as const;
+
+/** Jour de la semaine (enum Prisma Weekday) correspondant à referenceDate. */
+export function todayAsWeekday(referenceDate: Date = new Date()): (typeof WEEKDAY_ORDER)[number] {
+  return WEEKDAY_ORDER[(referenceDate.getDay() + 6) % 7];
+}
