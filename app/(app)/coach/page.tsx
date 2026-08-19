@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { composeWelcomeMessage } from "@/lib/brian/messages";
 import { CoachChat } from "@/components/coach/CoachChat";
+import { BrianTip } from "@/components/brian/BrianTip";
 
 export default async function CoachPage() {
   const user = await getCurrentInternalUser();
@@ -27,6 +28,12 @@ export default async function CoachPage() {
   return (
     <div className="mx-auto flex h-[calc(100dvh-8.5rem)] max-w-md flex-col p-4">
       <h1 className="mb-3 font-display text-2xl font-extrabold uppercase tracking-wide">Coach Brian</h1>
+      <div className="mb-3">
+        <BrianTip
+          tipKey="coach-intro"
+          text="Pose-moi n'importe quelle question sur ton entraînement — je réponds en fonction de tes vraies stats, pas de généralités."
+        />
+      </div>
       <CoachChat initialMessages={initialMessages} />
     </div>
   );

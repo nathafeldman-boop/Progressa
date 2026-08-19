@@ -13,6 +13,7 @@ import { POSITION_LABELS } from "@/lib/labels";
 import { getAgeCategory } from "@/lib/age-category";
 import { ensureTodayObjectives } from "@/lib/brian/daily-objectives";
 import { BrianAvatar } from "@/components/brian/BrianAvatar";
+import { BrianTip } from "@/components/brian/BrianTip";
 import { todayAsWeekday } from "@/lib/week";
 
 export default async function DashboardPage() {
@@ -87,6 +88,11 @@ export default async function DashboardPage() {
           </Link>
         </div>
       )}
+
+      <BrianTip
+        tipKey="dashboard-intro"
+        text="Ta séance du jour est ici, adaptée à ce que tu dois travailler. Une nouvelle génération se débloque chaque jour à 8h si tu veux la changer."
+      />
 
       <div className="flex items-center justify-between">
         <h2 className="font-display text-lg font-bold uppercase tracking-wide">Aujourd&apos;hui</h2>

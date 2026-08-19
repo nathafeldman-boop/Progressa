@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { MicroSurveyPrompt } from "@/components/session/MicroSurveyPrompt";
 import { BrianMessageCard } from "@/components/brian/BrianMessageCard";
 import { BrianAvatar, type BrianState } from "@/components/brian/BrianAvatar";
+import { BrianTip } from "@/components/brian/BrianTip";
 import { PlayerCardView } from "@/components/card/PlayerCardView";
 import type { PlayerCardStats } from "@/lib/player-card";
 import { elapsedSeconds, nowMs } from "@/lib/time";
@@ -493,7 +494,13 @@ function ActiveExerciseScreen({
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">
-        <div className="relative mx-auto aspect-square w-full max-w-xs overflow-hidden rounded-[var(--radius-card)] bg-[var(--color-surface-alt)]">
+        {state.phase === "idle" && (
+          <BrianTip
+            tipKey="seance-exercice-intro"
+            text="Un exercice à la fois, plein écran. Clique sur Commencer pour lancer le chrono, puis Terminé quand tu as fini — tu pourras noter la difficulté juste après."
+          />
+        )}
+        <div className="relative mx-auto mt-3 aspect-square w-full max-w-xs overflow-hidden rounded-[var(--radius-card)] bg-[var(--color-surface-alt)]">
           {EXERCISE_VIDEO[block.exercise.slug] ? (
             <video
               key={block.exercise.slug}

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { JournalTabs } from "@/components/journal/JournalTabs";
+import { BrianTip } from "@/components/brian/BrianTip";
 
 function todayUtc(): Date {
   const now = new Date();
@@ -22,6 +23,12 @@ export default async function JournalPage() {
   return (
     <div className="mx-auto max-w-md p-4">
       <h1 className="mb-4 font-display text-2xl font-extrabold uppercase tracking-wide">Journal</h1>
+      <div className="mb-4">
+        <BrianTip
+          tipKey="journal-intro"
+          text="Note tes ressentis, douleurs, matchs et objectifs ici — je m'en sers pour adapter tes séances à ta forme réelle."
+        />
+      </div>
       <JournalTabs todayCheckin={todayCheckin} painLogs={painLogs} growthEntries={growthEntries} matchLogs={matchLogs} goals={goals} />
     </div>
   );

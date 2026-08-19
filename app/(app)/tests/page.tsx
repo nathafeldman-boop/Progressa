@@ -4,6 +4,7 @@ import { TEST_PROTOCOLS, nextEligibleDate } from "@/lib/evaluation-tests";
 import { isInFuture } from "@/lib/time";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { TestSubmitForm } from "@/components/tests/TestSubmitForm";
+import { BrianTip } from "@/components/brian/BrianTip";
 import { EvaluationTestType } from "@prisma/client";
 
 export default async function TestsPage() {
@@ -24,6 +25,11 @@ export default async function TestsPage() {
     <div className="mx-auto max-w-md space-y-4 p-4">
       <h1 className="font-display text-2xl font-extrabold uppercase tracking-wide">Tests d&apos;évaluation</h1>
       <CardSubtitle>4 tests simples, réalisables seul, pour suivre ta progression réelle.</CardSubtitle>
+
+      <BrianTip
+        tipKey="tests-intro"
+        text="Ces tests calculent tes vraies stats sur ta carte joueur. Fais-les sérieusement — un seul essai compte par période."
+      />
 
       {Object.values(TEST_PROTOCOLS).map((protocol) => {
         const last = lastByType.get(protocol.type);
