@@ -14,6 +14,9 @@ import { PlayerCardView } from "@/components/card/PlayerCardView";
 import type { PlayerCardStats } from "@/lib/player-card";
 import { elapsedSeconds, nowMs } from "@/lib/time";
 import { EXERCISE_VIDEO } from "@/lib/exercises/exercise-media";
+import { EXERCISE_FRAMES } from "@/lib/exercises/exercise-frames";
+import { ExerciseFrameViewer } from "@/components/exercises/ExerciseFrameViewer";
+import { ExerciseFrameLoop } from "@/components/exercises/ExerciseFrameLoop";
 
 /** Re-render chaque seconde tant que `active` — sert au minuteur en direct. */
 function useTicker(active: boolean) {
@@ -474,6 +477,7 @@ function ActiveExerciseScreen({
 }) {
   useTicker(state.phase === "active");
   const elapsed = state.phase === "active" ? (elapsedSeconds(state.startedAt) ?? 0) : 0;
+  const frames = EXERCISE_FRAMES[block.exercise.slug];
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-[var(--color-bg)] [padding-top:env(safe-area-inset-top)] [padding-bottom:env(safe-area-inset-bottom)]">
@@ -507,35 +511,50 @@ function ActiveExerciseScreen({
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">
-        {state.phase === "idle" && (
+        {state.phase === "idle" && !frames && (
           <BrianTip
             tipKey="seance-exercice-intro"
             text="Un exercice à la fois, plein écran. Clique sur Commencer pour lancer le chrono, puis Terminé quand tu as fini — tu pourras noter la difficulté juste après."
           />
         )}
-        <div className="relative mx-auto mt-3 aspect-square w-full max-w-xs overflow-hidden rounded-[var(--radius-card)] bg-[var(--color-surface-alt)]">
-          {EXERCISE_VIDEO[block.exercise.slug] ? (
-            <video
-              key={block.exercise.slug}
-              src={EXERCISE_VIDEO[block.exercise.slug]}
-              className="h-full w-full object-cover"
-              autoPlay
-              muted
-              loop
-              playsInline
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-8xl">{block.exercise.emoji}</div>
-          )}
-          <div className="absolute bottom-2 right-2">
-            <BrianAvatar state={BRIAN_STATE_FOR_PHASE[state.phase]} size={56} className="ring-2 ring-[var(--color-surface)]" />
+        {state.phase === "idle" && frames ? (
+          <div className="mx-auto mt-3 w-full max-w-xs">
+            <ExerciseFrameViewer sequence={frames} onReady={onStart} />
+            <button
+              type="button"
+              onClick={onSkip}
+              className="mx-auto mt-3 block text-xs font-semibold text-[var(--color-text-muted)] underline"
+            >
+              Passer cet exercice
+            </button>
           </div>
-          {state.phase === "active" && (
-            <div className="absolute left-1/2 top-3 -translate-x-1/2 rounded-full bg-[var(--color-text)]/85 px-4 py-1.5 font-display text-2xl font-extrabold tabular-nums text-white">
-              {formatMmSs(elapsed)}
+        ) : (
+          <div className="relative mx-auto mt-3 aspect-square w-full max-w-xs overflow-hidden rounded-[var(--radius-card)] bg-[var(--color-surface-alt)]">
+            {frames ? (
+              <ExerciseFrameLoop sequence={frames} />
+            ) : EXERCISE_VIDEO[block.exercise.slug] ? (
+              <video
+                key={block.exercise.slug}
+                src={EXERCISE_VIDEO[block.exercise.slug]}
+                className="h-full w-full object-cover"
+                autoPlay
+                muted
+                loop
+                playsInline
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center text-8xl">{block.exercise.emoji}</div>
+            )}
+            <div className="absolute bottom-2 right-2">
+              <BrianAvatar state={BRIAN_STATE_FOR_PHASE[state.phase]} size={56} className="ring-2 ring-[var(--color-surface)]" />
             </div>
-          )}
-        </div>
+            {state.phase === "active" && (
+              <div className="absolute left-1/2 top-3 -translate-x-1/2 rounded-full bg-[var(--color-text)]/85 px-4 py-1.5 font-display text-2xl font-extrabold tabular-nums text-white">
+                {formatMmSs(elapsed)}
+              </div>
+            )}
+          </div>
+        )}
 
         <CardTitle className="mt-4 text-center text-xl">
           {block.exercise.emoji} {block.exercise.name}
@@ -590,7 +609,7 @@ function ActiveExerciseScreen({
       </div>
 
       <div className="border-t border-[var(--color-border)] p-4">
-        {state.phase === "idle" && (
+        {state.phase === "idle" && !frames && (
           <div className="flex gap-2">
             <Button variant="ghost" onClick={onSkip}>
               Passer
