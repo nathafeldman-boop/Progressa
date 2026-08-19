@@ -42,6 +42,7 @@ export function PlayerCardView({
   department,
   niveauLabel,
   stats,
+  photoUrl = null,
   animateFromOverall = null,
 }: {
   firstName: string;
@@ -51,6 +52,7 @@ export function PlayerCardView({
   department?: string | null;
   niveauLabel?: string | null;
   stats: PlayerCardStats;
+  photoUrl?: string | null;
   /** Note générale précédente — si fournie et différente, la note s'anime de cette valeur vers stats.overall. */
   animateFromOverall?: number | null;
 }) {
@@ -96,11 +98,16 @@ export function PlayerCardView({
         </p>
 
         <div
-          className="mx-auto mt-4 flex h-16 w-16 items-center justify-center rounded-full text-2xl font-extrabold"
+          className="mx-auto mt-4 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full text-2xl font-extrabold"
           style={{ background: `${style.accent}22`, color: style.accent, border: `1px solid ${style.border}` }}
           aria-hidden
         >
-          {firstName.charAt(0).toUpperCase() || "?"}
+          {photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element -- data URL, pas un asset optimisable par next/image
+            <img src={photoUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            firstName.charAt(0).toUpperCase() || "?"
+          )}
         </div>
         <h2 className="font-display mt-2 text-xl font-extrabold uppercase tracking-wide text-white">{firstName}</h2>
         <p className="text-xs font-semibold uppercase tracking-wide text-white/60">

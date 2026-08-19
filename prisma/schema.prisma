@@ -32,6 +32,8 @@ model User {
   email          String   @unique
   firstName      String
   role           UserRole @default(PLAYER)
+  // Data URL (image compressée côté client) affichée sur la carte joueur.
+  photoUrl       String?  @db.Text
 
   isMinor         Boolean   @default(false)
   parentEmail     String?

@@ -85,6 +85,7 @@ export default async function ProgressionPage() {
               department={profile?.district ?? null}
               niveauLabel={profile?.levelLabel ?? null}
               stats={stats}
+              photoUrl={user.photoUrl}
             />
             <ShareCardButton shareSlug={card!.shareSlug} firstName={user.firstName} />
           </div>

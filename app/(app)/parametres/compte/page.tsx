@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { DeleteAccountButton } from "@/components/account/DeleteAccountButton";
+import { ProfilePhotoUpload } from "@/components/account/ProfilePhotoUpload";
 
 export default async function ComptePage() {
   const user = await getCurrentInternalUser();
@@ -12,7 +13,8 @@ export default async function ComptePage() {
       <h1 className="font-display text-2xl font-extrabold uppercase tracking-wide">Mon compte</h1>
 
       <Card>
-        <CardTitle className="text-base">{user.firstName}</CardTitle>
+        <ProfilePhotoUpload currentPhotoUrl={user.photoUrl} />
+        <CardTitle className="mt-3 text-base">{user.firstName}</CardTitle>
         <CardSubtitle>{user.email}</CardSubtitle>
         {user.isMinor && (
           <p className="mt-2 text-xs text-[var(--color-text-muted)]">
