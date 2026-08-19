@@ -34,6 +34,37 @@ function useCountUp(target: number, from: number | null) {
   return shouldAnimate ? value : target;
 }
 
+function CrownIcon({ color, size = 18 }: { color: string; size?: number }) {
+  return (
+    <svg width={size} height={size * 0.75} viewBox="0 0 24 18" fill="none" aria-hidden>
+      <path
+        d="M2 6L7 10L12 2L17 10L22 6L20 15H4L2 6Z"
+        fill={color}
+        stroke={color}
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function StarRow({ count, color }: { count: number; color: string }) {
+  return (
+    <div className="flex items-center justify-center gap-1" aria-label={`${count} sur 5 étoiles`}>
+      {Array.from({ length: 5 }, (_, i) => (
+        <svg key={i} width="12" height="12" viewBox="0 0 24 24" aria-hidden>
+          <path
+            d="M12 1.5l3.09 6.26 6.91 1-5 4.87 1.18 6.87L12 17.27l-6.18 3.23L7 13.63l-5-4.87 6.91-1L12 1.5z"
+            fill={i < count ? color : "transparent"}
+            stroke={color}
+            strokeWidth="1.2"
+          />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
 export function PlayerCardView({
   firstName,
   positionLabel,
@@ -62,10 +93,12 @@ export function PlayerCardView({
 
   return (
     <div
-      className="relative mx-auto w-full max-w-sm overflow-hidden rounded-[1.75rem] p-6 text-center"
+      className="relative mx-auto w-full max-w-sm pb-8 pt-6 text-center"
       style={{
         background: `linear-gradient(165deg, ${style.gradient[0]}, ${style.gradient[1]})`,
         border: `2px solid ${style.border}`,
+        borderRadius: "1.75rem 1.75rem 0 0",
+        clipPath: "polygon(0% 0%, 100% 0%, 100% 88%, 50% 100%, 0% 88%)",
         boxShadow: `0 0 0 1px rgba(255,255,255,0.04) inset, 0 20px 45px -18px ${style.border}66`,
       }}
     >
@@ -78,28 +111,33 @@ export function PlayerCardView({
           aria-hidden
         />
       )}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ background: `radial-gradient(70% 45% at 50% 8%, ${style.border}33, transparent 70%)` }}
+        aria-hidden
+      />
 
-      <div className="relative">
-        <span
-          className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-[0.65rem] font-extrabold uppercase tracking-widest"
-          style={{ background: style.accent, color: style.onAccent }}
-        >
-          {displayedRank}
+      <div className="relative px-6">
+        <span className="absolute left-1 top-0 text-left">
+          <span className="font-display block text-2xl font-extrabold tabular-nums" style={{ color: style.accent }}>
+            {overall}
+          </span>
+          <span className="text-[0.55rem] font-bold uppercase tracking-widest" style={{ color: `${style.accent}99` }}>
+            OVR
+          </span>
         </span>
 
+        <CrownIcon color={style.accent} />
         <p
-          className="font-display mt-3 text-7xl font-extrabold leading-none tabular-nums"
-          style={{ color: style.accent, textShadow: `0 0 24px ${style.border}55` }}
+          className="font-display mt-1 text-lg font-extrabold uppercase tracking-widest"
+          style={{ color: style.accent, textShadow: `0 0 18px ${style.border}55` }}
         >
-          {overall}
-        </p>
-        <p className="mt-1 text-[0.65rem] font-bold uppercase tracking-[0.2em]" style={{ color: `${style.accent}99` }}>
-          Note générale
+          {displayedRank}
         </p>
 
         <div
-          className="mx-auto mt-4 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full text-2xl font-extrabold"
-          style={{ background: `${style.accent}22`, color: style.accent, border: `1px solid ${style.border}` }}
+          className="mx-auto mt-4 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full text-3xl font-extrabold"
+          style={{ background: `${style.accent}1a`, color: style.accent, border: `2px solid ${style.border}`, boxShadow: `0 0 24px -4px ${style.border}88` }}
           aria-hidden
         >
           {photoUrl ? (
@@ -115,14 +153,17 @@ export function PlayerCardView({
         </p>
 
         {(country || department || niveauLabel) && (
-          <div className="mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-[0.7rem] font-medium text-white/50">
-            {country && <span>📍 {country}</span>}
-            {department && <span>· {department}</span>}
-            {niveauLabel && <span>· {niveauLabel}</span>}
+          <div className="mt-3 space-y-1 border-t border-white/10 pt-3">
+            {(country || department) && (
+              <p className="text-[0.7rem] font-medium text-white/50">
+                {[country, department].filter(Boolean).join(" · ")}
+              </p>
+            )}
+            {niveauLabel && <p className="text-[0.7rem] font-medium text-white/50">{niveauLabel}</p>}
           </div>
         )}
 
-        <div className="mt-5 grid grid-cols-3 gap-x-2 gap-y-3 border-t border-white/10 pt-4">
+        <div className="mt-4 grid grid-cols-3 gap-x-2 gap-y-3 border-t border-white/10 pt-4">
           {STAT_ORDER.map((axis) => (
             <div key={axis}>
               <p className="font-display text-lg font-extrabold tabular-nums" style={{ color: style.accent }}>
@@ -133,6 +174,10 @@ export function PlayerCardView({
               </p>
             </div>
           ))}
+        </div>
+
+        <div className="mt-4 border-t border-white/10 pt-3">
+          <StarRow count={style.stars} color={style.accent} />
         </div>
       </div>
     </div>

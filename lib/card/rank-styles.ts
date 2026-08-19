@@ -19,6 +19,8 @@ export interface RankStyle {
   onAccent: string;
   /** Habillage "premium" réservé au rang le plus haut (particules/éclat). */
   premium?: boolean;
+  /** Nombre d'étoiles affichées en bas de la carte (1 à 5, plafonné à partir d'Espoir). */
+  stars: number;
 }
 
 export const RANK_STYLES: Record<RankTier["key"], RankStyle> = {
@@ -27,42 +29,49 @@ export const RANK_STYLES: Record<RankTier["key"], RankStyle> = {
     border: "#8a5a35",
     accent: "#c99a6c",
     onAccent: "#241a12",
+    stars: 1,
   },
   intermediaire: {
     gradient: ["#4a5258", "#262b2e"],
     border: "#9aa5ad",
     accent: "#d4dbe0",
     onAccent: "#20252a",
+    stars: 2,
   },
   avance: {
     gradient: ["#5c4a12", "#2b2205"],
     border: "#c9a227",
     accent: "#f0cc4e",
     onAccent: "#2b2205",
+    stars: 3,
   },
   confirme: {
     gradient: ["#123a24", "#081d13"],
     border: "#1aa350",
     accent: "#3ddc7f",
     onAccent: "#052210",
+    stars: 4,
   },
   espoir: {
     gradient: ["#0f2c52", "#081729"],
     border: "#2f6fed",
     accent: "#6fa2ff",
     onAccent: "#071227",
+    stars: 5,
   },
   pro: {
     gradient: ["#301a52", "#170b29"],
     border: "#7c3aed",
     accent: "#b58bff",
     onAccent: "#160a29",
+    stars: 5,
   },
   elite: {
     gradient: ["#4a1414", "#220707"],
     border: "#dc2626",
     accent: "#ff6b6b",
-    onAccent: "#210606"
+    onAccent: "#210606",
+    stars: 5,
   },
   elite_supreme: {
     gradient: ["#161616", "#000000"],
@@ -70,6 +79,7 @@ export const RANK_STYLES: Record<RankTier["key"], RankStyle> = {
     accent: "#f3d67c",
     onAccent: "#171006",
     premium: true,
+    stars: 5,
   },
 };
 
