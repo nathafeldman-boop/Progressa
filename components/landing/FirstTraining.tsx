@@ -16,7 +16,7 @@ const DELTAS = [
 
 export function FirstTraining() {
   return (
-    <section className="lp-section relative">
+    <section className="lp-section lp-section-alt relative">
       <div className="lp-container grid gap-12 md:grid-cols-2 md:items-center">
         <Reveal className="flex flex-col gap-5">
           <span className="lp-eyebrow">Premier entraînement</span>

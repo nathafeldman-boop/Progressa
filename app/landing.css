@@ -49,6 +49,13 @@
   margin: 0 auto;
 }
 
+/* Alternating tint applied to every other mid-page section, so the scroll
+   reads as a sequence of distinct blocks rather than one repeating pattern
+   on identical white. */
+.lp-section-alt {
+  background: var(--lp-bg-2);
+}
+
 .lp-eyebrow {
   display: inline-flex;
   align-items: center;

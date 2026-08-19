@@ -23,9 +23,21 @@ export function Hero() {
           aria-hidden
         />
 
+        {/* Voile sombre localisé sous le bloc de texte, pour garantir le
+            contraste quelle que soit la zone de la photo derrière (ciel
+            clair, maillot, pelouse...) — pas juste un text-shadow. */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(115deg, rgba(4,12,8,0.72) 0%, rgba(4,12,8,0.5) 32%, rgba(4,12,8,0.15) 58%, transparent 72%)",
+          }}
+          aria-hidden
+        />
+
         <div className="lp-container relative z-10 flex h-full items-end px-5 pb-14 sm:items-center sm:pb-0 md:px-6">
-          <div className="flex max-w-lg flex-col items-start gap-5 text-left" style={{ textShadow: "0 2px 20px rgba(5,15,10,0.5)" }}>
-            <span className="lp-eyebrow text-white/90">Ton parcours commence maintenant</span>
+          <div className="flex max-w-lg flex-col items-start gap-5 text-left" style={{ textShadow: "0 2px 24px rgba(0,0,0,0.65)" }}>
+            <span className="lp-eyebrow text-white">Ton parcours commence maintenant</span>
 
             <div className="flex items-center gap-2.5 rounded-full bg-white/10 py-1.5 pl-1.5 pr-4 backdrop-blur-sm ring-1 ring-white/20">
               <BrianAvatar state="idle" size={32} />
@@ -40,7 +52,7 @@ export function Hero() {
               Deviens meilleur chaque jour.
             </h1>
 
-            <p className="max-w-md text-base text-white/85 md:text-lg">
+            <p className="max-w-md text-base text-white md:text-lg">
               Des entraînements adaptés à ton niveau, une progression mesurable et un joueur qui évolue avec toi.
             </p>
 
@@ -50,7 +62,7 @@ export function Hero() {
               </Link>
               <a
                 href="#comment-ca-marche"
-                className="lp-btn-secondary w-full border-white/30 bg-white/90 text-[var(--lp-text)] sm:w-auto sm:whitespace-nowrap"
+                className="lp-btn-secondary w-full border-white/40 bg-white/10 !text-white backdrop-blur-sm sm:w-auto sm:whitespace-nowrap"
               >
                 Voir comment ça marche
               </a>

@@ -117,7 +117,7 @@ const SCREENS = [
 
 export function Gamification() {
   return (
-    <section className="lp-section relative">
+    <section className="lp-section lp-section-alt relative">
       <div className="lp-container">
         <Reveal className="mx-auto max-w-xl text-center">
           <span className="lp-eyebrow justify-center">Mode carrière</span>

@@ -13,7 +13,7 @@ const MESSAGES = [
 
 export function CoachBrian() {
   return (
-    <section className="lp-section relative overflow-hidden">
+    <section className="lp-section lp-section-alt relative overflow-hidden">
       <div className="lp-container grid gap-12 md:grid-cols-2 md:items-center">
         <Reveal className="order-2 md:order-1">
           <div className="relative mx-auto flex w-full max-w-sm items-end justify-center">
