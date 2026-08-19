@@ -67,6 +67,11 @@ export function composeTestPrompt(): string {
   return "Passe ton test de départ pour découvrir ton niveau.";
 }
 
+/** Écran d'intro du flow de tests plein écran — explique ce qu'on mesure et pourquoi, avant le premier exercice. */
+export function composeTestFlowIntro(firstName: string): string {
+  return `${firstName ? `${firstName}, on` : "On"} va mesurer tes vraies stats avec quelques tests simples, un par un. Fais chaque exercice à fond, je calcule ta carte à partir de tes résultats réels — pas d'approximation.`;
+}
+
 /** Explique pourquoi la carte affiche 0 partout avant le premier test — jamais laisser un 0 sans explication. */
 export function composeZeroOverallMessage(firstName: string): string {
   return `${firstName ? `${firstName}, tu` : "Tu"} es à 0 partout pour l'instant — c'est normal, tu n'as pas encore passé ton test de départ. Fais-le et je calcule tes vraies stats.`;

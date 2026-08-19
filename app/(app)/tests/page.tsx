@@ -2,9 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { TEST_PROTOCOLS, nextEligibleDate } from "@/lib/evaluation-tests";
 import { isInFuture } from "@/lib/time";
-import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
-import { TestSubmitForm } from "@/components/tests/TestSubmitForm";
-import { BrianTip } from "@/components/brian/BrianTip";
+import { TestPlayer, type TestFlowEntry } from "@/components/tests/TestPlayer";
 import { EvaluationTestType } from "@prisma/client";
 
 export default async function TestsPage() {
@@ -21,46 +19,21 @@ export default async function TestsPage() {
     if (!lastByType.has(result.testType)) lastByType.set(result.testType, result);
   }
 
-  return (
-    <div className="mx-auto max-w-md space-y-4 p-4">
-      <h1 className="font-display text-2xl font-extrabold uppercase tracking-wide">Tests d&apos;évaluation</h1>
-      <CardSubtitle>4 tests simples, réalisables seul, pour suivre ta progression réelle.</CardSubtitle>
+  const tests: TestFlowEntry[] = Object.values(TEST_PROTOCOLS).map((protocol) => {
+    const last = lastByType.get(protocol.type);
+    const eligibleAt = last ? nextEligibleDate(last.recordedAt) : null;
+    const locked = isInFuture(eligibleAt);
+    return {
+      type: protocol.type,
+      name: protocol.name,
+      unit: protocol.unit,
+      lowerIsBetter: protocol.lowerIsBetter,
+      protocol: protocol.protocol,
+      lastValue: last?.value ?? null,
+      locked,
+      eligibleAtLabel: locked ? eligibleAt!.toLocaleDateString("fr-FR") : null,
+    };
+  });
 
-      <BrianTip
-        tipKey="tests-intro"
-        text="Ces tests calculent tes vraies stats sur ta carte joueur. Fais-les sérieusement — un seul essai compte par période."
-      />
-
-      {Object.values(TEST_PROTOCOLS).map((protocol) => {
-        const last = lastByType.get(protocol.type);
-        const eligibleAt = last ? nextEligibleDate(last.recordedAt) : null;
-        const isLocked = isInFuture(eligibleAt);
-
-        return (
-          <Card key={protocol.type}>
-            <CardTitle>
-              {protocol.emoji} {protocol.name}
-            </CardTitle>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-[var(--color-text-muted)]">
-              {protocol.protocol.map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ul>
-            {last && (
-              <p className="mt-2 text-sm font-semibold text-[var(--color-primary-strong)]">
-                Dernier résultat: {last.value} {protocol.unit}
-              </p>
-            )}
-            {isLocked ? (
-              <p className="mt-3 text-xs text-[var(--color-text-muted)]">
-                Prochain essai possible le {eligibleAt!.toLocaleDateString("fr-FR")}.
-              </p>
-            ) : (
-              <TestSubmitForm testType={protocol.type} unit={protocol.unit} />
-            )}
-          </Card>
-        );
-      })}
-    </div>
-  );
+  return <TestPlayer tests={tests} firstName={user.firstName} />;
 }
