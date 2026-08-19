@@ -25,7 +25,7 @@ export function ShareCardButton({ shareSlug, firstName }: { shareSlug: string; f
 
   return (
     <Button className="w-full" onClick={share}>
-      📤 Partager ma carte
+      Partager ma carte
     </Button>
   );
 }
