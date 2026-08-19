@@ -40,8 +40,9 @@ export function DashboardHero({
     <div
       className="relative overflow-hidden rounded-[1.75rem] p-5 text-white"
       style={{
-        background: "linear-gradient(160deg, #1fbf63 0%, #0e7a3c 55%, #082f18 130%)",
-        boxShadow: "0 20px 45px -20px rgba(6, 30, 16, 0.6)",
+        background: "linear-gradient(160deg, #22c55e 0%, #0e7a3c 60%, #072a16 130%)",
+        boxShadow:
+          "0 0 0 1px rgba(14,122,60,0.5), 0 30px 60px -18px rgba(6, 30, 16, 0.85), 0 10px 24px -10px rgba(14,122,60,0.55)",
       }}
     >
       <span aria-hidden className="hero-particle absolute left-8 top-12 h-1.5 w-1.5 rounded-full bg-white/50" style={{ animationDelay: "0s" }} />

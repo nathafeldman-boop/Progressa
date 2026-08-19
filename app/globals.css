@@ -223,7 +223,8 @@ button:not(:disabled):active,
   }
 }
 .cta-primary {
-  background: linear-gradient(180deg, #34d67a, #0e7a3c 70%);
+  background: linear-gradient(180deg, #1fbf63, #159650 55%, #0e7a3c);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25) inset, 0 -3px 0 rgba(0, 0, 0, 0.16) inset, 0 12px 22px -8px rgba(6, 30, 16, 0.7);
   animation: cta-glow-pulse 2.6s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {

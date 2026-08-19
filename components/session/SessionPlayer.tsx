@@ -68,13 +68,44 @@ const PHASE_BADGE_STYLE: Record<SessionBlockView["phase"], string> = {
   COOLDOWN: "bg-[#60a5fa]/15 text-[#1d4ed8]",
 };
 
-const DIFFICULTY_OPTIONS: { value: "VERY_EASY" | "EASY" | "MEDIUM" | "HARD" | "VERY_HARD"; label: string }[] = [
-  { value: "VERY_EASY", label: "Très facile" },
-  { value: "EASY", label: "Facile" },
-  { value: "MEDIUM", label: "Moyen" },
-  { value: "HARD", label: "Difficile" },
-  { value: "VERY_HARD", label: "Très difficile" },
+const DIFFICULTY_OPTIONS: { value: "VERY_EASY" | "EASY" | "MEDIUM" | "HARD" | "VERY_HARD"; label: string; color: string }[] = [
+  { value: "VERY_EASY", label: "Très facile", color: "#1aa350" },
+  { value: "EASY", label: "Facile", color: "#7cc576" },
+  { value: "MEDIUM", label: "Moyen", color: "#e0b23f" },
+  { value: "HARD", label: "Difficile", color: "#e08a3f" },
+  { value: "VERY_HARD", label: "Très difficile", color: "#c23b3b" },
 ];
+
+/** Le ressenti de difficulté ajuste directement la génération suivante — mis en valeur pour que le joueur prenne cette question au sérieux. */
+function RatingCard({ onRate }: { onRate: (v: string) => void }) {
+  return (
+    <div className="mt-3 rounded-[var(--radius-card)] border-2 border-[var(--color-primary)] bg-[var(--color-primary-soft)] p-4">
+      <div className="flex items-start gap-2">
+        <BrianAvatar state="talking" size={36} />
+        <p className="text-sm font-semibold text-[var(--color-text)]">
+          Sois honnête sur ce ressenti — c&apos;est ce qui me permet d&apos;ajuster tes prochaines séances et de vraiment
+          te faire progresser.
+        </p>
+      </div>
+      <p className="mt-3 text-center text-sm font-extrabold uppercase tracking-wide text-[var(--color-primary-strong)]">
+        Comment tu as trouvé l&apos;exercice ?
+      </p>
+      <div className="mt-2 grid grid-cols-5 gap-1.5">
+        {DIFFICULTY_OPTIONS.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onRate(opt.value)}
+            className="rounded-[var(--radius-control)] px-1 py-2 text-center text-[0.65rem] font-bold leading-tight text-white"
+            style={{ background: opt.color }}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 type BlockPhaseState = "idle" | "active" | "rating" | "done";
 
@@ -518,7 +549,7 @@ function ActiveExerciseScreen({
           />
         )}
         {state.phase === "idle" && frames ? (
-          <div className="mx-auto mt-3 w-full max-w-xs">
+          <div className="mx-auto mt-3 w-full">
             <ExerciseFrameViewer sequence={frames} onReady={onStart} />
             <button
               type="button"
@@ -529,7 +560,7 @@ function ActiveExerciseScreen({
             </button>
           </div>
         ) : (
-          <div className="relative mx-auto mt-3 aspect-square w-full max-w-xs overflow-hidden rounded-[var(--radius-card)] bg-[var(--color-surface-alt)]">
+          <div className="relative mx-auto mt-3 h-[62vh] min-h-[420px] w-full overflow-hidden rounded-[var(--radius-card)] bg-[var(--color-surface-alt)]">
             {frames ? (
               <ExerciseFrameLoop sequence={frames} />
             ) : EXERCISE_VIDEO[block.exercise.slug] ? (
@@ -556,6 +587,8 @@ function ActiveExerciseScreen({
           </div>
         )}
 
+        {state.phase === "rating" && <RatingCard onRate={onRate} />}
+
         <CardTitle className="mt-4 text-center text-xl">
           {block.exercise.emoji} {block.exercise.name}
         </CardTitle>
@@ -579,24 +612,6 @@ function ActiveExerciseScreen({
         </div>
         {variant === "easy" && <p className="mt-2 text-center text-sm text-[var(--color-text-muted)]">{block.exercise.easyVariant}</p>}
         {variant === "hard" && <p className="mt-2 text-center text-sm text-[var(--color-text-muted)]">{block.exercise.hardVariant}</p>}
-
-        {state.phase === "rating" && (
-          <div className="mt-5 border-t border-[var(--color-border)] pt-4">
-            <p className="text-center text-sm font-semibold">Comment tu as trouvé l&apos;exercice ?</p>
-            <div className="mt-2 grid grid-cols-5 gap-1">
-              {DIFFICULTY_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => onRate(opt.value)}
-                  className="rounded-[var(--radius-control)] border border-[var(--color-border)] px-1 py-2 text-center text-[0.65rem] font-semibold leading-tight hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-soft)]"
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {state.phase === "done" && state.reaction && (
           <BrianMessageCard

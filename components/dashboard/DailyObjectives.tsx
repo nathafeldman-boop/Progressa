@@ -13,14 +13,14 @@ export function DailyObjectives({ objectives }: { objectives: DailyObjective[] }
           <li key={o.id} className="flex items-center gap-2 text-sm">
             <span
               className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs ${
-                o.done ? "bg-[var(--color-primary)] text-[var(--color-on-primary)]" : "bg-white/60 text-transparent"
+                o.done
+                  ? "bg-[var(--color-primary)] text-[var(--color-on-primary)]"
+                  : "border-2 border-[var(--color-border)] bg-white/60 text-transparent"
               }`}
             >
               ✓
             </span>
-            <span className={o.done ? "text-[var(--color-primary-strong)] line-through" : "text-[var(--color-text)]"}>
-              {o.label}
-            </span>
+            <span className="text-[var(--color-text)]">{o.label}</span>
           </li>
         ))}
       </ul>
