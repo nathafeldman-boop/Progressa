@@ -11,6 +11,7 @@ import { CalibratingCardTeaser } from "@/components/card/CalibratingCardTeaser";
 import { ShareCardButton } from "@/components/card/ShareCardButton";
 import { TargetedTrainingPicker } from "@/components/dashboard/TargetedTrainingPicker";
 import { BrianMessageCard } from "@/components/brian/BrianMessageCard";
+import { BrianAvatar } from "@/components/brian/BrianAvatar";
 import { composeZeroOverallMessage } from "@/lib/brian/messages";
 import type { PlayerCardStats } from "@/lib/player-card";
 
@@ -107,14 +108,14 @@ export default async function ProgressionPage() {
       <div className="grid grid-cols-2 gap-3">
         <Link href="/classement">
           <Card className="flex h-full flex-col items-center gap-1 p-4 text-center">
-            <span className="text-2xl">🏆</span>
+            <BrianAvatar state="confident" size={40} />
             <CardTitle className="text-sm">Classement</CardTitle>
             <CardSubtitle className="text-xs">Vs. les autres joueurs</CardSubtitle>
           </Card>
         </Link>
         <Link href="/tests">
           <Card className="flex h-full flex-col items-center gap-1 p-4 text-center">
-            <span className="text-2xl">📊</span>
+            <BrianAvatar state="thinking" size={40} />
             <CardTitle className="text-sm">Tests</CardTitle>
             <CardSubtitle className="text-xs">{testCount > 0 ? `${testCount} passés` : "Aucun test"}</CardSubtitle>
           </Card>
@@ -123,9 +124,12 @@ export default async function ProgressionPage() {
 
       <Link href="/journal" className="block">
         <Card className="flex items-center justify-between gap-3">
-          <div>
-            <CardTitle className="text-base">📓 Journal</CardTitle>
-            <CardSubtitle>Check-in, blessures, matchs, objectifs</CardSubtitle>
+          <div className="flex items-center gap-2">
+            <BrianAvatar state="idle" size={28} />
+            <div>
+              <CardTitle className="text-base">Journal</CardTitle>
+              <CardSubtitle>Check-in, blessures, matchs, objectifs</CardSubtitle>
+            </div>
           </div>
           <span className="text-xl">→</span>
         </Card>

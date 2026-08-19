@@ -25,7 +25,8 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
           background: "#ffffff",
         }}
       >
-        <span style={{ fontSize: "2.5rem" }}>😕</span>
+        {/* eslint-disable-next-line @next/next/no-img-element -- root error boundary: doit rester minimal, pas de next/image */}
+        <img src="/brian/coach-brian-surpris.png" alt="" width={72} height={72} style={{ borderRadius: "999px" }} />
         <h1 style={{ fontSize: "1.25rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.02em" }}>
           Un problème est survenu
         </h1>

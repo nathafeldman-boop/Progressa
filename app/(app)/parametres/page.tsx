@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
+import { BrianAvatar, type BrianState } from "@/components/brian/BrianAvatar";
 
-const LINKS = [
-  { href: "/parametres/abonnement", emoji: "💳", label: "Abonnement", desc: "Passer Premium, gérer mon paiement" },
-  { href: "/parametres/parrainage", emoji: "🎁", label: "Parrainage", desc: "Invite tes potes, gagne du Premium" },
-  { href: "/parametres/compte", emoji: "👤", label: "Compte", desc: "Confidentialité, suppression du compte" },
-  { href: "/confidentialite", emoji: "🔒", label: "Confidentialité", desc: "Notre politique en langage simple" },
+const LINKS: { href: string; brianState: BrianState; label: string; desc: string }[] = [
+  { href: "/parametres/abonnement", brianState: "confident", label: "Abonnement", desc: "Passer Premium, gérer mon paiement" },
+  { href: "/parametres/parrainage", brianState: "happy", label: "Parrainage", desc: "Invite tes potes, gagne du Premium" },
+  { href: "/parametres/compte", brianState: "idle", label: "Compte", desc: "Confidentialité, suppression du compte" },
+  { href: "/confidentialite", brianState: "thinking", label: "Confidentialité", desc: "Notre politique en langage simple" },
 ];
 
 export default function ParametresPage() {
@@ -15,7 +16,7 @@ export default function ParametresPage() {
       {LINKS.map((link) => (
         <Link key={link.href} href={link.href}>
           <Card className="flex items-center gap-3">
-            <span className="text-2xl">{link.emoji}</span>
+            <BrianAvatar state={link.brianState} size={36} />
             <div>
               <CardTitle className="text-base">{link.label}</CardTitle>
               <CardSubtitle>{link.desc}</CardSubtitle>

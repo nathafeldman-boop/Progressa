@@ -12,6 +12,7 @@ import { TargetedTrainingPicker } from "@/components/dashboard/TargetedTrainingP
 import { POSITION_LABELS, WEEKDAY_LABELS } from "@/lib/labels";
 import { getAgeCategory } from "@/lib/age-category";
 import { ensureTodayObjectives } from "@/lib/brian/daily-objectives";
+import { BrianAvatar } from "@/components/brian/BrianAvatar";
 
 export default async function DashboardPage() {
   const user = await getCurrentInternalUser();
@@ -46,7 +47,9 @@ export default async function DashboardPage() {
   return (
     <div className="mx-auto max-w-md space-y-4 p-4">
       <div>
-        <h1 className="font-display text-2xl font-extrabold uppercase tracking-wide">Salut {user.firstName} 👋</h1>
+        <h1 className="flex items-center gap-2 font-display text-2xl font-extrabold uppercase tracking-wide">
+          Salut {user.firstName} <BrianAvatar state="happy" size={28} />
+        </h1>
         {profile && (
           <div className="mt-2 flex flex-wrap gap-2">
             {ageCategory && <Chip>{ageCategory.label}</Chip>}
@@ -77,7 +80,7 @@ export default async function DashboardPage() {
                 </p>
                 <p className="font-display text-sm font-bold text-[var(--color-text)]">Voir</p>
               </div>
-              <span className="text-2xl">🏆</span>
+              <BrianAvatar state="confident" size={32} />
             </Card>
           </Link>
         </div>

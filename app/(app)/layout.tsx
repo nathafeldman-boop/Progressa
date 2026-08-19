@@ -2,14 +2,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { BrianFab } from "@/components/brian/BrianFab";
-import { BrianAvatar } from "@/components/brian/BrianAvatar";
+import { BrianAvatar, type BrianState } from "@/components/brian/BrianAvatar";
 import { APP_NAME } from "@/lib/app-config";
 
-const NAV_ITEMS = [
-  { href: "/dashboard", label: "Séances", emoji: "🏋️" },
-  { href: "/coach", label: "Coach", emoji: null },
-  { href: "/progression", label: "Progression", emoji: "📈" },
-  { href: "/parametres", label: "Réglages", emoji: "⚙️" },
+/**
+ * Une pose Coach Brian fixe par onglet (jamais d'emoji, jamais aléatoire —
+ * toujours la même pose pour un même onglet).
+ */
+const NAV_ITEMS: { href: string; label: string; brianState: BrianState }[] = [
+  { href: "/dashboard", label: "Séances", brianState: "motivated" },
+  { href: "/coach", label: "Coach", brianState: "idle" },
+  { href: "/progression", label: "Progression", brianState: "confident" },
+  { href: "/parametres", label: "Réglages", brianState: "thinking" },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -34,11 +38,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             href={item.href}
             className="flex flex-col items-center gap-0.5 px-2 py-1 text-xs font-semibold text-[var(--color-text-muted)]"
           >
-            {item.emoji ? (
-              <span className="text-lg">{item.emoji}</span>
-            ) : (
-              <BrianAvatar state="idle" size={22} />
-            )}
+            <BrianAvatar state={item.brianState} size={22} />
             {item.label}
           </Link>
         ))}
