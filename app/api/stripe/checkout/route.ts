@@ -6,9 +6,6 @@ import { getStripeClient, STRIPE_PRICE_IDS } from "@/lib/stripe";
 
 const bodySchema = z.object({
   plan: z.enum(["MONTHLY", "ANNUAL"]),
-  // Un mineur ne peut pas payer lui-même: un parent/tuteur doit confirmer
-  // explicitement avant qu'on ouvre la session de paiement (section 7).
-  parentConfirmed: z.boolean().optional(),
 });
 
 /**
@@ -23,13 +20,6 @@ export async function POST(request: Request) {
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: "invalid_payload" }, { status: 400 });
-
-  if (user.isMinor && !parsed.data.parentConfirmed) {
-    return NextResponse.json({ error: "parent_confirmation_required" }, { status: 400 });
-  }
-  if (user.isMinor && parsed.data.parentConfirmed && !user.parentConsentAt) {
-    await prisma.user.update({ where: { id: user.id }, data: { parentConsentAt: new Date() } });
-  }
 
   const priceId = parsed.data.plan === "MONTHLY" ? STRIPE_PRICE_IDS.MONTHLY : STRIPE_PRICE_IDS.ANNUAL;
   if (!priceId) {
@@ -49,7 +39,7 @@ export async function POST(request: Request) {
     cancel_url: `${origin}/parametres/abonnement?canceled=1`,
     client_reference_id: user.id,
     subscription_data: {
-      metadata: { userId: user.id, payerIsParent: String(user.isMinor) },
+      metadata: { userId: user.id },
     },
     metadata: { userId: user.id, plan: parsed.data.plan },
   });

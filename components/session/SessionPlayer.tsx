@@ -59,6 +59,12 @@ const PHASE_LABELS: Record<SessionBlockView["phase"], string> = {
   COOLDOWN: "Retour au calme",
 };
 
+const PHASE_BADGE_STYLE: Record<SessionBlockView["phase"], string> = {
+  WARMUP: "bg-[#fb923c]/15 text-[#c2410c]",
+  MAIN: "bg-[var(--color-primary-soft)] text-[var(--color-primary-strong)]",
+  COOLDOWN: "bg-[#60a5fa]/15 text-[#1d4ed8]",
+};
+
 const DIFFICULTY_OPTIONS: { value: "VERY_EASY" | "EASY" | "MEDIUM" | "HARD" | "VERY_HARD"; label: string }[] = [
   { value: "VERY_EASY", label: "Très facile" },
   { value: "EASY", label: "Facile" },
@@ -481,9 +487,16 @@ function ActiveExerciseScreen({
           ✕
         </button>
         <div className="flex-1">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
-            Exercice {index + 1}/{total} · {PHASE_LABELS[block.phase]}
-          </p>
+          <div className="flex items-center gap-2">
+            <span
+              className={`rounded-full px-2 py-0.5 text-[0.65rem] font-extrabold uppercase tracking-wide ${PHASE_BADGE_STYLE[block.phase]}`}
+            >
+              {PHASE_LABELS[block.phase]}
+            </span>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+              Exercice {index + 1}/{total}
+            </p>
+          </div>
           <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-surface-alt)]">
             <div
               className="h-full rounded-full bg-[var(--color-primary)] transition-[width]"

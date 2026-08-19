@@ -14,6 +14,7 @@ import { getAgeCategory } from "@/lib/age-category";
 import { ensureTodayObjectives } from "@/lib/brian/daily-objectives";
 import { BrianAvatar } from "@/components/brian/BrianAvatar";
 import { BrianTip } from "@/components/brian/BrianTip";
+import { RankCardBadge } from "@/components/card/RankCardBadge";
 import { todayAsWeekday } from "@/lib/week";
 
 export default async function DashboardPage() {
@@ -44,7 +45,7 @@ export default async function DashboardPage() {
 
   const premium = isPremiumActive(subscription);
   const ageCategory = profile ? getAgeCategory(profile.birthYear) : null;
-  const cardStats = playerCard?.stats as { overall: number; rankTier?: string } | undefined;
+  const cardStats = playerCard?.stats as { overall: number; rankTier?: string; rankKey?: string } | undefined;
   const todaySession = program?.sessions.find((s) => s.dayOfWeek === todayAsWeekday()) ?? null;
 
   return (
@@ -72,7 +73,7 @@ export default async function DashboardPage() {
                   {cardStats.overall} OVR
                 </p>
               </div>
-              <span className="text-2xl">🃏</span>
+              <RankCardBadge rankKey={cardStats.rankKey} size={26} />
             </Card>
           </Link>
           <Link href="/classement">

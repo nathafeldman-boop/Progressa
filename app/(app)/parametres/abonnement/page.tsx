@@ -30,14 +30,7 @@ export default async function AbonnementPage() {
         )}
       </Card>
 
-      {user.isMinor && !user.parentConsentAt && (
-        <Card className="border-[var(--color-warning)] bg-[var(--color-surface-alt)] text-sm">
-          Ce compte est mineur: l&apos;abonnement doit être souscrit par un parent ou tuteur, qui devra confirmer avant
-          le paiement.
-        </Card>
-      )}
-
-      <SubscriptionActions hasStripeCustomer={!!subscription?.stripeCustomerId} isMinor={user.isMinor} />
+      <SubscriptionActions hasStripeCustomer={!!subscription?.stripeCustomerId} />
 
       <p className="text-center text-xs text-[var(--color-text-muted)]">
         Paiement direct, sans essai gratuit. Renouvellement automatique. Résiliation en 1 clic.
