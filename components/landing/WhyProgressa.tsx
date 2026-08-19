@@ -8,7 +8,7 @@ export function WhyProgressa() {
     <section className="lp-section relative">
       <div className="lp-container">
         <Reveal className="mx-auto max-w-xl text-center">
-          <span className="lp-eyebrow justify-center">🤔 Pourquoi {APP_NAME} ?</span>
+          <span className="lp-eyebrow justify-center">Pourquoi {APP_NAME} ?</span>
           <h2 className="lp-h2 mt-3">Des exercices, tu peux en trouver partout.</h2>
           <p className="mt-3 text-[var(--lp-text-muted)]">
             Le problème, c&apos;est de savoir lesquels faire, quand les faire, et comment mesurer tes progrès.

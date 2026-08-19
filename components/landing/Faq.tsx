@@ -46,7 +46,7 @@ export function Faq() {
     <section id="faq" className="lp-section relative scroll-mt-16">
       <div className="lp-container max-w-2xl">
         <Reveal className="text-center">
-          <span className="lp-eyebrow justify-center">❓ Questions fréquentes</span>
+          <span className="lp-eyebrow justify-center">Questions fréquentes</span>
           <h2 className="lp-h2 mt-3">Tout ce qu&apos;il faut savoir.</h2>
         </Reveal>
 

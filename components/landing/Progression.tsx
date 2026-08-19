@@ -23,7 +23,7 @@ export function Progression() {
 
       <div className="lp-container relative">
         <Reveal className="mx-auto max-w-xl text-center">
-          <span className="lp-eyebrow justify-center">📅 Progression</span>
+          <span className="lp-eyebrow justify-center">Progression</span>
           <h2 className="lp-h2 mt-3">Imagine ta carte dans 30 jours.</h2>
           <p className="mt-3 text-[var(--lp-text-muted)]">
             Un exemple de progression pour un joueur qui enchaîne ses séances chaque semaine — pas une promesse, un

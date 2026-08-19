@@ -19,7 +19,7 @@ export function FirstTraining() {
     <section className="lp-section relative">
       <div className="lp-container grid gap-12 md:grid-cols-2 md:items-center">
         <Reveal className="flex flex-col gap-5">
-          <span className="lp-eyebrow">🎬 Premier entraînement</span>
+          <span className="lp-eyebrow">Premier entraînement</span>
           <h2 className="lp-h2">Commence par nous montrer ce que tu sais faire.</h2>
           <p className="max-w-md text-[var(--lp-text-muted)]">
             Ton premier exercice, gratuit, sert de point de départ : il pose les toutes premières statistiques de ta

@@ -25,9 +25,7 @@ export function Hero() {
 
         <div className="lp-container relative z-10 flex h-full items-end px-5 pb-14 sm:items-center sm:pb-0 md:px-6">
           <div className="flex max-w-lg flex-col items-start gap-5 text-left" style={{ textShadow: "0 2px 20px rgba(5,15,10,0.5)" }}>
-            <span className="lp-eyebrow text-white/90">
-              <span aria-hidden>⚽</span> Ton parcours commence maintenant
-            </span>
+            <span className="lp-eyebrow text-white/90">Ton parcours commence maintenant</span>
 
             <div className="flex items-center gap-2.5 rounded-full bg-white/10 py-1.5 pl-1.5 pr-4 backdrop-blur-sm ring-1 ring-white/20">
               <BrianAvatar state="idle" size={32} />

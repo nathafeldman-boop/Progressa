@@ -120,7 +120,7 @@ export function Gamification() {
     <section className="lp-section relative">
       <div className="lp-container">
         <Reveal className="mx-auto max-w-xl text-center">
-          <span className="lp-eyebrow justify-center">🏆 Mode carrière</span>
+          <span className="lp-eyebrow justify-center">Mode carrière</span>
           <h2 className="lp-h2 mt-3">Chaque jour fait avancer ton dossard.</h2>
           <p className="mt-3 text-[var(--lp-text-muted)]">
             Objectifs quotidiens, séries de jours, niveaux et classement — ta progression se joue comme une vraie

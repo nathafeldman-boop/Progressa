@@ -56,7 +56,7 @@ export function CoachBrian() {
         </Reveal>
 
         <Reveal delayMs={100} className="order-1 flex flex-col gap-5 md:order-2">
-          <span className="lp-eyebrow">🧑‍🏫 Coach Brian</span>
+          <span className="lp-eyebrow">Coach Brian</span>
           <h2 className="lp-h2">Ton coach. Ton parcours. Tes objectifs.</h2>
           <p className="max-w-md text-[var(--lp-text-muted)]">
             Brian suit ta progression, repère tes points forts et tes points faibles, et ajuste ton prochain

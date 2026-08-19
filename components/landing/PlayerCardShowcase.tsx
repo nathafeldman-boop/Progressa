@@ -25,7 +25,7 @@ export function PlayerCardShowcase() {
     <section className="lp-section relative">
       <div className="lp-container grid gap-12 md:grid-cols-[1fr_1.1fr] md:items-center">
         <Reveal className="flex flex-col gap-5">
-          <span className="lp-eyebrow">🃏 Carte joueur</span>
+          <span className="lp-eyebrow">Carte joueur</span>
           <h2 className="lp-h2">Ton joueur évolue avec toi.</h2>
           <p className="max-w-md text-[var(--lp-text-muted)]">
             Chaque entraînement complété, chaque test réussi met à jour tes statistiques. Ta carte n&apos;est pas un
