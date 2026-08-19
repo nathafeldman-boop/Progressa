@@ -20,7 +20,7 @@ export const THEME_EMOJI: Record<TrainingTheme, string> = {
   muscu: "💪",
 };
 
-const THEME_MAIN_CATEGORIES: Record<TrainingTheme, ExerciseCategory[]> = {
+export const THEME_MAIN_CATEGORIES: Record<TrainingTheme, ExerciseCategory[]> = {
   motricite: [ExerciseCategory.EXPLOSIVENESS, ExerciseCategory.CARDIO],
   ballon: [ExerciseCategory.TECHNIQUE],
   muscu: [ExerciseCategory.STRENGTH],
@@ -61,7 +61,7 @@ function genericInstruction(exercise: ExerciseSeed): string {
  * automatiquement. Sélection déterministe (pas d'appel IA: c'est un choix
  * explicite du joueur, pas une génération à personnaliser).
  */
-export async function buildTargetedSession(userId: string, theme: TrainingTheme) {
+export async function buildTargetedSession(userId: string, theme: TrainingTheme, chosenSlug?: string) {
   const [profile, subscription] = await Promise.all([
     prisma.playerProfile.findUnique({ where: { userId } }),
     prisma.subscription.findUnique({ where: { userId } }),
@@ -98,11 +98,20 @@ export async function buildTargetedSession(userId: string, theme: TrainingTheme)
   if (warmup) used.add(warmup.slug);
 
   const mainExercises: ExerciseSeed[] = [];
-  for (const exercise of mainPool) {
-    if (mainExercises.length >= 4) break;
-    if (used.has(exercise.slug)) continue;
-    mainExercises.push(exercise);
-    used.add(exercise.slug);
+  if (chosenSlug) {
+    // Choix explicite du joueur dans le catalogue à 5 exercices — un seul
+    // exercice principal, pas de complément automatique.
+    const chosen = mainPool.find((e) => e.slug === chosenSlug);
+    if (!chosen) return null;
+    mainExercises.push(chosen);
+    used.add(chosen.slug);
+  } else {
+    for (const exercise of mainPool) {
+      if (mainExercises.length >= 4) break;
+      if (used.has(exercise.slug)) continue;
+      mainExercises.push(exercise);
+      used.add(exercise.slug);
+    }
   }
 
   const cooldown = pick(cooldownPool, used);

@@ -5,6 +5,7 @@ import { buildTargetedSession, TRAINING_THEMES } from "@/lib/programs/build-targ
 
 const bodySchema = z.object({
   theme: z.enum(TRAINING_THEMES),
+  exerciseSlug: z.string().min(1).optional(),
 });
 
 export async function POST(request: Request) {
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: "invalid_payload" }, { status: 400 });
 
-  const session = await buildTargetedSession(user.id, parsed.data.theme);
+  const session = await buildTargetedSession(user.id, parsed.data.theme, parsed.data.exerciseSlug);
   if (!session) return NextResponse.json({ error: "no_matching_exercises" }, { status: 422 });
 
   return NextResponse.json({ sessionId: session.id });
