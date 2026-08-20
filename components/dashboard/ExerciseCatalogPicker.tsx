@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
 import { Card, CardSubtitle } from "@/components/ui/Card";
 import { BrianTip } from "@/components/brian/BrianTip";
 import { THEME_LABELS, type TrainingTheme } from "@/lib/programs/build-targeted-session";
 import type { TargetedCatalogEntry } from "@/lib/programs/get-targeted-catalog";
+import { EXERCISE_FRAMES } from "@/lib/exercises/exercise-frames";
 
 function intensityLabel(value: number): string {
   if (value <= 3) return "Faible";
@@ -17,6 +20,31 @@ function IntensityBadge({ value }: { value: number }) {
   return (
     <span className="inline-block rounded-full border border-[var(--color-border)] px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
       Intensité : {intensityLabel(value)}
+    </span>
+  );
+}
+
+function LockBadge({ reason }: { reason: "premium" | "equipment" }) {
+  return (
+    <span className="inline-block rounded-full border border-[var(--color-border)] bg-[var(--color-surface-alt)] px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+      {reason === "premium" ? "Premium" : "Matériel requis"}
+    </span>
+  );
+}
+
+/** Vignette de l'exercice: la première pose Coach Brian quand elle existe, sinon un monogramme. */
+function ExerciseLogo({ slug, name }: { slug: string; name: string }) {
+  const firstPose = EXERCISE_FRAMES[slug]?.poses[0];
+  if (firstPose) {
+    return (
+      <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)]">
+        <Image src={firstPose.image} alt="" fill sizes="44px" className="object-cover" unoptimized />
+      </span>
+    );
+  }
+  return (
+    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--color-primary-soft)] font-display text-base font-extrabold text-[var(--color-primary-strong)]">
+      {name.charAt(0).toUpperCase()}
     </span>
   );
 }
@@ -38,6 +66,15 @@ function ChooseButton({ onClick, disabled, loading }: { onClick: () => void; dis
         </svg>
       )}
     </button>
+  );
+}
+
+function LockIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <rect x="3.5" y="7" width="9" height="6.5" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
   );
 }
 
@@ -115,18 +152,41 @@ export function ExerciseCatalogPicker({ theme }: { theme: TrainingTheme }) {
           key={entry.slug}
           className="flex items-center gap-3 rounded-[var(--radius-card)] border border-[var(--color-border)]/70 bg-[var(--color-surface)] p-4"
         >
+          <ExerciseLogo slug={entry.slug} name={entry.name} />
           <div className="min-w-0 flex-1 space-y-1.5">
             <h3 className="font-display text-sm font-bold uppercase tracking-wide text-[var(--color-text)]">
               {entry.name}
             </h3>
             <p className="line-clamp-2 text-sm text-[var(--color-text-muted)]">{entry.description}</p>
-            <IntensityBadge value={entry.difficulty} />
+            <div className="flex flex-wrap items-center gap-1.5">
+              <IntensityBadge value={entry.difficulty} />
+              {entry.locked && <LockBadge reason={entry.lockReason ?? "equipment"} />}
+            </div>
           </div>
-          <ChooseButton
-            onClick={() => choose(entry.slug)}
-            disabled={picking !== null}
-            loading={picking === entry.slug}
-          />
+          {entry.locked ? (
+            entry.lockReason === "premium" ? (
+              <Link
+                href="/parametres/abonnement"
+                aria-label="Débloquer avec Premium"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-muted)]"
+              >
+                <LockIcon />
+              </Link>
+            ) : (
+              <span
+                aria-label="Matériel manquant"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-muted)] opacity-60"
+              >
+                <LockIcon />
+              </span>
+            )
+          ) : (
+            <ChooseButton
+              onClick={() => choose(entry.slug)}
+              disabled={picking !== null}
+              loading={picking === entry.slug}
+            />
+          )}
         </div>
       ))}
     </div>
