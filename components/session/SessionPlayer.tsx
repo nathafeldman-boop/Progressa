@@ -264,7 +264,7 @@ export function SessionPlayer({
     if (totalCompleted === 1) {
       setPendingSurvey({
         surveyKey: "comment_connu",
-        question: "Comment as-tu connu [APP] ?",
+        question: "Comment as-tu connu Progressa ?",
         options: ["Un ami", "Réseaux sociaux", "Mon club", "Recherche Google", "Autre"],
       });
     } else if (showPremiumBanner && (totalCompleted === 2 || totalCompleted === 3)) {

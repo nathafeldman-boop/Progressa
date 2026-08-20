@@ -13,4 +13,4 @@ export function getResendClient(): Resend {
   return cached;
 }
 
-export const EMAIL_FROM = process.env.EMAIL_FROM ?? "[APP] <no-reply@example.com>";
+export const EMAIL_FROM = process.env.EMAIL_FROM ?? "Progressa <no-reply@example.com>";

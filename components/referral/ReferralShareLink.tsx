@@ -10,7 +10,7 @@ export function ReferralShareLink({ code }: { code: string }) {
   async function share() {
     if (navigator.share) {
       try {
-        await navigator.share({ url, title: "Rejoins-moi sur [APP]" });
+        await navigator.share({ url, title: "Rejoins-moi sur Progressa" });
         return;
       } catch {
         // annulé ou non supporté — on retombe sur la copie du lien

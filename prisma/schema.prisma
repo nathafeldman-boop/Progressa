@@ -1,4 +1,4 @@
-// [APP] — schema Prisma
+// Progressa — schema Prisma
 //
 // Note: la base de données de production et le système d'affiliation créateurs
 // existent déjà ailleurs et seront réimportés tel quel (migration de données,

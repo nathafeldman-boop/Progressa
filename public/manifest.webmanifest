@@ -1,6 +1,6 @@
 {
-  "name": "[APP]",
-  "short_name": "[APP]",
+  "name": "Progressa",
+  "short_name": "Progressa",
   "description": "Ton préparateur physique et technique, entre les entraînements club.",
   "start_url": "/dashboard",
   "scope": "/",

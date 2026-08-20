@@ -18,7 +18,7 @@ export default async function ClassementPage() {
       <div className="mx-auto max-w-md p-4">
         <Card className="p-6 text-center">
           <CardTitle>Le classement est une fonctionnalité Premium</CardTitle>
-          <CardSubtitle className="mt-2">Vois où tu te situes face aux autres joueurs de [APP].</CardSubtitle>
+          <CardSubtitle className="mt-2">Vois où tu te situes face aux autres joueurs de Progressa.</CardSubtitle>
           <Link href="/parametres/abonnement" className="mt-4 block">
             <Button className="w-full">Découvrir Premium</Button>
           </Link>

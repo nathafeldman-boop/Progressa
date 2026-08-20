@@ -1,13 +1,9 @@
-# [APP]
+# Progressa
 
 Préparateur physique et technique personnel pour jeunes footballeurs (13-18 ans,
 extensible aux adultes amateurs). L'app génère un programme hebdomadaire
 personnalisé par IA, toujours en complément — jamais en remplacement — du
 calendrier club.
-
-> Le nom de l'app n'est pas encore choisi. `[APP]` est un placeholder utilisé
-> partout dans le code (`lib/app-config.ts`) — remplace cette seule constante
-> une fois le nom validé.
 
 ## Stack
 
