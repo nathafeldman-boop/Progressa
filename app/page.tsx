@@ -1,5 +1,6 @@
 import "./landing.css";
 import { Hero } from "@/components/landing/Hero";
+import { DemoVideo } from "@/components/landing/DemoVideo";
 import { PlayerCardShowcase } from "@/components/landing/PlayerCardShowcase";
 import { CoachBrian } from "@/components/landing/CoachBrian";
 import { HowItWorks } from "@/components/landing/HowItWorks";
@@ -16,6 +17,7 @@ export default function Home() {
   return (
     <main className="lp flex flex-1 flex-col">
       <Hero />
+      <DemoVideo />
       <PlayerCardShowcase />
       <CoachBrian />
       <HowItWorks />
