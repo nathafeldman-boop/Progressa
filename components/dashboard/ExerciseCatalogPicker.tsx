@@ -2,24 +2,42 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardTitle, CardSubtitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { Card, CardSubtitle } from "@/components/ui/Card";
 import { BrianTip } from "@/components/brian/BrianTip";
 import { THEME_LABELS, type TrainingTheme } from "@/lib/programs/build-targeted-session";
 import type { TargetedCatalogEntry } from "@/lib/programs/get-targeted-catalog";
 
-function DifficultyDots({ value }: { value: number }) {
-  const filled = Math.round(value / 2); // 1-10 -> 1-5 pastilles
+function intensityLabel(value: number): string {
+  if (value <= 3) return "Faible";
+  if (value <= 6) return "Modérée";
+  return "Élevée";
+}
+
+function IntensityBadge({ value }: { value: number }) {
   return (
-    <div className="flex gap-0.5" aria-label={`Difficulté ${value} sur 10`}>
-      {Array.from({ length: 5 }, (_, i) => (
-        <span
-          key={i}
-          className="h-1.5 w-4 rounded-full"
-          style={{ background: i < filled ? "var(--color-primary)" : "var(--color-border)" }}
-        />
-      ))}
-    </div>
+    <span className="inline-block rounded-full border border-[var(--color-border)] px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+      Intensité : {intensityLabel(value)}
+    </span>
+  );
+}
+
+function ChooseButton({ onClick, disabled, loading }: { onClick: () => void; disabled: boolean; loading: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label="Choisir cet exercice"
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] transition-transform disabled:opacity-50 active:scale-95"
+    >
+      {loading ? (
+        <span className="text-xs">…</span>
+      ) : (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
+    </button>
   );
 }
 
@@ -66,7 +84,7 @@ export function ExerciseCatalogPicker({ theme }: { theme: TrainingTheme }) {
 
   return (
     <div className="space-y-4">
-      <div>
+      <div className="pb-1">
         <h1 className="font-display text-2xl font-extrabold uppercase tracking-wide">{THEME_LABELS[theme]}</h1>
         <p className="mt-1 text-sm text-[var(--color-text-muted)]">
           5 exercices dosés pour ton niveau actuel. Choisis celui que tu veux travailler.
@@ -93,19 +111,23 @@ export function ExerciseCatalogPicker({ theme }: { theme: TrainingTheme }) {
       )}
 
       {entries?.map((entry) => (
-        <Card key={entry.slug} className="flex items-center gap-3">
-          <span className="text-2xl">{entry.emoji}</span>
-          <div className="min-w-0 flex-1">
-            <CardTitle className="text-base">{entry.name}</CardTitle>
-            <CardSubtitle className="mt-0.5 line-clamp-2">{entry.description}</CardSubtitle>
-            <div className="mt-1.5">
-              <DifficultyDots value={entry.difficulty} />
-            </div>
+        <div
+          key={entry.slug}
+          className="flex items-center gap-3 rounded-[var(--radius-card)] border border-[var(--color-border)]/70 bg-[var(--color-surface)] p-4"
+        >
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <h3 className="font-display text-sm font-bold uppercase tracking-wide text-[var(--color-text)]">
+              {entry.name}
+            </h3>
+            <p className="line-clamp-2 text-sm text-[var(--color-text-muted)]">{entry.description}</p>
+            <IntensityBadge value={entry.difficulty} />
           </div>
-          <Button onClick={() => choose(entry.slug)} disabled={picking !== null}>
-            {picking === entry.slug ? "…" : "Choisir"}
-          </Button>
-        </Card>
+          <ChooseButton
+            onClick={() => choose(entry.slug)}
+            disabled={picking !== null}
+            loading={picking === entry.slug}
+          />
+        </div>
       ))}
     </div>
   );
