@@ -164,4 +164,27 @@ export const EXERCISE_FRAMES: Partial<Record<string, ExerciseFrameSequence>> = {
       { image: "/exercises/frames/montees-marche-explosives/pose-4.png", caption: "Montée explosive côté gauche, alterne le rythme." },
     ],
   },
+  "slalom-plots-serre": {
+    poses: [
+      { image: "/exercises/frames/slalom-plots-serre/pose-1.png", caption: "Touche le ballon avec l'intérieur du pied fort à chaque plot." },
+      { image: "/exercises/frames/slalom-plots-serre/pose-2.png", caption: "Passe à l'extérieur du pied fort au plot suivant." },
+      { image: "/exercises/frames/slalom-plots-serre/pose-3.png", caption: "Accélère une fois sorti du dernier plot." },
+    ],
+  },
+  "course-cote-courte": {
+    poses: [
+      { image: "/exercises/frames/course-cote-courte/pose-1.png", caption: "Position de départ, en bas de la pente." },
+      { image: "/exercises/frames/course-cote-courte/pose-2.png", caption: "Montée explosive, pousse fort sur chaque appui." },
+      { image: "/exercises/frames/course-cote-courte/pose-3.png", caption: "Maintiens l'allure jusqu'en haut." },
+      { image: "/exercises/frames/course-cote-courte/pose-4.png", caption: "Redescends en marchant pour récupérer." },
+    ],
+  },
+  "course-lente-relachement": {
+    poses: [
+      { image: "/exercises/frames/course-lente-relachement/pose-1.png", caption: "Position de départ, allure très modérée." },
+      { image: "/exercises/frames/course-lente-relachement/pose-2.png", caption: "Relâche complètement les épaules et les bras." },
+      { image: "/exercises/frames/course-lente-relachement/pose-3.png", caption: "Garde une foulée souple, sans à-coup." },
+      { image: "/exercises/frames/course-lente-relachement/pose-4.png", caption: "Maintiens un rythme constant jusqu'à la fin." },
+    ],
+  },
 };

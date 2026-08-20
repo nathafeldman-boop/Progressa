@@ -813,6 +813,30 @@ export const EXERCISE_CATALOG: ExerciseSeed[] = [
     durationMinutes: 8,
     isFreeTier: false,
   },
+  {
+    slug: "course-lente-relachement",
+    name: "Course lente en relâchement",
+    category: ExerciseCategory.EXPLOSIVENESS,
+    emoji: "🏃",
+    description: "Course à faible intensité, concentrée sur le relâchement des bras et une foulée souple.",
+    matchBenefit: "Pour économiser de l'énergie en fin de match grâce à une foulée plus efficace.",
+    steps: [
+      "Cours à une allure très modérée, sans forcer.",
+      "Relâche complètement les épaules et les bras.",
+      "Garde une foulée souple, pose le pied sans à-coup.",
+      "Maintiens un rythme constant du début à la fin.",
+    ],
+    commonMistakes: ["Crisper les épaules et les bras", "Accélérer sans t'en rendre compte"],
+    equipment: [Equipment.NONE],
+    spaceFriendly: false,
+    minAge: 13,
+    positions: ALL_POSITIONS,
+    objectives: [Objective.ENDURANCE],
+    easyVariant: "Réduis à 5 minutes.",
+    hardVariant: "Allonge à 15 minutes en gardant le relâchement.",
+    durationMinutes: 8,
+    isFreeTier: false,
+  },
 
   // ---------------------------------------------------------------------
   // CARDIO (8)
