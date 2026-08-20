@@ -14,9 +14,8 @@ export function DemoVideo() {
           </p>
         </Reveal>
 
-        <Reveal delayMs={100} className="relative w-full max-w-[280px]">
-          <div className="relative overflow-hidden rounded-[2.5rem] border-[6px] border-[#10231a] bg-[#10231a] shadow-[0_30px_60px_-20px_rgba(16,35,26,0.45)]">
-            <div className="absolute left-1/2 top-0 z-10 h-5 w-28 -translate-x-1/2 rounded-b-xl bg-[#10231a]" />
+        <Reveal delayMs={100} className="w-full max-w-xs">
+          <div className="overflow-hidden rounded-[1.75rem] border border-[var(--lp-border-strong)] bg-white shadow-[0_30px_60px_-20px_rgba(16,35,26,0.35)]">
             <video
               className="block w-full"
               poster="/landing/demo-poster.jpg"
