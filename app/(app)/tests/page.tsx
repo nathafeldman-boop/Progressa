@@ -35,5 +35,5 @@ export default async function TestsPage() {
     };
   });
 
-  return <TestPlayer tests={tests} firstName={user.firstName} />;
+  return <TestPlayer tests={tests} firstName={user.firstName} isFirstTime={results.length === 0} />;
 }

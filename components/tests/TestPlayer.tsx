@@ -40,7 +40,15 @@ function useTicker(active: boolean) {
 
 const REST_SECONDS = 30;
 
-export function TestPlayer({ tests, firstName }: { tests: TestFlowEntry[]; firstName: string }) {
+export function TestPlayer({
+  tests,
+  firstName,
+  isFirstTime = false,
+}: {
+  tests: TestFlowEntry[];
+  firstName: string;
+  isFirstTime?: boolean;
+}) {
   const router = useRouter();
   const eligible = tests.filter((t) => !t.locked);
   const locked = tests.filter((t) => t.locked);
@@ -203,8 +211,11 @@ export function TestPlayer({ tests, firstName }: { tests: TestFlowEntry[]; first
             </ul>
           </Card>
         )}
-        <Button className="w-full" onClick={() => router.push("/progression")}>
-          Voir ma carte
+        <Button
+          className="w-full"
+          onClick={() => router.push(isFirstTime && eligible.length > 0 ? "/onboarding/tour" : "/progression")}
+        >
+          {isFirstTime && eligible.length > 0 ? "Découvrir l'application" : "Voir ma carte"}
         </Button>
       </div>
     );
