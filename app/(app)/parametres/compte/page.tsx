@@ -16,11 +16,6 @@ export default async function ComptePage() {
         <ProfilePhotoUpload currentPhotoUrl={user.photoUrl} />
         <CardTitle className="mt-3 text-base">{user.firstName}</CardTitle>
         <CardSubtitle>{user.email}</CardSubtitle>
-        {user.isMinor && (
-          <p className="mt-2 text-xs text-[var(--color-text-muted)]">
-            Compte mineur — consentement parental {user.parentConsentAt ? "enregistré" : "non requis pour l'usage gratuit"}.
-          </p>
-        )}
       </Card>
 
       <Card>

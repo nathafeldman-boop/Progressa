@@ -4,7 +4,7 @@ import { Card, CardTitle } from "@/components/ui/Card";
 const SECTIONS = [
   {
     title: "Ce qu'on collecte",
-    body: "Ton prénom, ton année de naissance, ton poste, ton niveau, et les infos que tu donnes volontairement (matériel, objectif, ressenti après les séances). Si tu es mineur, l'email d'un parent est facultatif pour l'usage gratuit — il devient nécessaire seulement pour payer l'abonnement.",
+    body: "Ton prénom, ton année de naissance, ton poste, ton niveau, et les infos que tu donnes volontairement (matériel, objectif, ressenti après les séances). L'usage de l'app — gratuit comme payant — ne dépend d'aucun accord parental : le compte t'appartient, quel que soit ton âge.",
   },
   {
     title: "Pourquoi on le collecte",
@@ -12,11 +12,23 @@ const SECTIONS = [
   },
   {
     title: "Ce qu'on ne fait jamais",
-    body: "Aucun tracking publicitaire, aucune revente de données, aucun partage avec des tiers en dehors des prestataires strictement nécessaires au fonctionnement du service (hébergement, paiement, emails).",
+    body: "Aucun tracking publicitaire, aucune revente de données, aucun partage avec des tiers en dehors des prestataires strictement nécessaires au fonctionnement du service.",
+  },
+  {
+    title: "Qui traite tes données pour nous",
+    body: "Supabase (authentification, base de données), Vercel (hébergement), Stripe (paiement, uniquement si tu prends Premium), Resend (emails), et les fournisseurs d'IA Anthropic et Mistral (génération de ton programme — reçoivent ton prénom, ton âge, ton poste et tes points faibles/douleurs signalées, jamais ton email ni tes identifiants). Certains de ces prestataires sont situés hors Union Européenne (États-Unis) ; leurs garanties contractuelles (clauses contractuelles types) encadrent ce transfert.",
+  },
+  {
+    title: "Combien de temps on garde tes données",
+    body: "Tant que ton compte existe. Si tu le supprimes, tout est effacé immédiatement — sauf ce que la loi nous oblige à garder plus longtemps (ex: factures, pour des raisons comptables).",
+  },
+  {
+    title: "Mesure d'audience",
+    body: "On mesure les pages vues et les clics en interne (jamais partagé, jamais publicitaire) pour comprendre ce qui marche et corriger ce qui ne marche pas. Un visiteur anonyme est identifié par un identifiant technique aléatoire, pas par son identité.",
   },
   {
     title: "Douleurs et santé",
-    body: "Les infos de santé que tu partages (douleurs, gênes, forme du jour) servent uniquement à adapter ton programme et éviter les blessures. Elles ne sont jamais partagées.",
+    body: "Les infos de santé que tu partages (douleurs, gênes, forme du jour) servent uniquement à adapter ton programme et éviter les blessures — y compris dans les instructions envoyées à l'IA qui génère ton programme (voir « Qui traite tes données »). Elles ne sont jamais partagées à d'autres fins.",
   },
   {
     title: "Avis publics",
@@ -24,7 +36,7 @@ const SECTIONS = [
   },
   {
     title: "Tes droits",
-    body: "Tu peux supprimer ton compte et toutes tes données en un clic depuis Réglages → Mon compte. La suppression est définitive et immédiate.",
+    body: "Tu peux accéder à tes données, les corriger, les récupérer, ou supprimer ton compte et toutes tes données en un clic depuis Réglages → Mon compte (suppression définitive et immédiate). Pour toute autre demande, écris à contact@progressa.app — on répond personnellement. Tu peux aussi déposer une réclamation auprès de la CNIL (cnil.fr) si tu estimes que tes droits ne sont pas respectés.",
   },
 ];
 

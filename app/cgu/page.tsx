@@ -8,7 +8,7 @@ const SECTIONS = [
   },
   {
     title: "Ton compte",
-    body: "Tu es responsable des informations que tu fournis et de la confidentialité de tes identifiants. Si tu es mineur, l'usage gratuit ne nécessite pas d'accord parental ; il devient nécessaire pour souscrire à l'abonnement payant.",
+    body: "Tu es responsable des informations que tu fournis et de la confidentialité de tes identifiants. L'usage de l'app — gratuit comme payant — ne dépend d'aucun accord parental, quel que soit ton âge.",
   },
   {
     title: "Abonnement et paiement",
