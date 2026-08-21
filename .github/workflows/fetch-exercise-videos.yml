@@ -35,8 +35,11 @@ jobs:
         with:
           node-version: 20
 
-      - name: Vérifie ffmpeg
-        run: ffmpeg -version
+      - name: Installe ffmpeg
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ffmpeg
+          ffmpeg -version
 
       - name: Télécharge les vidéos (Pexels)
         working-directory: scripts/videos
