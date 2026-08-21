@@ -1,11 +1,13 @@
 import { z } from "zod";
 import { Equipment, Objective, Position, Weekday } from "@prisma/client";
 
-// Public cible: 16-30 ans. Seule source de vérité pour la borne d'âge à
-// l'inscription — le client (OnboardingWizard) réutilise ces mêmes valeurs
-// pour son UI, mais c'est CETTE validation serveur qui fait foi.
+// Public cible: 16 ans et plus, sans limite d'âge haute. Seule source de
+// vérité pour la borne d'âge à l'inscription — le client (OnboardingWizard)
+// réutilise ces mêmes valeurs pour son UI, mais c'est CETTE validation
+// serveur qui fait foi. MAX_SIGNUP_AGE reste une borne technique (année de
+// naissance plausible), pas une limite produit.
 export const MIN_SIGNUP_AGE = 16;
-export const MAX_SIGNUP_AGE = 30;
+export const MAX_SIGNUP_AGE = 100;
 
 export const onboardingPayloadSchema = z.object({
   firstName: z.string().min(1).max(60),

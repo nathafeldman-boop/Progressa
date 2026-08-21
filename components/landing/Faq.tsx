@@ -11,7 +11,7 @@ const FAQ_ITEMS = [
   },
   {
     q: `À qui s'adresse ${APP_NAME} ?`,
-    a: "Aux joueurs et joueuses de 16 à 30 ans qui veulent progresser en dehors des entraînements club.",
+    a: "Aux joueurs et joueuses de 16 ans et plus qui veulent progresser en dehors des entraînements club.",
   },
   {
     q: "Comment fonctionne Coach Brian ?",

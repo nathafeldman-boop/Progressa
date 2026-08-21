@@ -85,7 +85,7 @@ export function OnboardingWizard() {
         const year = data.birthYear;
         const currentYear = new Date().getFullYear();
         if (!year || year < currentYear - MAX_SIGNUP_AGE || year > currentYear - MIN_SIGNUP_AGE) {
-          return "Progressa s'adresse aux 16-30 ans — indique une année de naissance dans cette tranche.";
+          return "Progressa s'adresse aux 16 ans et plus — indique une année de naissance dans cette tranche.";
         }
         return null;
       }
@@ -250,9 +250,11 @@ function ScreenAnneeNaissance({
     const digits = query.trim();
     const years: number[] = [];
     if (!digits) {
-      // Pas de saisie: on propose toute la tranche 16-30 ans, des plus jeunes aux plus âgés.
+      // Pas de saisie: on propose les années les plus probables (16-31 ans),
+      // des plus jeunes aux plus âgés — taper filtre vers le reste de la
+      // tranche (jusqu'à 100 ans) sans afficher une liste de 85 chips.
       for (let y = maxYear; y >= minYear; y--) years.push(y);
-      return years;
+      return years.slice(0, 16);
     }
     for (let y = maxYear; y >= minYear; y--) {
       if (String(y).startsWith(digits)) years.push(y);

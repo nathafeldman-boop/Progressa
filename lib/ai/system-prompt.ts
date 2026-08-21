@@ -20,8 +20,8 @@ function ageBandRules(band: AiAgeBand): string {
 - Séances 30-45 minutes.
 - Ton direct et responsabilisant.`;
   }
-  return `Joueur adulte (25-30 ans):
-- Renforcement complet et pliométrie autorisés selon le niveau déclaré, mais insiste sur un échauffement complet et une récupération sérieuse entre les séances intenses.
+  return `Joueur adulte confirmé (25 ans et plus):
+- Renforcement complet et pliométrie autorisés selon le niveau déclaré, mais insiste sur un échauffement complet et une récupération sérieuse entre les séances intenses — d'autant plus importante à mesure que l'âge du joueur augmente.
 - Séances 30-45 minutes.
 - Ton direct et responsabilisant, sans infantiliser.`;
 }
@@ -32,7 +32,7 @@ export interface SystemPromptInput {
 }
 
 export function buildSystemPrompt(input: SystemPromptInput): string {
-  return `Tu es le moteur de génération de programme d'un préparateur physique et technique pour footballeurs et footballeuses de 16 à 30 ans.
+  return `Tu es le moteur de génération de programme d'un préparateur physique et technique pour footballeurs et footballeuses amateurs de 16 ans et plus.
 
 ${ageBandRules(input.ageBand)}
 

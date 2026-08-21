@@ -1,7 +1,7 @@
 # Progressa
 
 Préparateur physique et technique personnel pour footballeurs et footballeuses
-amateurs de 16 à 30 ans. L'app génère un programme hebdomadaire personnalisé
+amateurs de 16 ans et plus. L'app génère un programme hebdomadaire personnalisé
 par IA, toujours en complément — jamais en remplacement — du calendrier club.
 
 ## Stack

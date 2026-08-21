@@ -23,7 +23,8 @@ export interface AgeCategory {
 
 // Au-delà de cette catégorie, "U27" ou "U30" ne veut plus rien dire pour un
 // joueur amateur — la convention du foot amateur passe à "Senior" (public
-// cible 16-30 ans, donc une bonne partie des joueurs est déjà en senior).
+// cible 16 ans et plus, sans limite haute, donc la majorité des joueurs
+// est en senior).
 const MAX_YOUTH_CATEGORY = 19;
 
 export function getAgeCategory(birthYear: number, referenceDate: Date = new Date()): AgeCategory {
@@ -37,14 +38,14 @@ export function getAgeCategory(birthYear: number, referenceDate: Date = new Date
   };
 }
 
-/** Bande d'âge utilisée par les règles de génération IA (section 6.2 du produit). Public cible: 16-30 ans. */
-export type AiAgeBand = "16-17" | "18-24" | "25-30";
+/** Bande d'âge utilisée par les règles de génération IA (section 6.2 du produit). Public cible: 16 ans et plus, sans limite haute. */
+export type AiAgeBand = "16-17" | "18-24" | "25+";
 
 export function getAiAgeBand(birthYear: number, referenceDate: Date = new Date()): AiAgeBand {
   const { approxAge } = getAgeCategory(birthYear, referenceDate);
   if (approxAge <= 17) return "16-17";
   if (approxAge <= 24) return "18-24";
-  return "25-30";
+  return "25+";
 }
 
 export function isMinor(birthYear: number, referenceDate: Date = new Date()): boolean {
