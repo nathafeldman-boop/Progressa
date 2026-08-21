@@ -43,8 +43,10 @@ process() {
     -c:v libx264 -profile:v main -crf 30 -preset slow -movflags +faststart -pix_fmt yuv420p \
     "$OUT_DIR/$slug.mp4"
 
-  # Image de couverture : prise à 1 s pour éviter une première image floue.
-  ffmpeg -loglevel error -y -ss "$((START + 1))" -i "$src" \
+  # Image de couverture : prise au milieu du clip conservé, pas au tout début
+  # — sinon elle tombe presque toujours avant que le geste ne commence
+  # (ex: gardien encore debout avant de plonger).
+  ffmpeg -loglevel error -y -ss "$((START + DUR / 2))" -i "$src" \
     -vf "$VF" -frames:v 1 -q:v 4 \
     "$OUT_DIR/$slug-poster.jpg"
 
