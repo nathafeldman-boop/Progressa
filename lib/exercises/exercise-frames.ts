@@ -187,4 +187,48 @@ export const EXERCISE_FRAMES: Partial<Record<string, ExerciseFrameSequence>> = {
       { image: "/exercises/frames/course-lente-relachement/pose-4.png", caption: "Maintiens un rythme constant jusqu'à la fin." },
     ],
   },
+  "gainage-lateral": {
+    poses: [
+      { image: "/exercises/frames/gainage-lateral/pose-1.png", caption: "Allonge-toi sur le côté, coude bien sous l'épaule." },
+      { image: "/exercises/frames/gainage-lateral/pose-2.png", caption: "Décolle le bassin en poussant sur le bras." },
+      { image: "/exercises/frames/gainage-lateral/pose-3.png", caption: "Tiens la position : chevilles, hanches et épaules alignées." },
+      { image: "/exercises/frames/gainage-lateral/pose-4.png", caption: "Redescends doucement, puis change de côté." },
+    ],
+  },
+  "gainage-lombaire-doux": {
+    poses: [
+      { image: "/exercises/frames/gainage-lombaire-doux/pose-1.png", caption: "Allonge-toi sur le dos, genoux pliés, pieds à plat." },
+      { image: "/exercises/frames/gainage-lombaire-doux/pose-2.png", caption: "Plaque le bas du dos au sol en rentrant le ventre." },
+      { image: "/exercises/frames/gainage-lombaire-doux/pose-3.png", caption: "Décolle une jambe sans laisser le dos se creuser." },
+    ],
+  },
+  "hip-thrust-sol": {
+    poses: [
+      { image: "/exercises/frames/hip-thrust-sol/pose-1.png", caption: "Allonge-toi, pieds à plat près des fesses." },
+      { image: "/exercises/frames/hip-thrust-sol/pose-2.png", caption: "Monte jusqu'à aligner épaules, hanches et genoux. Serre les fessiers." },
+      { image: "/exercises/frames/hip-thrust-sol/pose-3.png", caption: "Redescends lentement sans poser les fesses." },
+    ],
+  },
+  "pompes-genoux-pieds": {
+    poses: [
+      { image: "/exercises/frames/pompes-genoux-pieds/pose-1.png", caption: "Mains sous les épaules, corps bien aligné." },
+      { image: "/exercises/frames/pompes-genoux-pieds/pose-2.png", caption: "Descends en gardant les coudes près du corps." },
+      { image: "/exercises/frames/pompes-genoux-pieds/pose-3.png", caption: "Remonte en poussant fort sur les mains." },
+    ],
+  },
+  "equilibre-unipodal-genoux": {
+    poses: [
+      { image: "/exercises/frames/equilibre-unipodal-genoux/pose-1.png", caption: "Debout, regard droit devant toi." },
+      { image: "/exercises/frames/equilibre-unipodal-genoux/pose-2.png", caption: "Lève un pied, fléchis légèrement le genou d'appui." },
+      { image: "/exercises/frames/equilibre-unipodal-genoux/pose-3.png", caption: "Tiens : le genou reste aligné avec la pointe du pied." },
+    ],
+  },
+  "proprioception-cheville-serviette": {
+    poses: [
+      { image: "/exercises/frames/proprioception-cheville-serviette/pose-1.png", caption: "Plie une serviette et pose-la au sol." },
+      { image: "/exercises/frames/proprioception-cheville-serviette/pose-2.png", caption: "Pose un pied dessus, l'autre reste au sol." },
+      { image: "/exercises/frames/proprioception-cheville-serviette/pose-3.png", caption: "Tiens sur une jambe : la cheville travaille toute seule." },
+      { image: "/exercises/frames/proprioception-cheville-serviette/pose-4.png", caption: "Version difficile : ferme les yeux." },
+    ],
+  },
 };
