@@ -5,6 +5,16 @@ import { meetsMinAge } from "@/lib/age-category";
 import { isPremiumActive } from "@/lib/subscription";
 import { estimateDifficulty, difficultyBandForRankKey } from "@/lib/exercises/difficulty";
 import { THEME_MAIN_CATEGORIES, type TrainingTheme } from "@/lib/programs/build-targeted-session";
+import { getCurrentWeekStart } from "@/lib/week";
+
+/** Petit hash déterministe (djb2) — sert à varier le tri sans dépendance externe. */
+function hashSeed(input: string): number {
+  let h = 5381;
+  for (let i = 0; i < input.length; i++) {
+    h = (h * 33 + input.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h) % 1000;
+}
 
 export interface TargetedCatalogEntry {
   slug: string;
@@ -50,16 +60,26 @@ export async function getTargetedCatalog(userId: string, theme: TrainingTheme): 
   const [minDifficulty, maxDifficulty] = difficultyBandForRankKey(rankKey);
   const center = (minDifficulty + maxDifficulty) / 2;
 
+  // Beaucoup d'exercices tombent sur le même score de difficulté (heuristique
+  // volontairement grossière) : sans tiebreak, un tri stable renvoie toujours
+  // le même sous-ensemble (l'ordre de déclaration du catalogue), qui regroupe
+  // souvent des variantes très proches (ex: plusieurs exercices de sprint) —
+  // ça donne l'impression que "les mêmes exercices" reviennent en boucle.
+  // Le jitter, seedé par joueur + semaine, fait tourner ce sous-ensemble sans
+  // sacrifier le classement par difficulté ni changer à chaque rechargement.
+  const weekKey = getCurrentWeekStart().toISOString();
   const withMeta = pool.map((e) => {
     const equipmentOk = e.equipment.every((eq) => eq === Equipment.NONE || available.has(eq));
     const premiumOk = premium || e.isFreeTier;
     const lockReason: "premium" | "equipment" | null = !premiumOk ? "premium" : !equipmentOk ? "equipment" : null;
-    return { ...e, difficulty: estimateDifficulty(e), locked: lockReason !== null, lockReason };
+    const jitter = hashSeed(`${userId}:${theme}:${weekKey}:${e.slug}`);
+    return { ...e, difficulty: estimateDifficulty(e), locked: lockReason !== null, lockReason, jitter };
   });
 
   const scored = withMeta.sort((a, b) => {
     if (a.locked !== b.locked) return a.locked ? 1 : -1;
-    return Math.abs(a.difficulty - center) - Math.abs(b.difficulty - center);
+    const diffScore = Math.abs(a.difficulty - center) - Math.abs(b.difficulty - center);
+    return diffScore !== 0 ? diffScore : a.jitter - b.jitter;
   });
 
   return scored.slice(0, 5).map((e) => ({
