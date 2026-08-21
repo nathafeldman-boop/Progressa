@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import type { ExerciseFrameSequence } from "@/lib/exercises/exercise-frames";
 
-const FRAME_INTERVAL_MS = 3000;
+const FRAME_INTERVAL_MS = 2000;
 
 /** Fait défiler les poses en boucle (façon "vidéo" en stop-motion) pendant que le joueur exécute réellement l'exercice. */
 export function ExerciseFrameLoop({ sequence }: { sequence: ExerciseFrameSequence }) {

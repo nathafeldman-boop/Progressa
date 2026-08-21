@@ -36,12 +36,12 @@ const CATEGORY_LABELS: Record<ExerciseCategory, string> = {
 };
 
 function ExerciseThumb({ slug, emoji }: { slug: string; emoji: string }) {
-  // Image issue de la vraie vidéo Pexels si elle existe, sinon repli sur
-  // les poses Coach Brian générées par IA, sinon l'emoji.
+  // Pose Coach Brian générée par IA en priorité, sinon repli sur l'image
+  // issue de la vidéo Pexels, sinon l'emoji.
+  const firstPose = EXERCISE_FRAMES[slug]?.poses[0];
   const video = EXERCISE_VIDEO[slug];
   const poster = video ? video.replace(/\.mp4$/, "-poster.jpg") : undefined;
-  const firstPose = EXERCISE_FRAMES[slug]?.poses[0];
-  const thumbSrc = poster ?? firstPose?.image;
+  const thumbSrc = firstPose?.image ?? poster;
   if (thumbSrc) {
     return (
       <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)]">

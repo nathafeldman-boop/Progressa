@@ -518,11 +518,10 @@ function ActiveExerciseScreen({
 }) {
   useTicker(state.phase === "active");
   const elapsed = state.phase === "active" ? (elapsedSeconds(state.startedAt) ?? 0) : 0;
-  // La vraie vidéo Pexels prime toujours sur les poses Coach Brian générées
-  // par IA — celles-ci ne servent plus que de repli quand aucune vidéo
-  // n'a été trouvée pour ce slug (voir scripts/videos/).
-  const hasVideo = !!EXERCISE_VIDEO[block.exercise.slug];
-  const frames = hasVideo ? undefined : EXERCISE_FRAMES[block.exercise.slug];
+  // Les poses Coach Brian générées par IA priment toujours quand elles
+  // existent pour cet exercice — la vidéo Pexels ne sert que de repli pour
+  // les exercices sans pose IA (voir scripts/videos/).
+  const frames = EXERCISE_FRAMES[block.exercise.slug];
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-[var(--color-bg)] [padding-top:env(safe-area-inset-top)] [padding-bottom:env(safe-area-inset-bottom)]">
