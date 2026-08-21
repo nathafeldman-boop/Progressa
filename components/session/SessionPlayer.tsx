@@ -586,6 +586,16 @@ function ActiveExerciseScreen({
             ) : (
               <div className="flex h-full items-center justify-center text-8xl">{block.exercise.emoji}</div>
             )}
+            {!frames && EXERCISE_VIDEO[block.exercise.slug] && (
+              <a
+                href="https://www.pexels.com"
+                target="_blank"
+                rel="noreferrer"
+                className="absolute bottom-2 left-2 rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-medium text-white/80"
+              >
+                Vidéo : Pexels
+              </a>
+            )}
             <div className="absolute bottom-2 right-2">
               <BrianAvatar state={BRIAN_STATE_FOR_PHASE[state.phase]} size={56} className="ring-2 ring-[var(--color-surface)]" />
             </div>
