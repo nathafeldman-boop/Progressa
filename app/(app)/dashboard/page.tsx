@@ -86,7 +86,7 @@ export default async function DashboardPage() {
 
       <DailyObjectives objectives={objectives} />
 
-      <TargetedTrainingPicker />
+      <TargetedTrainingPicker isGoalkeeper={profile?.position === "GOALKEEPER"} />
 
       {!premium && (
         <Card className="border-[var(--color-primary)] bg-[var(--color-primary-soft)]">

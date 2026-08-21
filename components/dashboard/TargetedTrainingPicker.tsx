@@ -5,12 +5,21 @@ import { BrianTip } from "@/components/brian/BrianTip";
 import { THEME_LABELS, TRAINING_THEMES, type TrainingTheme } from "@/lib/programs/build-targeted-session";
 
 const THEME_BRIAN_STATE: Record<TrainingTheme, BrianState> = {
-  motricite: "motivated",
-  ballon: "confident",
+  pied_faible: "motivated",
+  dribble: "confident",
+  tir: "celebrating",
+  vitesse: "motivated",
+  cardio: "encouraging",
   muscu: "encouraging",
+  prevention: "happy",
+  gardien: "confident",
 };
 
-export function TargetedTrainingPicker() {
+export function TargetedTrainingPicker({ isGoalkeeper }: { isGoalkeeper: boolean }) {
+  // "gardien" nécessite des exercices réservés au poste de gardien: le
+  // proposer à un joueur de champ mènerait droit à une séance vide.
+  const themes = TRAINING_THEMES.filter((theme) => theme !== "gardien" || isGoalkeeper);
+
   return (
     <Card>
       <CardTitle className="text-base">Entraînement ciblé</CardTitle>
@@ -18,11 +27,11 @@ export function TargetedTrainingPicker() {
       <div className="mt-2">
         <BrianTip
           tipKey="entrainement-cible-intro"
-          text="Choisis un thème, je te propose 5 exercices adaptés à ta carte — tu piocheras celui qui te motive."
+          text="Choisis un besoin précis, je te construis une vraie séance complète dessus — pas une liste où piocher."
         />
       </div>
       <div className="mt-3 grid grid-cols-3 gap-2.5">
-        {TRAINING_THEMES.map((theme) => (
+        {themes.map((theme) => (
           <Link
             key={theme}
             href={`/entrainement-cible/${theme}`}

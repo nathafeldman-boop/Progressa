@@ -118,7 +118,7 @@ export default async function ProgressionPage() {
         </Button>
       </Link>
 
-      <TargetedTrainingPicker />
+      <TargetedTrainingPicker isGoalkeeper={profile?.position === "GOALKEEPER"} />
 
       <div className="grid grid-cols-2 gap-3">
         <Link href="/classement">
