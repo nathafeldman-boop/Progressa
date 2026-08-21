@@ -255,4 +255,60 @@ export const EXERCISE_FRAMES: Partial<Record<string, ExerciseFrameSequence>> = {
       { image: "/exercises/frames/jockey-defensif-pas-chasses/pose-4.png", caption: "Position maîtrisée, prêt à réagir." },
     ],
   },
+  "feintes-corps-piquet": {
+    poses: [
+      { image: "/exercises/frames/feintes-corps-piquet/pose-1.png", caption: "Balle au pied, face au piquet." },
+      { image: "/exercises/frames/feintes-corps-piquet/pose-2.png", caption: "Feinte le corps d'un côté, les épaules trompent l'adversaire." },
+      { image: "/exercises/frames/feintes-corps-piquet/pose-3.png", caption: "Change d'appui et repars de l'autre côté." },
+      { image: "/exercises/frames/feintes-corps-piquet/pose-4.png", caption: "Accélère dans l'espace libéré." },
+    ],
+  },
+  "dribble-1v1-plot-mobile": {
+    poses: [
+      { image: "/exercises/frames/dribble-1v1-plot-mobile/pose-1.png", caption: "Balle au pied, face au plot mobile." },
+      { image: "/exercises/frames/dribble-1v1-plot-mobile/pose-2.png", caption: "Provoque, garde la balle protégée du corps." },
+      { image: "/exercises/frames/dribble-1v1-plot-mobile/pose-3.png", caption: "Élimine d'un crochet sec, change de rythme." },
+      { image: "/exercises/frames/dribble-1v1-plot-mobile/pose-4.png", caption: "Accélère pour ressortir du dribble en vitesse." },
+    ],
+  },
+  "plongeon-lateral-amorti": {
+    poses: [
+      { image: "/exercises/frames/plongeon-lateral-amorti/pose-1.png", caption: "Position de base, mains prêtes devant toi." },
+      { image: "/exercises/frames/plongeon-lateral-amorti/pose-2.png", caption: "Pousse fort sur l'appui, pars vers le côté." },
+      { image: "/exercises/frames/plongeon-lateral-amorti/pose-3.png", caption: "Étends-toi vers le ballon, mains devant." },
+      { image: "/exercises/frames/plongeon-lateral-amorti/pose-4.png", caption: "Amortis la réception, ballon plaqué au sol." },
+    ],
+  },
+  "frappe-enroulee-cible": {
+    poses: [
+      { image: "/exercises/frames/frappe-enroulee-cible/pose-1.png", caption: "Balle au sol, fixe la cible du regard." },
+      { image: "/exercises/frames/frappe-enroulee-cible/pose-2.png", caption: "Course d'approche en angle vers le ballon." },
+      { image: "/exercises/frames/frappe-enroulee-cible/pose-3.png", caption: "Frappe de l'extérieur du pied pour enrouler." },
+      { image: "/exercises/frames/frappe-enroulee-cible/pose-4.png", caption: "La trajectoire courbe vient chercher la cible." },
+    ],
+  },
+  "frappe-puissance-surface": {
+    poses: [
+      { image: "/exercises/frames/frappe-puissance-surface/pose-1.png", caption: "Balle posée à l'entrée de la surface." },
+      { image: "/exercises/frames/frappe-puissance-surface/pose-2.png", caption: "Course d'appel, corps gainé vers le ballon." },
+      { image: "/exercises/frames/frappe-puissance-surface/pose-3.png", caption: "Frappe du cou-de-pied, cheville verrouillée." },
+      { image: "/exercises/frames/frappe-puissance-surface/pose-4.png", caption: "Frappe puissante, droit au but." },
+    ],
+  },
+  "frappe-volee-ballon-lance": {
+    poses: [
+      { image: "/exercises/frames/frappe-volee-ballon-lance/pose-1.png", caption: "Un partenaire (ou toi-même) lance le ballon en l'air." },
+      { image: "/exercises/frames/frappe-volee-ballon-lance/pose-2.png", caption: "Avance sous la trajectoire, yeux sur le ballon." },
+      { image: "/exercises/frames/frappe-volee-ballon-lance/pose-3.png", caption: "Frappe de volée, sans laisser rebondir." },
+      { image: "/exercises/frames/frappe-volee-ballon-lance/pose-4.png", caption: "Bon timing : le ballon part cadré." },
+    ],
+  },
+  "frappe-premiere-intention": {
+    poses: [
+      { image: "/exercises/frames/frappe-premiere-intention/pose-1.png", caption: "Le ballon arrive, aucun contrôle prévu." },
+      { image: "/exercises/frames/frappe-premiere-intention/pose-2.png", caption: "Anticipe la trajectoire et arme ta frappe tôt." },
+      { image: "/exercises/frames/frappe-premiere-intention/pose-3.png", caption: "Frappe dès le premier contact, sans amortir." },
+      { image: "/exercises/frames/frappe-premiere-intention/pose-4.png", caption: "Réaction rapide, ballon cadré." },
+    ],
+  },
 };
