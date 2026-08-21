@@ -100,7 +100,6 @@ export const EXERCISE_VIDEO: Partial<Record<string, string>> = {
   "skipping-genoux-hauts": "/exercises/skipping-genoux-hauts.mp4",
   "slalom-plots-serre": "/exercises/slalom-plots-serre.mp4",
   "sorties-aeriennes": "/exercises/sorties-aeriennes.mp4",
-  "souleve-terre-jambe-tendue": "/exercises/souleve-terre-jambe-tendue.mp4",
   "sprint-changement-direction-5-10-5": "/exercises/sprint-changement-direction-5-10-5.mp4",
   "sprints-courts-10m": "/exercises/sprints-courts-10m.mp4",
   "squat-jumps": "/exercises/squat-jumps.mp4",
@@ -108,6 +107,5 @@ export const EXERCISE_VIDEO: Partial<Record<string, string>> = {
   "squats-poids-du-corps": "/exercises/squats-poids-du-corps.mp4",
   "tacle-glisse-controle": "/exercises/tacle-glisse-controle.mp4",
   "talons-fesses": "/exercises/talons-fesses.mp4",
-  "tete-plongeante-cage": "/exercises/tete-plongeante-cage.mp4",
   "tirage-elastique-dos": "/exercises/tirage-elastique-dos.mp4",
 };
