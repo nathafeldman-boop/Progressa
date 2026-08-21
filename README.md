@@ -29,7 +29,7 @@ calendrier club.
 npm install
 cp .env.example .env.local   # renseigner les variables (voir plus bas)
 npm run db:generate
-npm run db:push              # ou db:migrate si tu préfères des migrations versionnées
+npm run db:migrate           # applique les migrations versionnées (prisma/migrations/)
 npm run db:seed              # charge le catalogue d'exercices (~60) et les badges
 npm run dev
 ```
@@ -57,6 +57,38 @@ npm run dev
 Les clients Stripe/Resend sont **initialisés paresseusement**
 (`lib/stripe.ts`, `lib/email/resend.ts`): l'app build et démarre même sans
 ces clés, elles ne sont requises qu'au moment d'un vrai paiement/envoi.
+
+## Migrations de base de données
+
+Le schéma est versionné via `prisma/migrations/` — jamais de `db push` en
+production (ça ne laisse aucune trace, aucun historique, et un rollback
+devient impossible sans deviner le diff à la main).
+
+- **Nouveau changement de schéma (dev):** édite `prisma/schema.prisma` puis
+  `npm run db:migrate` — ça crée un nouveau dossier horodaté dans
+  `prisma/migrations/` avec le SQL généré, à commiter avec le code qui en
+  dépend.
+- **Déploiement:** `npm run build` exécute automatiquement
+  `prisma migrate deploy` avant `next build` — les migrations en attente
+  s'appliquent à chaque déploiement Vercel, sans étape manuelle.
+- `db:push` reste disponible pour du prototypage local rapide (jamais contre
+  la base de production) — une fois le schéma stabilisé, capture-le avec
+  `db:migrate` pour qu'il rentre dans l'historique versionné.
+
+`prisma/migrations/0_init/` est une migration de **baseline**: elle capture
+l'état du schéma tel qu'il existait déjà en base (précédemment géré par
+`db push`, sans historique). **Étape unique obligatoire avant le premier
+déploiement de ce changement** — sans elle, `prisma migrate deploy` tentera
+de recréer des tables qui existent déjà et le build échouera:
+
+```bash
+npx prisma migrate resolve --applied 0_init
+```
+
+À exécuter une seule fois, depuis une machine qui a accès à la vraie
+`DATABASE_URL` (ce sandbox ne l'a pas). Une fois fait, plus jamais besoin
+d'y revenir — chaque nouvelle migration s'applique normalement au déploiement
+suivant.
 
 ## Architecture
 
