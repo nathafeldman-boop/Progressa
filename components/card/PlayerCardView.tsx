@@ -75,6 +75,8 @@ export function PlayerCardView({
   stats,
   photoUrl = null,
   animateFromOverall = null,
+  onPhotoClick,
+  photoBusy = false,
 }: {
   firstName: string;
   positionLabel: string;
@@ -86,6 +88,9 @@ export function PlayerCardView({
   photoUrl?: string | null;
   /** Note générale précédente — si fournie et différente, la note s'anime de cette valeur vers stats.overall. */
   animateFromOverall?: number | null;
+  /** Quand fourni, la photo devient cliquable (changement de photo directement depuis la carte) — sur les cartes publiques/partagées, ne pas le passer. */
+  onPhotoClick?: () => void;
+  photoBusy?: boolean;
 }) {
   const style = rankStyleFor(stats.rankKey);
   const overall = useCountUp(stats.overall, animateFromOverall);
@@ -135,16 +140,31 @@ export function PlayerCardView({
           {displayedRank}
         </p>
 
-        <div
-          className="mx-auto mt-4 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full text-3xl font-extrabold"
-          style={{ background: `${style.accent}1a`, color: style.accent, border: `2px solid ${style.border}`, boxShadow: `0 0 24px -4px ${style.border}88` }}
-          aria-hidden
-        >
-          {photoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element -- data URL, pas un asset optimisable par next/image
-            <img src={photoUrl} alt="" className="h-full w-full object-cover" />
-          ) : (
-            firstName.charAt(0).toUpperCase() || "?"
+        <div className="relative mx-auto mt-4 h-24 w-24">
+          <div
+            className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full text-3xl font-extrabold"
+            style={{ background: `${style.accent}1a`, color: style.accent, border: `2px solid ${style.border}`, boxShadow: `0 0 24px -4px ${style.border}88` }}
+            aria-hidden={!onPhotoClick}
+          >
+            {photoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- data URL, pas un asset optimisable par next/image
+              <img src={photoUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              firstName.charAt(0).toUpperCase() || "?"
+            )}
+          </div>
+          {onPhotoClick && (
+            <button
+              type="button"
+              onClick={onPhotoClick}
+              disabled={photoBusy}
+              aria-label="Changer la photo de profil"
+              className="absolute inset-0 flex items-center justify-center rounded-full bg-black/0 transition-colors hover:bg-black/35 active:bg-black/45"
+            >
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs shadow-md">
+                {photoBusy ? "…" : "📷"}
+              </span>
+            </button>
           )}
         </div>
         <h2 className="font-display mt-2 text-xl font-extrabold uppercase tracking-wide text-white">{firstName}</h2>

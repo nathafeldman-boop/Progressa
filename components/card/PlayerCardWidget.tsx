@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { PlayerCardView } from "@/components/card/PlayerCardView";
 import { ShareCardButton } from "@/components/card/ShareCardButton";
 import { RankCardBadge } from "@/components/card/RankCardBadge";
 import { rankStyleFor } from "@/lib/card/rank-styles";
+import { uploadProfilePhoto } from "@/lib/client/profile-photo";
 import type { PlayerCardStats } from "@/lib/player-card";
 
 /**
@@ -33,8 +35,27 @@ export function PlayerCardWidget({
   photoUrl: string | null;
   shareSlug: string;
 }) {
+  const router = useRouter();
   const [expanded, setExpanded] = useState(false);
+  const [photo, setPhoto] = useState(photoUrl);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const style = rankStyleFor(stats.rankKey);
+
+  async function handlePhotoFile(file: File) {
+    setPhotoBusy(true);
+    setPhotoError(null);
+    try {
+      const dataUrl = await uploadProfilePhoto(file);
+      setPhoto(dataUrl);
+      router.refresh();
+    } catch {
+      setPhotoError("La photo n'a pas pu être envoyée. Réessaie avec une autre image.");
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
 
   if (!expanded) {
     return (
@@ -66,6 +87,17 @@ export function PlayerCardWidget({
 
   return (
     <div className="space-y-3">
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) void handlePhotoFile(file);
+          e.target.value = "";
+        }}
+      />
       <PlayerCardView
         firstName={firstName}
         positionLabel={positionLabel}
@@ -74,8 +106,11 @@ export function PlayerCardWidget({
         department={department}
         niveauLabel={niveauLabel}
         stats={stats}
-        photoUrl={photoUrl}
+        photoUrl={photo}
+        onPhotoClick={() => inputRef.current?.click()}
+        photoBusy={photoBusy}
       />
+      {photoError && <p className="text-center text-xs text-[var(--color-danger)]">{photoError}</p>}
       <div className="flex gap-2">
         <button
           type="button"
