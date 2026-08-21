@@ -88,6 +88,16 @@ export default async function DashboardPage() {
 
       <TargetedTrainingPicker position={profile?.position ?? null} />
 
+      <Link href="/exercices" className="block">
+        <Card className="flex items-center justify-between gap-3">
+          <div>
+            <CardTitle className="text-base">Bibliothèque d&apos;exercices</CardTitle>
+            <CardSubtitle className="mt-0.5">Tout le catalogue, classé par catégorie.</CardSubtitle>
+          </div>
+          <span className="text-[var(--color-text-muted)]">→</span>
+        </Card>
+      </Link>
+
       {!premium && (
         <Card className="border-[var(--color-primary)] bg-[var(--color-primary-soft)]">
           <CardTitle className="text-[var(--color-primary-strong)]">Passe Premium</CardTitle>
