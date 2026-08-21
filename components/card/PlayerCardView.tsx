@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import type { PlayerCardStats } from "@/lib/player-card";
 import { STAT_LABELS, STAT_SHORT_LABELS } from "@/lib/brian/types";
 import { rankStyleFor } from "@/lib/card/rank-styles";
@@ -77,6 +78,7 @@ export function PlayerCardView({
   animateFromOverall = null,
   onPhotoClick,
   photoBusy = false,
+  statsClickable = false,
 }: {
   firstName: string;
   positionLabel: string;
@@ -91,6 +93,8 @@ export function PlayerCardView({
   /** Quand fourni, la photo devient cliquable (changement de photo directement depuis la carte) — sur les cartes publiques/partagées, ne pas le passer. */
   onPhotoClick?: () => void;
   photoBusy?: boolean;
+  /** Quand vrai, chaque stat renvoie vers son analyse détaillée — jamais sur les cartes publiques/partagées. */
+  statsClickable?: boolean;
 }) {
   const style = rankStyleFor(stats.rankKey);
   const overall = useCountUp(stats.overall, animateFromOverall);
@@ -184,16 +188,25 @@ export function PlayerCardView({
         )}
 
         <div className="mt-4 grid grid-cols-3 gap-x-2 gap-y-3 border-t border-white/10 pt-4">
-          {STAT_ORDER.map((axis) => (
-            <div key={axis}>
-              <p className="font-display text-lg font-extrabold tabular-nums" style={{ color: style.accent }}>
-                {stats.skills[STAT_LABELS[axis]] ?? "—"}
-              </p>
-              <p className="text-[0.6rem] font-bold uppercase tracking-widest text-white/45">
-                {STAT_SHORT_LABELS[axis]}
-              </p>
-            </div>
-          ))}
+          {STAT_ORDER.map((axis) => {
+            const value = (
+              <>
+                <p className="font-display text-lg font-extrabold tabular-nums" style={{ color: style.accent }}>
+                  {stats.skills[STAT_LABELS[axis]] ?? "—"}
+                </p>
+                <p className="text-[0.6rem] font-bold uppercase tracking-widest text-white/45">
+                  {STAT_SHORT_LABELS[axis]}
+                </p>
+              </>
+            );
+            return statsClickable ? (
+              <Link key={axis} href={`/progression/stat/${axis.toLowerCase()}`} className="block rounded-lg active:opacity-70">
+                {value}
+              </Link>
+            ) : (
+              <div key={axis}>{value}</div>
+            );
+          })}
         </div>
 
         <div className="mt-4 border-t border-white/10 pt-3">

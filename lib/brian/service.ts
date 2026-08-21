@@ -18,7 +18,7 @@ const DEFAULT_STATS: StatAxisValues = {
   MENTAL: 50,
 };
 
-function toAxisValues(state: {
+export function toAxisValues(state: {
   vitesse: number;
   tir: number;
   passe: number;

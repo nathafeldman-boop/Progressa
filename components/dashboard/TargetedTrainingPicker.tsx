@@ -4,6 +4,7 @@ import { Card, CardTitle, CardSubtitle } from "@/components/ui/Card";
 import { BrianAvatar, type BrianState } from "@/components/brian/BrianAvatar";
 import { BrianTip } from "@/components/brian/BrianTip";
 import { THEME_LABELS, TRAINING_THEMES, type TrainingTheme } from "@/lib/programs/build-targeted-session";
+import { isNeedAvailableForPosition } from "@/lib/exercises/needs";
 
 const THEME_BRIAN_STATE: Record<TrainingTheme, BrianState> = {
   pied_faible: "motivated",
@@ -17,17 +18,8 @@ const THEME_BRIAN_STATE: Record<TrainingTheme, BrianState> = {
   gardien: "confident",
 };
 
-const DEFENSIVE_POSITIONS: Position[] = ["CENTER_BACK", "FULLBACK", "DEFENSIVE_MID"];
-
 export function TargetedTrainingPicker({ position }: { position: Position | null }) {
-  // "gardien" et "défense" reposent sur des exercices réservés à certains
-  // postes: les proposer à qui n'y a pas accès mènerait droit à une
-  // séance vide (voir exercisesForNeed).
-  const themes = TRAINING_THEMES.filter((theme) => {
-    if (theme === "gardien") return position === "GOALKEEPER";
-    if (theme === "defense") return !!position && DEFENSIVE_POSITIONS.includes(position);
-    return true;
-  });
+  const themes = TRAINING_THEMES.filter((theme) => isNeedAvailableForPosition(theme, position));
 
   return (
     <Card>

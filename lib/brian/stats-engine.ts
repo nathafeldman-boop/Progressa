@@ -9,7 +9,7 @@ import type { StatAxisValues } from "./types";
  * carte joueur). Étendre cette table est le seul endroit à toucher pour
  * faire contribuer une nouvelle catégorie d'exercice à un axe.
  */
-const CATEGORY_WEIGHTS: Record<ExerciseCategory, Partial<Record<StatAxis, number>>> = {
+export const CATEGORY_WEIGHTS: Record<ExerciseCategory, Partial<Record<StatAxis, number>>> = {
   TECHNIQUE: { CONDUITE: 0.7, PASSE: 0.3 },
   STRENGTH: { PHYSIQUE: 1 },
   EXPLOSIVENESS: { VITESSE: 0.8, PHYSIQUE: 0.2 },
@@ -18,7 +18,7 @@ const CATEGORY_WEIGHTS: Record<ExerciseCategory, Partial<Record<StatAxis, number
   GOALKEEPER: { DEFENSE: 0.5, CONDUITE: 0.3, PHYSIQUE: 0.2 },
 };
 
-const OBJECTIVE_WEIGHTS: Record<Objective, Partial<Record<StatAxis, number>>> = {
+export const OBJECTIVE_WEIGHTS: Record<Objective, Partial<Record<StatAxis, number>>> = {
   SPEED_EXPLOSIVENESS: { VITESSE: 1 },
   TECHNIQUE_DRIBBLING: { CONDUITE: 0.7, PASSE: 0.3 },
   PHYSICAL_DUELS: { PHYSIQUE: 0.6, DEFENSE: 0.4 },

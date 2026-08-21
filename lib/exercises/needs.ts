@@ -1,4 +1,4 @@
-import { ExerciseCategory, Objective } from "@prisma/client";
+import { ExerciseCategory, Objective, Position } from "@prisma/client";
 import type { ExerciseSeed } from "./catalog-data";
 
 /**
@@ -92,6 +92,15 @@ export function warmupPoolForNeed(catalog: ExerciseSeed[], need: TrainingNeed): 
 
 export function cooldownPoolForNeed(catalog: ExerciseSeed[]): ExerciseSeed[] {
   return catalog.filter((e) => e.category === ExerciseCategory.PREVENTION);
+}
+
+const DEFENSIVE_POSITIONS: Position[] = [Position.CENTER_BACK, Position.FULLBACK, Position.DEFENSIVE_MID];
+
+/** "gardien" et "defense" reposent sur des exercices réservés à certains postes — proposer ce besoin à qui n'y a pas accès mènerait à une séance vide. */
+export function isNeedAvailableForPosition(need: TrainingNeed, position: Position | null): boolean {
+  if (need === "gardien") return position === Position.GOALKEEPER;
+  if (need === "defense") return !!position && DEFENSIVE_POSITIONS.includes(position);
+  return true;
 }
 
 /** Consigne réécrite pour imposer le pied faible, sans dupliquer l'exercice dans le catalogue. */

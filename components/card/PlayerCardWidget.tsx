@@ -109,6 +109,7 @@ export function PlayerCardWidget({
         photoUrl={photo}
         onPhotoClick={() => inputRef.current?.click()}
         photoBusy={photoBusy}
+        statsClickable
       />
       {photoError && <p className="text-center text-xs text-[var(--color-danger)]">{photoError}</p>}
       <div className="flex gap-2">
