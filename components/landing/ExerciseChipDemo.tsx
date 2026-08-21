@@ -13,7 +13,10 @@ export function ExerciseChipDemo() {
   return (
     <span className="relative inline-block h-7 w-7 shrink-0 overflow-hidden rounded-full bg-[var(--lp-surface-2)]" aria-hidden>
       {video ? (
-        <video src={video} className="h-full w-full object-cover" autoPlay muted loop playsInline />
+        <video className="h-full w-full object-cover" autoPlay muted loop playsInline>
+          <source src={video.replace(/\.mp4$/, ".webm")} type="video/webm" />
+          <source src={video} type="video/mp4" />
+        </video>
       ) : (
         <ExerciseFrameLoop sequence={sequence} />
       )}

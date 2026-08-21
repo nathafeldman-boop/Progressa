@@ -580,13 +580,16 @@ function ActiveExerciseScreen({
             ) : EXERCISE_VIDEO[block.exercise.slug] ? (
               <video
                 key={block.exercise.slug}
-                src={EXERCISE_VIDEO[block.exercise.slug]}
+                poster={EXERCISE_VIDEO[block.exercise.slug]!.replace(/\.mp4$/, "-poster.jpg")}
                 className="h-full w-full object-cover"
                 autoPlay
                 muted
                 loop
                 playsInline
-              />
+              >
+                <source src={EXERCISE_VIDEO[block.exercise.slug]!.replace(/\.mp4$/, ".webm")} type="video/webm" />
+                <source src={EXERCISE_VIDEO[block.exercise.slug]} type="video/mp4" />
+              </video>
             ) : (
               <div className="flex h-full items-center justify-center text-8xl">{block.exercise.emoji}</div>
             )}
