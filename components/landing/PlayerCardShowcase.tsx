@@ -57,7 +57,7 @@ export function PlayerCardShowcase() {
           <PlayerCardView
             firstName="Toi"
             positionLabel="Milieu offensif"
-            ageCategoryLabel="U16"
+            ageCategoryLabel="Senior"
             stats={DEMO_STATS}
           />
         </Reveal>

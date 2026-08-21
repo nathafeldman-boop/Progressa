@@ -9,7 +9,7 @@ const REFERENCE_DATE = new Date("2026-08-17"); // hors saison FFF -> approxAge =
 
 const baseInput: GenerateProgramInput = {
   firstName: "Alex",
-  birthYear: 2010, // ~16 ans -> bande 15-17
+  birthYear: 2010, // ~16 ans -> bande 16-17
   position: Position.ATTACKING_MID,
   country: "FR",
   levelLabel: "Régional 1 (R1)",

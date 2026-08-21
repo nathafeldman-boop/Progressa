@@ -26,13 +26,21 @@ test("age category flips forward on July 1st, not on the birthday", () => {
   assert.equal(afterSeason.label, "U16");
 });
 
-test("AI age bands split at 15 and 18", () => {
+test("AI age bands split at 18 and 25 (public cible 16-30 ans)", () => {
   const ref = new Date("2026-08-17");
-  assert.equal(getAiAgeBand(2013, ref), "13-14"); // 13 ans
-  assert.equal(getAiAgeBand(2012, ref), "13-14"); // 14 ans
-  assert.equal(getAiAgeBand(2011, ref), "15-17"); // 15 ans
-  assert.equal(getAiAgeBand(2009, ref), "15-17"); // 17 ans
-  assert.equal(getAiAgeBand(2007, ref), "18+"); // 19 ans
+  assert.equal(getAiAgeBand(2010, ref), "16-17"); // 16 ans
+  assert.equal(getAiAgeBand(2009, ref), "16-17"); // 17 ans
+  assert.equal(getAiAgeBand(2008, ref), "18-24"); // 18 ans
+  assert.equal(getAiAgeBand(2002, ref), "18-24"); // 24 ans
+  assert.equal(getAiAgeBand(2001, ref), "25-30"); // 25 ans
+  assert.equal(getAiAgeBand(1996, ref), "25-30"); // 30 ans
+});
+
+test("age category caps at Senior beyond U19 (adult players in the 16-30 range)", () => {
+  const ref = new Date("2026-08-17");
+  const category = getAgeCategory(1998, ref); // ~28 ans
+  assert.equal(category.categoryNumber, 29);
+  assert.equal(category.label, "Senior");
 });
 
 test("isMinor is true under 18", () => {

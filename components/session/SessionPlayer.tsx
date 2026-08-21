@@ -271,7 +271,7 @@ export function SessionPlayer({
       setPendingSurvey({
         surveyKey: "pourquoi_pas_premium",
         question: "Pourquoi Premium ne t'intéresse pas (pour l'instant) ?",
-        options: ["Trop cher", "Je veux tester encore", "Pas convaincu par l'utilité", "Je vais demander à mes parents"],
+        options: ["Trop cher", "Je veux tester encore", "Pas convaincu par l'utilité", "Je dois y réfléchir"],
       });
     } else {
       goToDashboard();

@@ -7,25 +7,23 @@ import type { AiAgeBand } from "@/lib/age-category";
  * garantir la sécurité du contenu envoyé à des mineurs.
  */
 function ageBandRules(band: AiAgeBand): string {
-  if (band === "13-14") {
-    return `Tranche d'âge 13-14 ans — règles ABSOLUES:
-- Aucune charge externe (pas d'haltère, pas de poids ajouté).
-- Aucune pliométrie intensive (pas de sauts en profondeur, pas de sauts répétés à haute intensité).
-- Chaque séance dure 25 minutes maximum.
-- Beaucoup de ballon: privilégie les exercices techniques et ludiques.
-- Ton encourageant, simple, phrases courtes. Jamais culpabilisant.`;
-  }
-  if (band === "15-17") {
-    return `Tranche d'âge 15-17 ans — règles ABSOLUES:
+  if (band === "16-17") {
+    return `Tranche d'âge 16-17 ans (encore mineur) — règles ABSOLUES:
 - Renforcement complet autorisé (poids du corps, élastiques si disponibles).
 - Pliométrie progressive modérée autorisée (pas de volume excessif).
 - Chaque séance dure entre 30 et 40 minutes, structurée clairement.
 - Ton direct, façon centre de formation: exigeant mais respectueux.`;
   }
-  return `Joueur adulte (18+):
+  if (band === "18-24") {
+    return `Joueur adulte jeune (18-24 ans):
 - Renforcement complet et pliométrie autorisés selon le niveau déclaré.
 - Séances 30-45 minutes.
 - Ton direct et responsabilisant.`;
+  }
+  return `Joueur adulte (25-30 ans):
+- Renforcement complet et pliométrie autorisés selon le niveau déclaré, mais insiste sur un échauffement complet et une récupération sérieuse entre les séances intenses.
+- Séances 30-45 minutes.
+- Ton direct et responsabilisant, sans infantiliser.`;
 }
 
 export interface SystemPromptInput {
@@ -34,7 +32,7 @@ export interface SystemPromptInput {
 }
 
 export function buildSystemPrompt(input: SystemPromptInput): string {
-  return `Tu es le moteur de génération de programme d'un préparateur physique et technique pour jeunes footballeurs.
+  return `Tu es le moteur de génération de programme d'un préparateur physique et technique pour footballeurs et footballeuses de 16 à 30 ans.
 
 ${ageBandRules(input.ageBand)}
 

@@ -28,7 +28,7 @@ export function ShareSection() {
           <PlayerCardView
             firstName="Toi"
             positionLabel="Milieu offensif"
-            ageCategoryLabel="U16"
+            ageCategoryLabel="Senior"
             country="France"
             niveauLabel="National 1"
             stats={DEMO_STATS}

@@ -31,6 +31,7 @@ import {
   composeOnboardingRevelation,
 } from "@/lib/brian/messages";
 import { getOrCreateAnonId, loadOnboardingData, saveOnboardingData, setReferralCode } from "@/lib/onboarding/storage";
+import { MAX_SIGNUP_AGE, MIN_SIGNUP_AGE } from "@/lib/onboarding/schema";
 import { ONBOARDING_SCREEN_KEYS, type OnboardingData } from "@/lib/onboarding/types";
 import { trackClick, trackOnboardingFunnel } from "@/lib/analytics/track";
 
@@ -83,7 +84,9 @@ export function OnboardingWizard() {
       case "annee_naissance": {
         const year = data.birthYear;
         const currentYear = new Date().getFullYear();
-        if (!year || year < currentYear - 70 || year > currentYear - 5) return "Indique une année de naissance valide.";
+        if (!year || year < currentYear - MAX_SIGNUP_AGE || year > currentYear - MIN_SIGNUP_AGE) {
+          return "Progressa s'adresse aux 16-30 ans — indique une année de naissance dans cette tranche.";
+        }
         return null;
       }
       case "poste":
@@ -239,23 +242,23 @@ function ScreenAnneeNaissance({
   firstName: string;
 }) {
   const currentYear = new Date().getFullYear();
-  const minYear = currentYear - 70;
-  const maxYear = currentYear - 5;
+  const minYear = currentYear - MAX_SIGNUP_AGE;
+  const maxYear = currentYear - MIN_SIGNUP_AGE;
   const [query, setQuery] = useState(value ? String(value) : "");
 
   const suggestions = useMemo(() => {
     const digits = query.trim();
     const years: number[] = [];
     if (!digits) {
-      // Pas de saisie: on propose d'abord la tranche la plus probable (joueurs jeunes).
-      for (let y = Math.min(maxYear, currentYear - 6); y >= Math.max(minYear, currentYear - 19); y--) years.push(y);
+      // Pas de saisie: on propose toute la tranche 16-30 ans, des plus jeunes aux plus âgés.
+      for (let y = maxYear; y >= minYear; y--) years.push(y);
       return years;
     }
     for (let y = maxYear; y >= minYear; y--) {
       if (String(y).startsWith(digits)) years.push(y);
     }
     return years.slice(0, 16);
-  }, [query, currentYear, minYear, maxYear]);
+  }, [query, minYear, maxYear]);
 
   function pick(y: number) {
     setQuery(String(y));

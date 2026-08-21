@@ -632,7 +632,9 @@ model Subscription {
   status               SubscriptionStatus @default(NONE)
   plan                 SubscriptionPlan?
   currentPeriodEnd     DateTime?
-  // Un mineur ne peut pas payer lui-même: le compte payeur est un parent/tuteur.
+  // Hérité d'une ancienne logique de consentement parental, retirée du
+  // parcours de paiement — champ non lu ailleurs dans le code, conservé
+  // pour ne pas nécessiter de migration.
   payerIsParent        Boolean            @default(false)
   // Premium offert par le parrainage (viral loop), indépendant de Stripe.
   // isPremiumActive() considère le compte premium si status=ACTIVE OU si
