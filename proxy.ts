@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 // Next.js 16 renamed the `middleware` file convention to `proxy`.
 const PUBLIC_PREFIXES = [
@@ -46,29 +47,58 @@ if (!supabaseConfigured) {
   );
 }
 
+function denyToLogin(request: NextRequest): NextResponse {
+  const url = request.nextUrl.clone();
+  url.pathname = "/connexion";
+  url.searchParams.set("redirect", request.nextUrl.pathname);
+  return NextResponse.redirect(url);
+}
+
+function tooManyRequests(): NextResponse {
+  return NextResponse.json({ error: "rate_limited" }, { status: 429, headers: { "Retry-After": "60" } });
+}
+
+// Stripe/cron ne passent jamais par ici avec un trafic utilisateur — pas de
+// limite sur ces routes (elles ont leur propre vérification de signature/secret).
+const RATE_LIMIT_EXEMPT_PREFIXES = ["/api/webhooks", "/api/cron"];
+// Endpoints qui coûtent réellement de l'argent par appel (LLM) ou sont des
+// cibles de spam évidentes: limite plus stricte que le reste de l'API.
+const STRICT_RATE_LIMIT_PREFIXES = ["/api/coach", "/api/track"];
+
+function rateLimitFor(pathname: string): { limit: number; windowMs: number } | null {
+  if (!pathname.startsWith("/api/")) return null;
+  if (RATE_LIMIT_EXEMPT_PREFIXES.some((p) => pathname.startsWith(p))) return null;
+  if (STRICT_RATE_LIMIT_PREFIXES.some((p) => pathname.startsWith(p))) return { limit: 20, windowMs: 60_000 };
+  return { limit: 120, windowMs: 60_000 };
+}
+
+function clientIp(request: NextRequest): string {
+  return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
+}
+
 export async function proxy(request: NextRequest) {
-  if (!supabaseConfigured) {
-    return NextResponse.next();
+  const isPublic = isPublicRoute(request.nextUrl.pathname);
+
+  const rule = rateLimitFor(request.nextUrl.pathname);
+  if (rule) {
+    const key = `${clientIp(request)}:${request.nextUrl.pathname}`;
+    if (!checkRateLimit(key, rule.limit, rule.windowMs)) return tooManyRequests();
   }
 
-  // Belt and suspenders: even with a well-formed URL, the Supabase SDK can
-  // still throw for other misconfiguration (bad key, network issue). This
-  // middleware runs on nearly every request, so it must never crash the
-  // whole site over an auth check — fail open instead.
+  // Fail CLOSED, not open: public routes (marketing, webhooks, cron) stay
+  // reachable no matter what, but a misconfigured or unreachable auth
+  // backend must never turn a protected route public — it must deny access.
+  if (!supabaseConfigured) {
+    return isPublic ? NextResponse.next() : denyToLogin(request);
+  }
+
   try {
     const { response, user } = await updateSession(request);
-
-    if (!user && !isPublicRoute(request.nextUrl.pathname)) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/connexion";
-      url.searchParams.set("redirect", request.nextUrl.pathname);
-      return NextResponse.redirect(url);
-    }
-
+    if (!user && !isPublic) return denyToLogin(request);
     return response;
   } catch (err) {
-    console.error("[proxy] Supabase session refresh failed — serving unprotected", err);
-    return NextResponse.next();
+    console.error("[proxy] Supabase session refresh failed — denying access to protected routes", err);
+    return isPublic ? NextResponse.next() : denyToLogin(request);
   }
 }
 

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getCurrentInternalUser } from "@/lib/auth";
 import { logClick, logOnboardingFunnelEvent, logPageView, recordMicroSurveyResponse } from "@/lib/analytics/server";
 
 // Endpoint d'ingestion analytics first-party. Toujours répondre 204 même en
@@ -8,19 +9,26 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
+    // Le userId ne vient jamais du client (un visiteur pourrait attribuer
+    // ses events, voire des réponses de micro-sondage, à n'importe quel
+    // autre compte) — seule la session serveur authentifiée fait foi.
+    // undefined pour un visiteur anonyme, ce qui est la valeur légitime.
+    const user = await getCurrentInternalUser();
+    const userId = user?.id;
+
     switch (body.type) {
       case "page_view":
-        await logPageView(body.anonId, body.path, body.userId, body.referrer);
+        await logPageView(body.anonId, body.path, userId, body.referrer);
         break;
       case "click":
-        await logClick(body.anonId, body.label, body.userId, body.path);
+        await logClick(body.anonId, body.label, userId, body.path);
         break;
       case "onboarding_funnel":
         await logOnboardingFunnelEvent(body.anonId, body.screen, body.screenKey, body.action);
         break;
       case "micro_survey":
-        if (body.userId) {
-          await recordMicroSurveyResponse(body.userId, body.surveyKey, body.question, body.answer ?? null, !!body.skipped);
+        if (userId) {
+          await recordMicroSurveyResponse(userId, body.surveyKey, body.question, body.answer ?? null, !!body.skipped);
         }
         break;
       default:
