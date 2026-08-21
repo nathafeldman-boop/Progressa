@@ -21,12 +21,14 @@ function rotate<T>(items: T[], offset: number): T[] {
   return [...items.slice(i), ...items.slice(0, i)];
 }
 
-function pickOne(catalog: ExerciseSeed[], categories: ExerciseCategory[], seed: number, exclude: Set<string>): ExerciseSeed | null {
+function pickMany(catalog: ExerciseSeed[], categories: ExerciseCategory[], seed: number, exclude: Set<string>, count: number): ExerciseSeed[] {
   const pool = rotate(
     catalog.filter((e) => categories.includes(e.category) && !exclude.has(e.slug)),
     seed
   );
-  return pool[0] ?? null;
+  const picked = pool.slice(0, count);
+  for (const e of picked) exclude.add(e.slug);
+  return picked;
 }
 
 function genericInstruction(exercise: ExerciseSeed): string {
@@ -51,8 +53,17 @@ export function buildFallbackProgram(input: FallbackTemplateInput): ProgramOutpu
     const isMatchAdjacent = input.matchAdjacentDays.includes(dayOfWeek);
     const used = new Set<string>();
 
-    const warmup = pickOne(input.filteredCatalog, WARMUP_CATEGORIES, seed + index, used);
-    if (warmup) used.add(warmup.slug);
+    // Une vraie séance de coach, pas 3-4 exercices qui ne mènent nulle
+    // part: on vise 2 échauffement + 7 corps de séance + 2 retour au
+    // calme (moins pour une séance allégée veille/jour de match, qui
+    // reste volontairement courte). Le compte gratuit n'a que ~15% du
+    // catalogue débloqué: la séance reste réellement jouable, juste plus
+    // courte, plutôt que de tronquer silencieusement.
+    const warmupTarget = isMatchAdjacent ? 1 : 2;
+    const mainTarget = isMatchAdjacent ? 3 : 7;
+    const cooldownTarget = isMatchAdjacent ? 1 : 2;
+
+    const warmup = pickMany(input.filteredCatalog, WARMUP_CATEGORIES, seed + index, used, warmupTarget);
 
     const mainCategories = isMatchAdjacent ? LIGHT_MAIN_CATEGORIES : [ExerciseCategory.TECHNIQUE, ExerciseCategory.STRENGTH, ExerciseCategory.EXPLOSIVENESS, ExerciseCategory.CARDIO];
     const mainExercises: ExerciseSeed[] = [];
@@ -64,26 +75,19 @@ export function buildFallbackProgram(input: FallbackTemplateInput): ProgramOutpu
       used.add(objectiveExercise.slug);
     }
 
-    for (let i = 0; i < 2; i++) {
-      const pick = pickOne(input.filteredCatalog, mainCategories, seed + index + i + 1, used);
-      if (pick) {
-        mainExercises.push(pick);
-        used.add(pick.slug);
-      }
-    }
+    mainExercises.push(...pickMany(input.filteredCatalog, mainCategories, seed + index + 1, used, Math.max(0, mainTarget - mainExercises.length)));
 
-    const cooldown = pickOne(input.filteredCatalog, COOLDOWN_CATEGORIES, seed + index, used);
-    if (cooldown) used.add(cooldown.slug);
+    const cooldown = pickMany(input.filteredCatalog, COOLDOWN_CATEGORIES, seed + index, used, cooldownTarget);
 
     const blocks: ProgramOutput["sessions"][number]["blocks"] = [];
-    if (warmup) {
+    for (const exercise of warmup) {
       blocks.push({
-        exerciseSlug: warmup.slug,
+        exerciseSlug: exercise.slug,
         phase: BlockPhase.WARMUP,
         sets: null,
         reps: null,
         restSeconds: 30,
-        customInstruction: genericInstruction(warmup),
+        customInstruction: genericInstruction(exercise),
       });
     }
     for (const exercise of mainExercises) {
@@ -96,14 +100,14 @@ export function buildFallbackProgram(input: FallbackTemplateInput): ProgramOutpu
         customInstruction: genericInstruction(exercise),
       });
     }
-    if (cooldown) {
+    for (const exercise of cooldown) {
       blocks.push({
-        exerciseSlug: cooldown.slug,
+        exerciseSlug: exercise.slug,
         phase: BlockPhase.COOLDOWN,
         sets: null,
         reps: null,
         restSeconds: 0,
-        customInstruction: genericInstruction(cooldown),
+        customInstruction: genericInstruction(exercise),
       });
     }
 
