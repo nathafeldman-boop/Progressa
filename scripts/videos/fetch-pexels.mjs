@@ -87,7 +87,21 @@ async function download(url, dest) {
 
 const slugs = only.length ? only : Object.keys(QUERIES);
 fs.mkdirSync(OUT, { recursive: true });
-if (!fs.existsSync(CREDITS)) fs.writeFileSync(CREDITS, "slug,requete,auteur,page_pexels,duree_s\n");
+
+// Une ligne par slug — un re-fetch remplace l'ancienne ligne au lieu de
+// l'empiler, sinon credits.csv accumule des crédits pour des vidéos qui ne
+// sont plus utilisées après un re-run ciblé.
+const creditsBySlug = new Map();
+if (fs.existsSync(CREDITS)) {
+  for (const line of fs.readFileSync(CREDITS, "utf8").split("\n").slice(1)) {
+    const slug = line.split(",")[0];
+    if (slug) creditsBySlug.set(slug, line);
+  }
+}
+function writeCredits() {
+  const rows = [...creditsBySlug.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([, row]) => row);
+  fs.writeFileSync(CREDITS, "slug,requete,auteur,page_pexels,duree_s\n" + rows.join("\n") + "\n");
+}
 
 let found = 0, missing = [];
 
@@ -130,10 +144,11 @@ for (const slug of slugs) {
 
   try {
     const bytes = await download(file.link, dest);
-    fs.appendFileSync(
-      CREDITS,
-      `${slug},"${used}","${(video.user?.name || "").replace(/"/g, "")}",${video.url},${video.duration}\n`
+    creditsBySlug.set(
+      slug,
+      `${slug},"${used}","${(video.user?.name || "").replace(/"/g, "")}",${video.url},${video.duration}`
     );
+    writeCredits();
     console.log(`✓  ${slug} : ${(bytes / 1e6).toFixed(1)} Mo — ${video.user?.name || "auteur inconnu"}`);
     found++;
   } catch (e) {
