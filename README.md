@@ -43,7 +43,8 @@ npm run dev
 
 | Variable | Usage |
 |---|---|
-| `DATABASE_URL` | Connexion PostgreSQL (Prisma) |
+| `DATABASE_URL` | Connexion PostgreSQL utilisée par l'app en runtime (peut être un pooler en mode transaction, ex: Supabase Supavisor port 6543) |
+| `DIRECT_URL` | Connexion PostgreSQL utilisée uniquement par `prisma migrate` — doit être une connexion directe ou un pooler en **mode session** (port 5432) ; un pooler en mode transaction ne supporte pas les verrous que les migrations nécessitent, et fait planter/bloquer `prisma migrate deploy` (vécu en prod : un build a mis 45 minutes avant de timeout). En local, identique à `DATABASE_URL`. |
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | Auth + base de données Supabase |
 | `ANTHROPIC_API_KEY` | Génération de programme (Claude API) |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Paiement |
