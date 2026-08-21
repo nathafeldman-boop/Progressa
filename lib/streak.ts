@@ -31,17 +31,20 @@ export interface StreakUpdateResult {
   tierJustChanged: boolean;
 }
 
-/**
- * Série cassée dès qu'une séance est sautée (section 6.5). Une deuxième
- * séance le même jour ne fait pas progresser la série une seconde fois.
- */
-export async function updateStreakOnCompletion(userId: string, completedAt: Date = new Date()): Promise<StreakUpdateResult> {
-  const state = await prisma.streakState.upsert({
-    where: { userId },
-    create: { userId },
-    update: {},
-  });
+export interface StreakState {
+  currentStreak: number;
+  longestStreak: number;
+  lastCompletedAt: Date | null;
+  currentTier: string | null;
+}
 
+/**
+ * Cœur de la logique de série, séparé de la lecture/écriture DB pour être
+ * testable sans base de données. Série cassée dès qu'une séance est sautée
+ * (section 6.5). Une deuxième séance le même jour ne fait pas progresser la
+ * série une seconde fois.
+ */
+export function computeStreakTransition(state: StreakState, completedAt: Date): StreakUpdateResult {
   let currentStreak = state.currentStreak;
   if (!state.lastCompletedAt) {
     currentStreak = 1;
@@ -61,16 +64,28 @@ export async function updateStreakOnCompletion(userId: string, completedAt: Date
   const currentTier = tierForStreak(currentStreak);
   const tierJustChanged = currentTier !== null && currentTier !== previousTier;
 
+  return { currentStreak, longestStreak, currentTier, tierJustChanged };
+}
+
+export async function updateStreakOnCompletion(userId: string, completedAt: Date = new Date()): Promise<StreakUpdateResult> {
+  const state = await prisma.streakState.upsert({
+    where: { userId },
+    create: { userId },
+    update: {},
+  });
+
+  const result = computeStreakTransition(state, completedAt);
+
   await prisma.streakState.update({
     where: { userId },
     data: {
-      currentStreak,
-      longestStreak,
+      currentStreak: result.currentStreak,
+      longestStreak: result.longestStreak,
       lastCompletedAt: completedAt,
-      currentTier,
-      ...(tierJustChanged ? { lastTierCelebratedAt: completedAt } : {}),
+      currentTier: result.currentTier,
+      ...(result.tierJustChanged ? { lastTierCelebratedAt: completedAt } : {}),
     },
   });
 
-  return { currentStreak, longestStreak, currentTier, tierJustChanged };
+  return result;
 }

@@ -14,11 +14,27 @@ const WEEKS_PER_THREE_ONBOARDED = 1;
 const MAX_ONBOARDED_CREDITS = 4; // cumulable jusqu'à 4 semaines (section 3)
 const WEEKS_PER_FRIEND_PAID = 2;
 
-async function grantBonusWeeks(userId: string, weeks: number) {
+/**
+ * Pure — le bonus se cumule sur ce qui reste d'un bonus déjà en cours (pas
+ * de reset si un bonus précédent n'est pas encore expiré), sinon repart de
+ * maintenant. Séparé du I/O pour être testable sans DB.
+ */
+export function computeBonusPremiumUntil(currentBonusUntil: Date | null, weeks: number, now: Date = new Date()): Date {
   const extraMs = weeks * 7 * 24 * 60 * 60 * 1000;
+  const base = currentBonusUntil && currentBonusUntil.getTime() > now.getTime() ? currentBonusUntil.getTime() : now.getTime();
+  return new Date(base + extraMs);
+}
+
+/** Pure — tous les 3 filleuls onboardés, plafonné à MAX_ONBOARDED_CREDITS crédits. */
+export function shouldCreditThreeFriendsBonus(totalOnboarded: number, alreadyCredited: number): boolean {
+  if (totalOnboarded % 3 !== 0) return false;
+  if (alreadyCredited >= MAX_ONBOARDED_CREDITS) return false;
+  return true;
+}
+
+async function grantBonusWeeks(userId: string, weeks: number) {
   const existing = await prisma.subscription.findUnique({ where: { userId } });
-  const base = existing?.bonusPremiumUntil && existing.bonusPremiumUntil.getTime() > Date.now() ? existing.bonusPremiumUntil.getTime() : Date.now();
-  const bonusPremiumUntil = new Date(base + extraMs);
+  const bonusPremiumUntil = computeBonusPremiumUntil(existing?.bonusPremiumUntil ?? null, weeks);
 
   await prisma.subscription.upsert({
     where: { userId },
@@ -49,12 +65,10 @@ export async function recordReferralOnboarding(referralCode: string | null | und
   }
 
   const totalOnboarded = await prisma.referral.count({ where: { referrerId: codeRow.userId } });
-  if (totalOnboarded % 3 !== 0) return;
-
   const alreadyCredited = await prisma.referralCredit.count({
     where: { userId: codeRow.userId, source: "THREE_FRIENDS_ONBOARDED" },
   });
-  if (alreadyCredited >= MAX_ONBOARDED_CREDITS) return;
+  if (!shouldCreditThreeFriendsBonus(totalOnboarded, alreadyCredited)) return;
 
   try {
     await prisma.referralCredit.create({
