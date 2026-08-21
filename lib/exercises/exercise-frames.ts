@@ -231,4 +231,28 @@ export const EXERCISE_FRAMES: Partial<Record<string, ExerciseFrameSequence>> = {
       { image: "/exercises/frames/proprioception-cheville-serviette/pose-4.png", caption: "Version difficile : ferme les yeux." },
     ],
   },
+  "tacle-glisse-controle": {
+    poses: [
+      { image: "/exercises/frames/tacle-glisse-controle/pose-1.png", caption: "Position de départ, face au porteur de balle." },
+      { image: "/exercises/frames/tacle-glisse-controle/pose-2.png", caption: "Approche de biais, jamais de face." },
+      { image: "/exercises/frames/tacle-glisse-controle/pose-3.png", caption: "Glisse, jambe tendue, en visant le ballon." },
+      { image: "/exercises/frames/tacle-glisse-controle/pose-4.png", caption: "Relève-toi tout de suite, ballon récupéré." },
+    ],
+  },
+  "duel-aerien-defensif": {
+    poses: [
+      { image: "/exercises/frames/duel-aerien-defensif/pose-1.png", caption: "Position de départ, lis la trajectoire du ballon." },
+      { image: "/exercises/frames/duel-aerien-defensif/pose-2.png", caption: "Cours te placer sous le point de chute." },
+      { image: "/exercises/frames/duel-aerien-defensif/pose-3.png", caption: "Saute et dégage de la tête, front haut." },
+      { image: "/exercises/frames/duel-aerien-defensif/pose-4.png", caption: "Retombe équilibré, prêt pour la suite." },
+    ],
+  },
+  "jockey-defensif-pas-chasses": {
+    poses: [
+      { image: "/exercises/frames/jockey-defensif-pas-chasses/pose-1.png", caption: "Position basse, face à l'attaquant." },
+      { image: "/exercises/frames/jockey-defensif-pas-chasses/pose-2.png", caption: "Recule en pas chassés, sans croiser les appuis." },
+      { image: "/exercises/frames/jockey-defensif-pas-chasses/pose-3.png", caption: "Reste sur la pointe des pieds, concentré." },
+      { image: "/exercises/frames/jockey-defensif-pas-chasses/pose-4.png", caption: "Position maîtrisée, prêt à réagir." },
+    ],
+  },
 };
