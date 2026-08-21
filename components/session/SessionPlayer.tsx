@@ -622,6 +622,17 @@ function ActiveExerciseScreen({
         <p className="mt-2 text-center text-sm text-[var(--color-text)]">{block.customInstruction}</p>
         <p className="mt-2 text-center text-xs italic text-[var(--color-text-muted)]">{block.exercise.matchBenefit}</p>
 
+        {state.phase === "idle" && block.exercise.steps.length > 0 && (
+          <Card className="mt-4 text-left">
+            <CardSubtitle>Comment faire, étape par étape</CardSubtitle>
+            <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-sm text-[var(--color-text)]">
+              {block.exercise.steps.map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Card>
+        )}
+
         <div className="mt-3 flex flex-wrap justify-center gap-2 text-sm font-semibold text-[var(--color-text-muted)]">
           {block.sets && <span>{block.sets} séries</span>}
           {block.reps && <span>· {block.reps}</span>}

@@ -1,12 +1,12 @@
 {
   "_comment": "slug Progressa -> requetes Pexels, de la plus precise a la plus large. Le script essaie dans l'ordre et s'arrete au premier resultat exploitable. Couvre les exercices du catalogue avec un geste technique a montrer. Les exercices de course d'ambiance visent une image cohérente, pas un geste a copier.",
   "automassage-mollets": [
-    "foam rolling calf",
-    "foam roller legs recovery"
+    "foam rolling calf muscle recovery",
+    "calf massage self recovery"
   ],
   "blocage-sol-parade-basse": [
-    "goalkeeper low save",
-    "goalkeeper training save"
+    "goalkeeper low save training drill",
+    "goalkeeper diving low save ball"
   ],
   "bondissements-lateraux": [
     "lateral jumps exercise",
@@ -59,12 +59,12 @@
     "band side steps exercise"
   ],
   "enchainement-plongeon-releve-plongeon": [
-    "goalkeeper double save training",
-    "goalkeeper reaction dive drill"
+    "goalkeeper diving save drill",
+    "goalkeeper dive save training"
   ],
   "equilibre-unipodal-genoux": [
-    "single leg balance exercise",
-    "one leg stand balance"
+    "single leg stand balance exercise",
+    "standing balance exercise one leg athlete"
   ],
   "etirements-adducteurs": [
     "groin stretch",
@@ -109,8 +109,8 @@
     "side plank hold workout"
   ],
   "gainage-lombaire-doux": [
-    "dead bug exercise",
-    "core exercise floor back"
+    "core stability exercise lying on back",
+    "abdominal exercise arm leg extension floor"
   ],
   "gainage-mountain-climbers": [
     "mountain climbers exercise"
@@ -144,8 +144,8 @@
     "walk to run warm up"
   ],
   "mobilite-chevilles": [
-    "ankle mobility exercise",
-    "ankle circles warm up"
+    "ankle rotation exercise warm up",
+    "foot and ankle warm up drill"
   ],
   "mobilite-hanches-cercles": [
     "hip mobility exercise",
@@ -157,9 +157,8 @@
     "box step up workout"
   ],
   "navette-progressive": [
-    "shuttle run test",
-    "beep test running",
-    "agility shuttle run"
+    "shuttle run fitness test track",
+    "beep test running athlete track"
   ],
   "nordic-curl-assiste": [
     "nordic hamstring curl",
@@ -179,18 +178,16 @@
     "goalkeeper dive training"
   ],
   "pompes-genoux-pieds": [
-    "push up exercise",
-    "man doing push ups",
-    "pushups floor workout"
+    "push up exercise floor fitness",
+    "man doing push ups workout"
   ],
   "prise-balle-haute": [
-    "goalkeeper catching high ball",
-    "goalkeeper catch training"
+    "goalkeeper catching high ball cross",
+    "goalkeeper jumping catch save"
   ],
   "proprioception-cheville-serviette": [
-    "balance training ankle",
-    "single leg balance cushion",
-    "proprioception exercise balance"
+    "balance exercise standing on foam pad",
+    "single leg balance training athlete"
   ],
   "reflexes-mains-rapprochees": [
     "goalkeeper reflex training",
@@ -206,8 +203,8 @@
     "standing calf raises"
   ],
   "repositionnement-lateral-pas-chasses": [
-    "goalkeeper footwork lateral",
-    "goalkeeper side steps drill"
+    "goalkeeper lateral movement drill",
+    "goalkeeper side to side positioning"
   ],
   "respiration-retour-au-calme": [
     "breathing exercise cool down",
@@ -239,15 +236,16 @@
     "athlete short sprint"
   ],
   "squat-jumps": [
-    "jump squat exercise",
-    "squat jump workout"
+    "jump squat exercise fitness",
+    "explosive squat jump training athlete"
   ],
   "squats-bulgares": [
-    "bulgarian split squat"
+    "bulgarian split squat exercise gym",
+    "rear foot elevated split squat"
   ],
   "squats-poids-du-corps": [
-    "bodyweight squat",
-    "squat exercise woman"
+    "bodyweight squat exercise proper form",
+    "squat exercise fitness training"
   ],
   "talons-fesses": [
     "butt kicks exercise",
@@ -270,8 +268,8 @@
     "football trivela shot"
   ],
   "tete-plongeante-cage": [
-    "soccer diving header",
-    "football header goal"
+    "football header dive goal",
+    "soccer player heading ball dive"
   ],
   "finition-1v1-gardien": [
     "soccer one on one goalkeeper finish",
@@ -298,20 +296,20 @@
     "football lay off pass drill"
   ],
   "controle-orientation-corps": [
-    "soccer first touch body orientation",
-    "football receiving on the turn"
+    "soccer player turning with ball",
+    "football receive ball body turn drill"
   ],
   "passe-exterieur-tranchante": [
     "soccer outside foot pass",
     "football outside of foot passing"
   ],
   "tacle-glisse-controle": [
-    "soccer slide tackle",
-    "football sliding tackle training"
+    "football sliding tackle ball",
+    "soccer defender slide tackle drill"
   ],
   "jockey-defensif-pas-chasses": [
-    "soccer defensive jockey footwork",
-    "football defender side steps"
+    "soccer defender footwork side steps drill",
+    "football defensive stance shuffle"
   ],
   "duel-aerien-defensif": [
     "soccer aerial duel header",
@@ -330,8 +328,8 @@
     "football sprint back defending"
   ],
   "debordement-exterieur-centre": [
-    "soccer winger cross",
-    "football wing dribble and cross"
+    "soccer winger dribble down the wing",
+    "football player crossing the ball into box"
   ],
   "crochet-interieur-frappe": [
     "soccer cut inside shot",
@@ -342,16 +340,16 @@
     "football holding up play back to goal"
   ],
   "souleve-terre-jambe-tendue": [
-    "single leg deadlift exercise",
-    "romanian deadlift single leg"
+    "single leg romanian deadlift exercise",
+    "single leg deadlift balance exercise"
   ],
   "gainage-rotation-medecine": [
-    "medicine ball rotation core",
-    "russian twist medicine ball"
+    "medicine ball twist exercise",
+    "russian twist medicine ball core workout"
   ],
   "tirage-elastique-dos": [
-    "resistance band row exercise",
-    "band back row workout"
+    "resistance band row back exercise",
+    "band pulling exercise back muscles gym"
   ],
   "fentes-laterales-mobilite-hanches": [
     "lateral lunge exercise",
@@ -362,8 +360,8 @@
     "footwork ladder training"
   ],
   "changement-direction-reactif-partenaire": [
-    "reactive agility drill partner",
-    "change of direction reaction training"
+    "soccer agility cone drill",
+    "football change of direction training drill"
   ],
   "bondissements-avant-reception": [
     "broad jump landing exercise",
@@ -394,23 +392,27 @@
     "foam roller thigh recovery"
   ],
   "gainage-oiseau-chien-stabilite": [
-    "bird dog exercise",
-    "core stability bird dog"
+    "core stability exercise hands and knees",
+    "opposite arm leg extension exercise"
   ],
   "footwork-echelle-gardien": [
-    "goalkeeper footwork ladder",
-    "goalkeeper agility drill"
+    "goalkeeper agility ladder drill training",
+    "goalkeeper quick feet drill"
   ],
   "reduction-angle-1v1": [
-    "goalkeeper narrowing angle",
-    "goalkeeper one on one positioning"
+    "goalkeeper positioning narrowing angle drill",
+    "goalkeeper one on one save"
   ],
   "reflexes-frappes-rapprochees": [
-    "goalkeeper close range reflex save",
-    "goalkeeper reaction save drill"
+    "goalkeeper close range save drill",
+    "goalkeeper quick reaction save"
   ],
   "distribution-sous-pression": [
-    "goalkeeper distribution under pressure",
-    "goalkeeper quick throw"
+    "goalkeeper quick distribution drill",
+    "goalkeeper throw ball fast"
+  ],
+  "reflexes-mains-rapprochees": [
+    "goalkeeper reaction save close range drill",
+    "goalkeeper quick hands save training"
   ]
 }

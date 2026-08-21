@@ -56,16 +56,22 @@ async function search(query, orientation) {
   return res.json();
 }
 
-/** Meilleur fichier : ~1080p de haut, sinon le plus grand en dessous. */
+const MIN_FILE_HEIGHT = 480; // en dessous, visiblement pixelisé une fois recadré/affiché
+
+/** Meilleur fichier : ~1080p de haut, sinon le plus grand en dessous — jamais sous MIN_FILE_HEIGHT. */
 function pickFile(video) {
-  const files = (video.video_files || []).filter((f) => f.file_type === "video/mp4" && f.link);
+  const files = (video.video_files || []).filter(
+    (f) => f.file_type === "video/mp4" && f.link && (f.height || 0) >= MIN_FILE_HEIGHT
+  );
   if (!files.length) return null;
   const sorted = files.sort((a, b) => (b.height || 0) - (a.height || 0));
   return sorted.find((f) => (f.height || 0) <= 1200) || sorted[sorted.length - 1];
 }
 
 function pickVideo(json) {
-  const ok = (json.videos || []).filter((v) => v.duration >= MIN_DUR && v.duration <= MAX_DUR);
+  const ok = (json.videos || []).filter(
+    (v) => v.duration >= MIN_DUR && v.duration <= MAX_DUR && pickFile(v) !== null
+  );
   if (!ok.length) return null;
   // Le portrait passe mieux dans un lecteur vertical ; sinon on prend le premier.
   return ok.find((v) => v.height > v.width) || ok[0];
