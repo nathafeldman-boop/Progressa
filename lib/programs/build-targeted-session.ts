@@ -27,6 +27,7 @@ const NEED_OBJECTIVE: Record<TrainingNeed, Objective> = {
   pied_faible: "TECHNIQUE_DRIBBLING",
   dribble: "TECHNIQUE_DRIBBLING",
   tir: "SHOOTING",
+  defense: "PHYSICAL_DUELS",
   vitesse: "SPEED_EXPLOSIVENESS",
   cardio: "ENDURANCE",
   muscu: "PHYSICAL_DUELS",

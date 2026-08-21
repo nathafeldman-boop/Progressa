@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Position } from "@prisma/client";
 import { Card, CardTitle, CardSubtitle } from "@/components/ui/Card";
 import { BrianAvatar, type BrianState } from "@/components/brian/BrianAvatar";
 import { BrianTip } from "@/components/brian/BrianTip";
@@ -8,6 +9,7 @@ const THEME_BRIAN_STATE: Record<TrainingTheme, BrianState> = {
   pied_faible: "motivated",
   dribble: "confident",
   tir: "celebrating",
+  defense: "confident",
   vitesse: "motivated",
   cardio: "encouraging",
   muscu: "encouraging",
@@ -15,10 +17,17 @@ const THEME_BRIAN_STATE: Record<TrainingTheme, BrianState> = {
   gardien: "confident",
 };
 
-export function TargetedTrainingPicker({ isGoalkeeper }: { isGoalkeeper: boolean }) {
-  // "gardien" nécessite des exercices réservés au poste de gardien: le
-  // proposer à un joueur de champ mènerait droit à une séance vide.
-  const themes = TRAINING_THEMES.filter((theme) => theme !== "gardien" || isGoalkeeper);
+const DEFENSIVE_POSITIONS: Position[] = ["CENTER_BACK", "FULLBACK", "DEFENSIVE_MID"];
+
+export function TargetedTrainingPicker({ position }: { position: Position | null }) {
+  // "gardien" et "défense" reposent sur des exercices réservés à certains
+  // postes: les proposer à qui n'y a pas accès mènerait droit à une
+  // séance vide (voir exercisesForNeed).
+  const themes = TRAINING_THEMES.filter((theme) => {
+    if (theme === "gardien") return position === "GOALKEEPER";
+    if (theme === "defense") return !!position && DEFENSIVE_POSITIONS.includes(position);
+    return true;
+  });
 
   return (
     <Card>

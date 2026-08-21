@@ -13,6 +13,7 @@ export const TRAINING_NEEDS = [
   "pied_faible",
   "dribble",
   "tir",
+  "defense",
   "vitesse",
   "cardio",
   "muscu",
@@ -25,6 +26,7 @@ export const NEED_LABELS: Record<TrainingNeed, string> = {
   pied_faible: "Pied faible",
   dribble: "Dribble & conduite de balle",
   tir: "Frappe & finition",
+  defense: "Défense & duels",
   vitesse: "Vitesse & explosivité",
   cardio: "Cardio",
   muscu: "Renforcement musculaire",
@@ -36,6 +38,7 @@ export const NEED_EMOJI: Record<TrainingNeed, string> = {
   pied_faible: "🦶",
   dribble: "🌀",
   tir: "🥅",
+  defense: "🛡️",
   vitesse: "💨",
   cardio: "🫀",
   muscu: "🏋️",
@@ -48,6 +51,7 @@ export const NEED_INTRO: Record<TrainingNeed, string> = {
     "Ton pied faible, c'est la moitié de ton jeu que tu n'exploites pas encore. Cette séance reprend les gammes techniques, mais tout se joue de ce pied-là — sans exception.",
   dribble: "Le ballon collé au pied, la tête relevée, l'adversaire dans le vent. Cette séance muscle ta technique de conduite et d'élimination.",
   tir: "Une occasion qui ne se transforme pas, c'est un but perdu. Cette séance travaille ta frappe sous toutes ses formes: puissance, précision, volée.",
+  defense: "Un bon défenseur ne subit pas le jeu, il l'anticipe. Cette séance travaille ton placement, tes duels et ton timing défensif.",
   vitesse: "Les matchs se gagnent souvent sur les 5 premiers mètres. Cette séance travaille ton explosivité et ta vitesse de réaction.",
   cardio: "Un joueur qui tient physiquement jusqu'à la 90e, c'est un joueur qui pèse sur le match jusqu'au bout. Cette séance construit ton endurance.",
   muscu: "Gagner tes duels commence par être plus fort. Cette séance renforce les appuis et le gainage dont tu as besoin sur le terrain.",
@@ -65,6 +69,8 @@ export function exercisesForNeed(catalog: ExerciseSeed[], need: TrainingNeed): E
       );
     case "tir":
       return catalog.filter((e) => e.category === ExerciseCategory.TECHNIQUE && e.objectives.includes(Objective.SHOOTING));
+    case "defense":
+      return catalog.filter((e) => e.category === ExerciseCategory.TECHNIQUE && e.objectives.includes(Objective.PHYSICAL_DUELS));
     case "vitesse":
       return catalog.filter((e) => e.category === ExerciseCategory.EXPLOSIVENESS);
     case "cardio":
