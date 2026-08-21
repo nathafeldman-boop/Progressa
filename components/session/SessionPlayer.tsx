@@ -53,6 +53,8 @@ export interface SessionBlockView {
     easyVariant: string;
     hardVariant: string;
     durationMinutes: number;
+    /** Meilleur temps déjà réalisé par le joueur sur cet exercice, toutes séances confondues — null si jamais fait. */
+    personalBest: { seconds: number; feltDifficulty: string | null } | null;
   };
 }
 
@@ -66,6 +68,14 @@ const PHASE_BADGE_STYLE: Record<SessionBlockView["phase"], string> = {
   WARMUP: "bg-[#fb923c]/15 text-[#c2410c]",
   MAIN: "bg-[var(--color-primary-soft)] text-[var(--color-primary-strong)]",
   COOLDOWN: "bg-[#60a5fa]/15 text-[#1d4ed8]",
+};
+
+const DIFFICULTY_LABEL_FR: Record<string, string> = {
+  VERY_EASY: "très facile",
+  EASY: "facile",
+  MEDIUM: "moyen",
+  HARD: "difficile",
+  VERY_HARD: "très difficile",
 };
 
 const DIFFICULTY_OPTIONS: { value: "VERY_EASY" | "EASY" | "MEDIUM" | "HARD" | "VERY_HARD"; label: string; color: string }[] = [
@@ -112,7 +122,7 @@ type BlockPhaseState = "idle" | "active" | "rating" | "done";
 interface BlockLocalState {
   phase: BlockPhaseState;
   startedAt: number | null;
-  reaction: { category: string; text: string; deltas: Partial<Record<StatAxis, number>> } | null;
+  reaction: { category: string; text: string; deltas: Partial<Record<StatAxis, number>>; isPersonalRecord?: boolean } | null;
   /** L'utilisateur a vu le retour de Brian et appuyé sur "Suivant" — sans
    * ça, dès qu'un bloc passe à "done" on sauterait directement au suivant
    * sans jamais laisser le temps de lire la réaction. */
@@ -214,7 +224,7 @@ export function SessionPlayer({
     const actualDurationSeconds = elapsedSeconds(blockStates[blockId]?.startedAt ?? null);
     updateBlock(blockId, { phase: "done" });
     const data = await postTelemetry(blockId, { status: "COMPLETED", feltDifficulty, actualDurationSeconds });
-    if (data) updateBlock(blockId, { reaction: { ...data.brianMessage, deltas: data.deltas } });
+    if (data) updateBlock(blockId, { reaction: { ...data.brianMessage, deltas: data.deltas, isPersonalRecord: data.isPersonalRecord } });
   }
 
   function advanceToNext(blockId: string) {
@@ -602,6 +612,16 @@ function ActiveExerciseScreen({
           <span>· ~{block.exercise.durationMinutes} min</span>
         </div>
 
+        {block.exercise.personalBest && state.phase !== "done" && (
+          <p className="mt-2 text-center text-xs font-semibold text-[var(--color-primary-strong)]">
+            🏆 Ton record : {formatMmSs(block.exercise.personalBest.seconds)}
+            {block.exercise.personalBest.feltDifficulty
+              ? ` (${DIFFICULTY_LABEL_FR[block.exercise.personalBest.feltDifficulty] ?? block.exercise.personalBest.feltDifficulty})`
+              : ""}{" "}
+            — à toi de le battre.
+          </p>
+        )}
+
         <div className="mt-3 flex justify-center gap-2">
           <button type="button" onClick={() => onSetVariant("easy")} className="text-xs font-semibold text-[var(--color-primary-strong)] underline">
             Variante facile
@@ -612,6 +632,14 @@ function ActiveExerciseScreen({
         </div>
         {variant === "easy" && <p className="mt-2 text-center text-sm text-[var(--color-text-muted)]">{block.exercise.easyVariant}</p>}
         {variant === "hard" && <p className="mt-2 text-center text-sm text-[var(--color-text-muted)]">{block.exercise.hardVariant}</p>}
+
+        {state.phase === "done" && state.reaction?.isPersonalRecord && (
+          <div className="mt-5 animate-[pulse_1.6s_ease-in-out_2] rounded-[var(--radius-control)] border-2 border-[var(--color-primary)] bg-[var(--color-primary-soft)] p-3 text-center">
+            <p className="font-display text-base font-extrabold uppercase tracking-wide text-[var(--color-primary-strong)]">
+              🏆 Nouveau record personnel !
+            </p>
+          </div>
+        )}
 
         {state.phase === "done" && state.reaction && (
           <BrianMessageCard

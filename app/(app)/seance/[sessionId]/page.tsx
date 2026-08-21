@@ -6,6 +6,7 @@ import { isPremiumActive } from "@/lib/subscription";
 import { getAgeCategory } from "@/lib/age-category";
 import { POSITION_LABELS, WEEKDAY_LABELS } from "@/lib/labels";
 import { SessionPlayer, type SessionBlockView } from "@/components/session/SessionPlayer";
+import { getPersonalBests } from "@/lib/brian/service";
 
 export default async function SeancePage({ params }: { params: Promise<{ sessionId: string }> }) {
   const { sessionId } = await params;
@@ -19,6 +20,11 @@ export default async function SeancePage({ params }: { params: Promise<{ session
   ]);
 
   if (!session) notFound();
+
+  const personalBests = await getPersonalBests(
+    user.id,
+    session.blocks.map((b) => b.exercise.id)
+  );
 
   const premium = isPremiumActive(subscription);
   const ageCategory = profile ? getAgeCategory(profile.birthYear) : null;
@@ -49,6 +55,10 @@ export default async function SeancePage({ params }: { params: Promise<{ session
       easyVariant: block.exercise.easyVariant,
       hardVariant: block.exercise.hardVariant,
       durationMinutes: block.exercise.durationMinutes,
+      personalBest: (() => {
+        const best = personalBests.get(block.exercise.id);
+        return best ? { seconds: best.actualDurationSeconds, feltDifficulty: best.feltDifficulty } : null;
+      })(),
     },
   }));
 

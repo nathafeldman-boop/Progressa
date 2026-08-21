@@ -51,6 +51,41 @@ const OBJECTIVE_KEY_FOR_AXIS: Partial<Record<StatAxis, "WORK_ON_SPEED" | "WORK_O
   PHYSIQUE: "WORK_ON_ENDURANCE",
 };
 
+export interface PersonalBest {
+  actualDurationSeconds: number;
+  feltDifficulty: FeltDifficulty | null;
+}
+
+/**
+ * Meilleur temps du joueur par exercice (parmi les blocs déjà complétés,
+ * toutes séances confondues) — sert à afficher "ton record" avant de
+ * lancer un exercice, sur la même donnée que le calcul isPersonalRecord
+ * de recordBlockTelemetry ci-dessous.
+ */
+export async function getPersonalBests(userId: string, exerciseIds: string[]): Promise<Map<string, PersonalBest>> {
+  if (exerciseIds.length === 0) return new Map();
+
+  const rows = await prisma.sessionBlock.findMany({
+    where: {
+      exerciseId: { in: exerciseIds },
+      status: "COMPLETED",
+      actualDurationSeconds: { not: null },
+      programSession: { weeklyProgram: { userId } },
+    },
+    select: { exerciseId: true, actualDurationSeconds: true, feltDifficulty: true },
+  });
+
+  const bests = new Map<string, PersonalBest>();
+  for (const row of rows) {
+    const seconds = row.actualDurationSeconds!;
+    const current = bests.get(row.exerciseId);
+    if (!current || seconds < current.actualDurationSeconds) {
+      bests.set(row.exerciseId, { actualDurationSeconds: seconds, feltDifficulty: row.feltDifficulty });
+    }
+  }
+  return bests;
+}
+
 export interface BlockTelemetryResult {
   deltas: Partial<Record<StatAxis, number>>;
   isPersonalRecord: boolean;
