@@ -1,6 +1,7 @@
 import { BlockPhase, type Objective } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { filterCatalogForProfile } from "@/lib/ai/catalog-filter";
+import type { ExerciseSeed } from "@/lib/exercises/catalog-data";
 import { isPremiumActive } from "@/lib/subscription";
 import {
   TRAINING_NEEDS,
@@ -60,45 +61,37 @@ function pickMany<T extends { slug: string }>(pool: T[], exclude: Set<string>, c
   return picked;
 }
 
+/** Décale le pool d'un cran de départ — sert à générer des variantes de séance différentes pour un même besoin. */
+function rotate<T>(items: T[], offset: number): T[] {
+  if (items.length === 0) return items;
+  const i = ((offset % items.length) + items.length) % items.length;
+  return [...items.slice(i), ...items.slice(0, i)];
+}
+
+export const TARGETED_SESSION_VARIANT_COUNT = 5;
+
+interface TargetedSelection {
+  warmup: ExerciseSeed[];
+  mainExercises: ExerciseSeed[];
+  cooldown: ExerciseSeed[];
+}
+
 /**
- * Séance ciblée sur un besoin précis (pied faible, cardio, vitesse...), à
- * la demande du joueur — distincte du programme hebdomadaire généré
- * automatiquement. Sélection déterministe (pas d'appel IA: c'est un choix
- * explicite du joueur, pas une génération à personnaliser). Construit
- * directement une séance complète et jouable — le joueur ne pioche plus
- * un exercice dans une liste, le coach construit la séance pour lui.
+ * Sélection pure (aucun accès DB au-delà du catalogue déjà filtré): choisit
+ * échauffement/corps de séance/retour au calme pour un besoin donné.
+ * `variantIndex` fait tourner le point de départ dans chaque pool — permet
+ * de proposer plusieurs séances différentes pour le même besoin (section
+ * "Entraînement ciblé": le joueur choisit parmi TARGETED_SESSION_VARIANT_COUNT
+ * variantes plutôt que de recevoir toujours exactement la même sélection).
  */
-export async function buildTargetedSession(userId: string, need: TrainingNeed) {
-  const [profile, subscription] = await Promise.all([
-    prisma.playerProfile.findUnique({ where: { userId } }),
-    prisma.subscription.findUnique({ where: { userId } }),
-  ]);
-  if (!profile) return null;
-
-  const premium = isPremiumActive(subscription);
-  const catalog = filterCatalogForProfile({
-    birthYear: profile.birthYear,
-    position: profile.position,
-    equipment: profile.equipment,
-    isPremium: premium,
-  });
-
-  const mainPool = exercisesForNeed(catalog, need);
-  const warmupPool = warmupPoolForNeed(catalog, need);
-  const cooldownPool = cooldownPoolForNeed(catalog);
+function computeTargetedSelection(catalog: ExerciseSeed[], need: TrainingNeed, variantIndex = 0): TargetedSelection | null {
+  const mainPool = rotate(exercisesForNeed(catalog, need), variantIndex * 2);
+  const warmupPool = rotate(warmupPoolForNeed(catalog, need), variantIndex);
+  const cooldownPool = rotate(cooldownPoolForNeed(catalog), variantIndex);
 
   if (mainPool.length === 0) return null;
 
   const used = new Set<string>();
-  const blocks: {
-    exerciseId: string;
-    order: number;
-    phase: BlockPhase;
-    sets: number | null;
-    reps: string | null;
-    restSeconds: number | null;
-    customInstruction: string;
-  }[] = [];
 
   // Le corps de séance vise MAX_MAIN_EXERCISES, mais un compte gratuit n'a
   // que ~1-2 exercices débloqués par catégorie (freemium ~15% du
@@ -119,6 +112,85 @@ export async function buildTargetedSession(userId: string, need: TrainingNeed) {
 
   const warmup = pickMany(warmupPool, used, warmupCount);
   const cooldown = pickMany(cooldownPool, used, cooldownCount);
+
+  return { warmup, mainExercises, cooldown };
+}
+
+async function loadFilteredCatalog(userId: string) {
+  const [profile, subscription] = await Promise.all([
+    prisma.playerProfile.findUnique({ where: { userId } }),
+    prisma.subscription.findUnique({ where: { userId } }),
+  ]);
+  if (!profile) return null;
+
+  const premium = isPremiumActive(subscription);
+  return filterCatalogForProfile({
+    birthYear: profile.birthYear,
+    position: profile.position,
+    equipment: profile.equipment,
+    isPremium: premium,
+  });
+}
+
+export interface TargetedSessionVariantPreview {
+  variantIndex: number;
+  totalBlocks: number;
+  mainExerciseNames: string[];
+}
+
+/**
+ * Calcule TARGETED_SESSION_VARIANT_COUNT aperçus (aucune écriture en base)
+ * pour l'écran de choix — le joueur voit ce que contient chaque variante
+ * avant de la lancer. Des besoins à pool très étroit (ex: freemium) peuvent
+ * produire des variantes identiques ou moins nombreuses: on ne déguise
+ * jamais artificiellement une répétition en fausse variété.
+ */
+export async function previewTargetedSessionVariants(
+  userId: string,
+  need: TrainingNeed
+): Promise<TargetedSessionVariantPreview[]> {
+  const catalog = await loadFilteredCatalog(userId);
+  if (!catalog) return [];
+
+  const previews: TargetedSessionVariantPreview[] = [];
+  for (let variantIndex = 0; variantIndex < TARGETED_SESSION_VARIANT_COUNT; variantIndex++) {
+    const selection = computeTargetedSelection(catalog, need, variantIndex);
+    if (!selection) continue;
+    const totalBlocks = selection.warmup.length + selection.mainExercises.length + selection.cooldown.length;
+    previews.push({
+      variantIndex,
+      totalBlocks,
+      mainExerciseNames: selection.mainExercises.slice(0, 3).map((e) => e.name),
+    });
+  }
+  return previews;
+}
+
+/**
+ * Séance ciblée sur un besoin précis (pied faible, cardio, vitesse...), à
+ * la demande du joueur — distincte du programme hebdomadaire généré
+ * automatiquement. Sélection déterministe (pas d'appel IA: c'est un choix
+ * explicite du joueur, pas une génération à personnaliser). `variantIndex`
+ * choisit laquelle des TARGETED_SESSION_VARIANT_COUNT variantes présentées
+ * à l'écran de choix construire et persister.
+ */
+export async function buildTargetedSession(userId: string, need: TrainingNeed, variantIndex = 0) {
+  const catalog = await loadFilteredCatalog(userId);
+  if (!catalog) return null;
+
+  const selection = computeTargetedSelection(catalog, need, variantIndex);
+  if (!selection) return null;
+  const { warmup, mainExercises, cooldown } = selection;
+
+  const blocks: {
+    exerciseId: string;
+    order: number;
+    phase: BlockPhase;
+    sets: number | null;
+    reps: string | null;
+    restSeconds: number | null;
+    customInstruction: string;
+  }[] = [];
 
   const slugs = [...warmup, ...mainExercises, ...cooldown].map((e) => e.slug);
   const dbExercises = await prisma.exercise.findMany({ where: { slug: { in: slugs } } });
