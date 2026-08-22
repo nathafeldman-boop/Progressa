@@ -16,6 +16,15 @@ export interface CatalogFilterInput {
 const equipmentSet = (equipment: Equipment[]) => new Set(equipment.length ? equipment : [Equipment.NONE]);
 
 /**
+ * Matériel "substituable": des plots ne sont jamais un vrai blocage — une
+ * paire de chaussettes, un sac ou une bouteille au sol font l'affaire. On ne
+ * retire donc jamais un exercice du catalogue pour cette seule raison; c'est
+ * à l'IA (system-prompt) de préciser la substitution dans sa consigne quand
+ * le joueur n'a pas coché "Plots" dans son matériel.
+ */
+const SUBSTITUTABLE_EQUIPMENT = new Set<Equipment>([Equipment.CONES]);
+
+/**
  * Filtre le catalogue AVANT de le donner à l'IA: âge minimum, poste,
  * matériel réellement disponible. L'IA ne voit jamais un exercice qu'elle
  * ne pourrait pas prescrire — elle choisit uniquement dans ce sous-ensemble.
@@ -30,7 +39,9 @@ export function filterCatalogForProfile(input: CatalogFilterInput): ExerciseSeed
     const positionOk = exercise.positions.length === 0 || exercise.positions.includes(input.position);
     if (!positionOk) return false;
 
-    const equipmentOk = exercise.equipment.every((eq) => eq === Equipment.NONE || available.has(eq));
+    const equipmentOk = exercise.equipment.every(
+      (eq) => eq === Equipment.NONE || SUBSTITUTABLE_EQUIPMENT.has(eq) || available.has(eq)
+    );
     if (!equipmentOk) return false;
 
     if (input.isPremium === false && !exercise.isFreeTier) return false;

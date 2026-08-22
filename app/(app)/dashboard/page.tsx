@@ -46,6 +46,7 @@ export default async function DashboardPage() {
   const ageCategory = profile ? getAgeCategory(profile.birthYear) : null;
   const cardStats = playerCard?.stats as { overall: number; rankTier?: string; rankKey?: string } | undefined;
   const todaySession = program?.sessions.find((s) => s.dayOfWeek === todayAsWeekday()) ?? null;
+  const isMatchDayToday = !!profile?.matchDay && profile.matchDay === todayAsWeekday();
 
   return (
     <div className="mx-auto max-w-md space-y-4 p-4">
@@ -66,6 +67,8 @@ export default async function DashboardPage() {
         cardStats={cardStats ? { overall: cardStats.overall, rankTier: cardStats.rankTier } : null}
         streakCount={streak?.currentStreak ?? 0}
         hasProgram={!!program}
+        firstName={user.firstName}
+        isMatchDayToday={isMatchDayToday}
       />
 
       <div className="flex items-center justify-between px-1">

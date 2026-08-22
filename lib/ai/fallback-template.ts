@@ -1,4 +1,4 @@
-import { BlockPhase, ExerciseCategory, type Objective, type Weekday } from "@prisma/client";
+import { BlockPhase, Equipment, ExerciseCategory, type Objective, type Weekday } from "@prisma/client";
 import type { ExerciseSeed } from "@/lib/exercises/catalog-data";
 import type { ProgramOutput } from "@/lib/ai/program-schema";
 
@@ -8,6 +8,7 @@ export interface FallbackTemplateInput {
   matchAdjacentDays: Weekday[];
   filteredCatalog: ExerciseSeed[];
   objective: Objective;
+  equipment?: Equipment[];
   weekSeed?: number; // fait varier le choix d'une semaine à l'autre (ex: numéro de semaine ISO)
 }
 
@@ -31,8 +32,14 @@ function pickMany(catalog: ExerciseSeed[], categories: ExerciseCategory[], seed:
   return picked;
 }
 
-function genericInstruction(exercise: ExerciseSeed): string {
-  return `Fais "${exercise.name}" en respectant les étapes indiquées. Programme de repli généré automatiquement — sera personnalisé dès la prochaine génération IA réussie.`;
+function genericInstruction(exercise: ExerciseSeed, opts: { hasCones: boolean; matchIntro?: boolean }): string {
+  const base = `Fais "${exercise.name}" en respectant les étapes indiquées. Programme de repli généré automatiquement — sera personnalisé dès la prochaine génération IA réussie.`;
+  const conesNote =
+    !opts.hasCones && exercise.equipment.includes(Equipment.CONES)
+      ? " Pas de plots ? Remplace-les par des chaussettes roulées, un sac ou une bouteille au sol."
+      : "";
+  const matchNote = opts.matchIntro ? "Veille de match: séance volontairement courte et légère pour arriver frais. " : "";
+  return `${matchNote}${base}${conesNote}`;
 }
 
 /**
@@ -49,9 +56,17 @@ export function buildFallbackProgram(input: FallbackTemplateInput): ProgramOutpu
     seed
   )[0];
 
+  const hasCones = (input.equipment ?? []).includes(Equipment.CONES);
+
   const sessions = days.map((dayOfWeek, index) => {
     const isMatchAdjacent = input.matchAdjacentDays.includes(dayOfWeek);
     const used = new Set<string>();
+    let matchIntroUsed = false;
+    const instructionFor = (exercise: ExerciseSeed): string => {
+      const matchIntro = isMatchAdjacent && !matchIntroUsed;
+      if (matchIntro) matchIntroUsed = true;
+      return genericInstruction(exercise, { hasCones, matchIntro });
+    };
 
     // Une vraie séance de coach, pas 3-4 exercices qui ne mènent nulle
     // part: on vise 2 échauffement + 7 corps de séance + 2 retour au
@@ -87,7 +102,7 @@ export function buildFallbackProgram(input: FallbackTemplateInput): ProgramOutpu
         sets: null,
         reps: null,
         restSeconds: 30,
-        customInstruction: genericInstruction(exercise),
+        customInstruction: instructionFor(exercise),
       });
     }
     for (const exercise of mainExercises) {
@@ -97,7 +112,7 @@ export function buildFallbackProgram(input: FallbackTemplateInput): ProgramOutpu
         sets: 3,
         reps: null,
         restSeconds: 45,
-        customInstruction: genericInstruction(exercise),
+        customInstruction: instructionFor(exercise),
       });
     }
     for (const exercise of cooldown) {
@@ -107,7 +122,7 @@ export function buildFallbackProgram(input: FallbackTemplateInput): ProgramOutpu
         sets: null,
         reps: null,
         restSeconds: 0,
-        customInstruction: genericInstruction(exercise),
+        customInstruction: instructionFor(exercise),
       });
     }
 

@@ -27,11 +27,15 @@ export function DashboardHero({
   cardStats,
   streakCount,
   hasProgram,
+  firstName,
+  isMatchDayToday,
 }: {
   todaySession: HeroSession | null;
   cardStats: HeroCardStats | null;
   streakCount: number;
   hasProgram: boolean;
+  firstName: string;
+  isMatchDayToday: boolean;
 }) {
   const progress = cardStats ? nextRankProgress(cardStats.overall) : null;
   const alreadyDone = todaySession?.status === "COMPLETED";
@@ -62,6 +66,15 @@ export function DashboardHero({
               Ton programme arrive
             </h1>
             <p className="mt-1 text-sm text-white/80">Complète ton profil pour débloquer ta première séance.</p>
+          </>
+        ) : !todaySession && isMatchDayToday ? (
+          <>
+            <h1 className="mt-1 font-display text-2xl font-extrabold uppercase leading-tight">
+              Bon match{firstName ? `, ${firstName}` : ""} ! 🏆
+            </h1>
+            <p className="mt-1 text-sm text-white/80">
+              Pas de séance aujourd&apos;hui — repos complet, tu gardes tes jambes fraîches pour le match.
+            </p>
           </>
         ) : !todaySession ? (
           <>

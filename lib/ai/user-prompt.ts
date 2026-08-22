@@ -1,4 +1,4 @@
-import type { Position, Objective, Weekday } from "@prisma/client";
+import type { Position, Objective, Weekday, Equipment } from "@prisma/client";
 import type { ExerciseSeed } from "@/lib/exercises/catalog-data";
 
 export interface PreviousWeekSummary {
@@ -18,6 +18,7 @@ export interface UserPromptInput {
   weightKg?: number | null;
   clubSessionsPerWeek?: number | null;
   matchDay?: Weekday | null;
+  equipment: Equipment[];
   objective: Objective;
   weakPointNote?: string | null;
   unresolvedPain: { bodyPart: string; note?: string | null }[];
@@ -50,6 +51,7 @@ export function buildUserPrompt(input: UserPromptInput): string {
     weightKg: input.weightKg ?? null,
     clubSessionsPerWeek: input.clubSessionsPerWeek ?? null,
     matchDay: input.matchDay ?? null,
+    equipmentDisponible: input.equipment.length ? input.equipment : ["NONE"],
     objective: input.objective,
     weakPointNote: input.weakPointNote ?? null,
   };
@@ -61,9 +63,9 @@ export function buildUserPrompt(input: UserPromptInput): string {
       ? `Bilan de la semaine précédente:\n${JSON.stringify(input.previousWeek, null, 2)}\nAjuste la charge à la hausse si le ressenti était facile (1-2) et les séances complétées, à la baisse si difficile (4-5) ou beaucoup de séances sautées.`
       : `Pas de semaine précédente (premier programme du joueur).`,
     `Jours envisageables pour placer les séances: ${input.targetWeekDays.join(", ")}.`,
-    `Jours veille/jour de match (INTERDITS pour tout bloc intense, marquer isMatchAdjacent=true si utilisés): ${
+    `Jours veille de match (séance légère obligatoire, marquer isMatchAdjacent=true, rappeler le match à venir dans le titre ou la première consigne): ${
       input.matchAdjacentDays.length ? input.matchAdjacentDays.join(", ") : "aucun"
-    }.`,
+    }. Le jour du match lui-même (${input.matchDay ?? "aucun"}) n'apparaît jamais dans les jours envisageables ci-dessus — c'est un repos complet.`,
     `Catalogue d'exercices disponibles pour ce joueur (choisis UNIQUEMENT parmi ces slugs):\n${JSON.stringify(
       catalogForPrompt(input.filteredCatalog),
       null,

@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { StatAxis } from "@prisma/client";
+import { Equipment, type StatAxis } from "@prisma/client";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
 import { Button } from "@/components/ui/Button";
 import { MicroSurveyPrompt } from "@/components/session/MicroSurveyPrompt";
+import { PreSessionCheckIn } from "@/components/session/PreSessionCheckIn";
 import { BrianMessageCard } from "@/components/brian/BrianMessageCard";
 import { BrianAvatar, type BrianState } from "@/components/brian/BrianAvatar";
 import { BrianTip } from "@/components/brian/BrianTip";
@@ -17,6 +18,7 @@ import { EXERCISE_VIDEO } from "@/lib/exercises/exercise-media";
 import { EXERCISE_FRAMES } from "@/lib/exercises/exercise-frames";
 import { ExerciseFrameViewer } from "@/components/exercises/ExerciseFrameViewer";
 import { ExerciseFrameLoop } from "@/components/exercises/ExerciseFrameLoop";
+import { EQUIPMENT_LABELS } from "@/lib/labels";
 
 /** Re-render chaque seconde tant que `active` — sert au minuteur en direct. */
 function useTicker(active: boolean) {
@@ -53,6 +55,7 @@ export interface SessionBlockView {
     easyVariant: string;
     hardVariant: string;
     durationMinutes: number;
+    equipment: Equipment[];
     /** Meilleur temps déjà réalisé par le joueur sur cet exercice, toutes séances confondues — null si jamais fait. */
     personalBest: { seconds: number; feltDifficulty: string | null } | null;
   };
@@ -152,6 +155,7 @@ export function SessionPlayer({
   blocks,
   alreadyCompleted,
   showPremiumBanner,
+  defaultEquipment,
 }: {
   sessionId: string;
   title: string;
@@ -159,8 +163,13 @@ export function SessionPlayer({
   blocks: SessionBlockView[];
   alreadyCompleted: boolean;
   showPremiumBanner: boolean;
+  defaultEquipment: Equipment[];
 }) {
   const router = useRouter();
+  // Toujours demandé avant la première séance, sauf en lecture seule
+  // (séance déjà terminée qu'on ne fait que consulter).
+  const [checkedIn, setCheckedIn] = useState(alreadyCompleted);
+  const [todayEquipment, setTodayEquipment] = useState<Equipment[]>(defaultEquipment);
   const [difficulty, setDifficulty] = useState<number | null>(null);
   const [recoveryNote, setRecoveryNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -288,6 +297,18 @@ export function SessionPlayer({
     }
   }
 
+  if (!checkedIn) {
+    return (
+      <PreSessionCheckIn
+        defaultEquipment={defaultEquipment}
+        onConfirm={(equipment) => {
+          setTodayEquipment(equipment);
+          setCheckedIn(true);
+        }}
+      />
+    );
+  }
+
   if (pendingSurvey) {
     return (
       <div className="mx-auto max-w-md p-4">
@@ -406,6 +427,7 @@ export function SessionPlayer({
         index={currentIndex}
         total={blocks.length}
         state={blockStates[block.id]}
+        todayEquipment={todayEquipment}
         variant={expandedVariant[block.id] ?? null}
         onSetVariant={(v) => setExpandedVariant((prev) => ({ ...prev, [block.id]: prev[block.id] === v ? null : v }))}
         onSkip={() => skipBlock(block.id)}
@@ -492,6 +514,7 @@ function ActiveExerciseScreen({
   index,
   total,
   state,
+  todayEquipment,
   variant,
   onSetVariant,
   onSkip,
@@ -506,6 +529,7 @@ function ActiveExerciseScreen({
   index: number;
   total: number;
   state: BlockLocalState;
+  todayEquipment: Equipment[];
   variant: "easy" | "hard" | null;
   onSetVariant: (v: "easy" | "hard") => void;
   onSkip: () => void;
@@ -522,6 +546,11 @@ function ActiveExerciseScreen({
   // existent pour cet exercice — la vidéo Pexels ne sert que de repli pour
   // les exercices sans pose IA (voir scripts/videos/).
   const frames = EXERCISE_FRAMES[block.exercise.slug];
+  // Les plots ne sont jamais un vrai blocage: si le joueur a dit ne pas en
+  // avoir aujourd'hui (check-in avant séance) et que cet exercice en
+  // utilise, on propose une substitution plutôt que de le laisser deviner.
+  const needsSubstituteCones =
+    block.exercise.equipment.includes(Equipment.CONES) && !todayEquipment.includes(Equipment.CONES);
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-[var(--color-bg)] [padding-top:env(safe-area-inset-top)] [padding-bottom:env(safe-area-inset-bottom)]">
@@ -620,6 +649,12 @@ function ActiveExerciseScreen({
         </CardTitle>
         <p className="mt-2 text-center text-sm text-[var(--color-text)]">{block.customInstruction}</p>
         <p className="mt-2 text-center text-xs italic text-[var(--color-text-muted)]">{block.exercise.matchBenefit}</p>
+        {needsSubstituteCones && (
+          <p className="mx-auto mt-2 max-w-xs text-center text-xs font-semibold text-[var(--color-primary-strong)]">
+            💡 Pas de {EQUIPMENT_LABELS.CONES.toLowerCase()} ? Remplace-les par des chaussettes roulées, un sac ou une
+            bouteille au sol.
+          </p>
+        )}
 
         {state.phase === "idle" && block.exercise.steps.length > 0 && (
           <Card className="mt-4 text-left">

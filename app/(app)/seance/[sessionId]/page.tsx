@@ -55,6 +55,7 @@ export default async function SeancePage({ params }: { params: Promise<{ session
       easyVariant: block.exercise.easyVariant,
       hardVariant: block.exercise.hardVariant,
       durationMinutes: block.exercise.durationMinutes,
+      equipment: block.exercise.equipment,
       personalBest: (() => {
         const best = personalBests.get(block.exercise.id);
         return best ? { seconds: best.actualDurationSeconds, feltDifficulty: best.feltDifficulty } : null;
@@ -70,6 +71,7 @@ export default async function SeancePage({ params }: { params: Promise<{ session
       blocks={blocks}
       alreadyCompleted={session.status === "COMPLETED"}
       showPremiumBanner={!premium}
+      defaultEquipment={profile?.equipment ?? []}
     />
   );
 }

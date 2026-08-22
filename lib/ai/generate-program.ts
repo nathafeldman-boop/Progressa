@@ -110,6 +110,7 @@ export async function generateWeeklyProgram(
     weightKg: input.weightKg,
     clubSessionsPerWeek: input.clubSessionsPerWeek,
     matchDay: input.matchDay,
+    equipment: input.equipment,
     objective: input.objective,
     weakPointNote: input.weakPointNote,
     unresolvedPain: input.unresolvedPain,
@@ -160,6 +161,7 @@ export async function generateWeeklyProgram(
     matchAdjacentDays: input.matchAdjacentDays,
     filteredCatalog,
     objective: input.objective,
+    equipment: input.equipment,
     weekSeed: input.weekSeed,
   });
 
