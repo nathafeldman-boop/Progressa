@@ -8,6 +8,8 @@ import {
   type TrainingTheme,
 } from "@/lib/programs/build-targeted-session";
 import { getCurrentInternalUser } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { isPremiumActive } from "@/lib/subscription";
 import { TargetedSessionVariantPicker } from "@/components/dashboard/TargetedSessionVariantPicker";
 import type { BrianState } from "@/components/brian/BrianAvatar";
 
@@ -35,6 +37,9 @@ export default async function EntrainementCiblePage({ params }: { params: Promis
 
   const user = await getCurrentInternalUser();
   if (!user) redirect("/connexion");
+
+  const subscription = await prisma.subscription.findUnique({ where: { userId: user.id } });
+  if (!isPremiumActive(subscription)) redirect("/paywall");
 
   const trainingTheme = theme as TrainingTheme;
   const variants = await previewTargetedSessionVariants(user.id, trainingTheme);

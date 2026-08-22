@@ -17,11 +17,11 @@ export default async function AbonnementPage() {
       <h1 className="font-display text-2xl font-extrabold uppercase tracking-wide">Abonnement</h1>
 
       <Card>
-        <CardTitle>{premium ? "Tu es Premium 🎉" : "Compte gratuit"}</CardTitle>
+        <CardTitle>{premium ? "Ton abonnement est actif 🎉" : "Aucun abonnement actif"}</CardTitle>
         <CardSubtitle className="mt-1">
           {premium
-            ? "Programme 100% personnalisé, jusqu'à 3 séances/semaine, bibliothèque complète."
-            : "1 séance générique par semaine, accès limité à la bibliothèque d'exercices."}
+            ? "Programme 100% personnalisé, jusqu'à 3 séances/semaine, bibliothèque complète, 6,99 €/mois."
+            : "Abonne-toi pour 6,99 €/mois et débloque ton programme personnalisé."}
         </CardSubtitle>
         {subscription?.bonusPremiumUntil && isInFuture(subscription.bonusPremiumUntil) && (
           <p className="mt-2 text-xs font-semibold text-[var(--color-primary-strong)]">

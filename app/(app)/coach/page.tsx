@@ -1,5 +1,7 @@
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentInternalUser } from "@/lib/auth";
+import { isPremiumActive } from "@/lib/subscription";
 import { composeWelcomeMessage } from "@/lib/brian/messages";
 import { CoachChat } from "@/components/coach/CoachChat";
 import { BrianTip } from "@/components/brian/BrianTip";
@@ -7,6 +9,9 @@ import { BrianTip } from "@/components/brian/BrianTip";
 export default async function CoachPage() {
   const user = await getCurrentInternalUser();
   if (!user) return null;
+
+  const subscription = await prisma.subscription.findUnique({ where: { userId: user.id } });
+  if (!isPremiumActive(subscription)) redirect("/paywall");
 
   const messages = await prisma.brianMessage.findMany({
     where: { userId: user.id },

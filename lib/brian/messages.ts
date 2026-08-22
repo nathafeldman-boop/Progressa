@@ -190,3 +190,43 @@ export function composeRetentionMessage(): string {
     "Prêt pour la suite ? Je te prépare ton prochain entraînement pour demain.",
   ]);
 }
+
+/**
+ * Séquence de commentaires de Brian juste après la révélation de la carte
+ * (premier test terminé) — section "révélation de la carte" du funnel.
+ * Toujours basé sur les vraies stats du joueur (point fort/point faible
+ * réels), jamais un texte générique identique pour tout le monde.
+ */
+export function composeCardRevealOpening(firstName: string): string {
+  return pick([
+    `Voilà ton point de départ, ${firstName}.`,
+    `${firstName}, voici ton vrai niveau de départ.`,
+    `C'est fait, ${firstName} — ta carte est calculée à partir de tes résultats réels.`,
+  ]);
+}
+
+export function composeCardRevealStrength(strongestLabel: string, strongestValue: number): string {
+  if (strongestValue < 40) {
+    return "J'ai regardé tes résultats de près — il n'y a pas encore de point qui sort vraiment du lot, et c'est normal pour un premier test.";
+  }
+  return pick([
+    `${strongestLabel} est clairement l'un de tes points forts.`,
+    `Ce qui ressort tout de suite: ton ${strongestLabel.toLowerCase()} est déjà solide.`,
+    `J'ai identifié tes points forts — ${strongestLabel.toLowerCase()} en tête.`,
+  ]);
+}
+
+export function composeCardRevealFocus(weakestLabel: string): string {
+  return pick([
+    `${weakestLabel} est actuellement le point que je vais prioriser dans tes séances.`,
+    `Et surtout, je sais maintenant ce qu'on doit travailler en premier: ton ${weakestLabel.toLowerCase()}.`,
+    `On va se concentrer sur ton ${weakestLabel.toLowerCase()} dans les prochaines séances.`,
+  ]);
+}
+
+export function composeCardRevealTransition(firstName: string): string {
+  return pick([
+    `Ton profil est prêt, ${firstName}. Il est temps de commencer ta progression.`,
+    `${firstName}, j'ai ton point de départ. Maintenant, on construit la suite ensemble.`,
+  ]);
+}

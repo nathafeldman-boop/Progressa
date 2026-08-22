@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { getProgramSessionForUser } from "@/lib/programs/get-session";
@@ -27,6 +27,7 @@ export default async function SeancePage({ params }: { params: Promise<{ session
   );
 
   const premium = isPremiumActive(subscription);
+  if (!premium) redirect("/paywall");
   const ageCategory = profile ? getAgeCategory(profile.birthYear) : null;
 
   const chips = [

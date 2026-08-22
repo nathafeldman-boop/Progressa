@@ -43,11 +43,8 @@ export function SubscriptionActions({ hasStripeCustomer }: { hasStripeCustomer: 
 
   return (
     <Card className="space-y-3">
-      <Button className="w-full" onClick={() => startCheckout("ANNUAL")} disabled={!!loading}>
-        {loading === "ANNUAL" ? "..." : "Annuel (2 mois offerts)"}
-      </Button>
-      <Button variant="secondary" className="w-full" onClick={() => startCheckout("MONTHLY")} disabled={!!loading}>
-        {loading === "MONTHLY" ? "..." : "Mensuel"}
+      <Button className="w-full" onClick={() => startCheckout("MONTHLY")} disabled={!!loading}>
+        {loading === "MONTHLY" ? "..." : "S'abonner — 6,99 € / mois"}
       </Button>
     </Card>
   );

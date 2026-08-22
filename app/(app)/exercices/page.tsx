@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { isPremiumActive } from "@/lib/subscription";
@@ -18,6 +18,7 @@ export default async function ExercicesPage() {
   if (!profile) notFound();
 
   const premium = isPremiumActive(subscription);
+  if (!premium) redirect("/paywall");
   const available = new Set(profile.equipment.length ? profile.equipment : [Equipment.NONE]);
 
   // Portes "dures" (âge, poste): un joueur de champ ne verra jamais les

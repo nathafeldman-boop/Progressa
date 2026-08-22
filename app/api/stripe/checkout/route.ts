@@ -35,8 +35,11 @@ export async function POST(request: Request) {
     customer_email: existingSubscription?.stripeCustomerId ? undefined : user.email,
     line_items: [{ price: priceId, quantity: 1 }],
     allow_promotion_codes: true,
-    success_url: `${origin}/parametres/abonnement?success=1`,
-    cancel_url: `${origin}/parametres/abonnement?canceled=1`,
+    // Après paiement, le joueur entre directement dans l'app (jamais vers
+    // la landing ni un simple écran de confirmation) — /onboarding/brian
+    // gère déjà l'accueil + le lien vers le premier entraînement.
+    success_url: `${origin}/onboarding/brian?success=1`,
+    cancel_url: `${origin}/paywall?canceled=1`,
     client_reference_id: user.id,
     subscription_data: {
       metadata: { userId: user.id },

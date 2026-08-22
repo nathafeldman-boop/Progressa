@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { getCurrentWeeklyProgram } from "@/lib/programs/get-current-program";
@@ -43,6 +44,10 @@ export default async function DashboardPage() {
   ]);
 
   const premium = isPremiumActive(subscription);
+  // Hard paywall: un profil sans abonnement actif n'accède pas au tableau
+  // de bord — mais on ne le renvoie jamais vers le paywall avant d'avoir
+  // fini l'onboarding (pas encore de profil = encore en cours d'inscription).
+  if (profile && !premium) redirect("/paywall");
   const ageCategory = profile ? getAgeCategory(profile.birthYear) : null;
   const cardStats = playerCard?.stats as { overall: number; rankTier?: string; rankKey?: string } | undefined;
   const todaySession = program?.sessions.find((s) => s.dayOfWeek === todayAsWeekday()) ?? null;

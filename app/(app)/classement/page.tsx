@@ -1,10 +1,9 @@
-import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isPremiumActive } from "@/lib/subscription";
 import { getLeaderboard } from "@/lib/brian/leaderboard";
-import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 
 export default async function ClassementPage() {
   const user = await getCurrentInternalUser();
@@ -13,19 +12,7 @@ export default async function ClassementPage() {
   const subscription = await prisma.subscription.findUnique({ where: { userId: user.id } });
   const premium = isPremiumActive(subscription);
 
-  if (!premium) {
-    return (
-      <div className="mx-auto max-w-md p-4">
-        <Card className="p-6 text-center">
-          <CardTitle>Le classement est une fonctionnalité Premium</CardTitle>
-          <CardSubtitle className="mt-2">Vois où tu te situes face aux autres joueurs de Progressa.</CardSubtitle>
-          <Link href="/parametres/abonnement" className="mt-4 block">
-            <Button className="w-full">Découvrir Premium</Button>
-          </Link>
-        </Card>
-      </div>
-    );
-  }
+  if (!premium) redirect("/paywall");
 
   const { entries, currentUserRank, isDemo } = await getLeaderboard(user.id);
 

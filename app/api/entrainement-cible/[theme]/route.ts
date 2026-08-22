@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentInternalUser } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { isPremiumActive } from "@/lib/subscription";
 import {
   TRAINING_THEMES,
   TARGETED_SESSION_VARIANT_COUNT,
@@ -20,6 +22,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ the
 
   const user = await getCurrentInternalUser();
   if (!user) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+
+  const subscription = await prisma.subscription.findUnique({ where: { userId: user.id } });
+  if (!isPremiumActive(subscription)) return NextResponse.json({ error: "payment_required" }, { status: 402 });
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: "invalid_payload" }, { status: 400 });

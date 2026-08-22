@@ -1,5 +1,7 @@
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentInternalUser } from "@/lib/auth";
+import { isPremiumActive } from "@/lib/subscription";
 import { JournalTabs } from "@/components/journal/JournalTabs";
 import { BrianTip } from "@/components/brian/BrianTip";
 
@@ -11,6 +13,9 @@ function todayUtc(): Date {
 export default async function JournalPage() {
   const user = await getCurrentInternalUser();
   if (!user) return null;
+
+  const subscription = await prisma.subscription.findUnique({ where: { userId: user.id } });
+  if (!isPremiumActive(subscription)) redirect("/paywall");
 
   const [todayCheckin, painLogs, growthEntries, matchLogs, goals] = await Promise.all([
     prisma.dailyCheckin.findUnique({ where: { userId_date: { userId: user.id, date: todayUtc() } } }),

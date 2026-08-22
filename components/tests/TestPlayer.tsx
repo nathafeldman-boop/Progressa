@@ -11,6 +11,8 @@ import { composeTestFlowIntro } from "@/lib/brian/messages";
 import { elapsedSeconds, nowMs } from "@/lib/time";
 import { EXERCISE_FRAMES } from "@/lib/exercises/exercise-frames";
 import { ExerciseFrameViewer } from "@/components/exercises/ExerciseFrameViewer";
+import { trackClick } from "@/lib/analytics/track";
+import { getOrCreateAnonId } from "@/lib/onboarding/storage";
 
 /** Test d'évaluation -> même séquence de poses Coach Brian que l'exercice équivalent en séance, quand elle existe. */
 const TEST_FRAMES_SLUG: Partial<Record<string, string>> = {
@@ -85,6 +87,7 @@ export function TestPlayer({
   function startTimer() {
     setTimerPhase("running");
     setStartedAt(nowMs());
+    if (current) trackClick(getOrCreateAnonId(), "exercise_started", `/tests#${current.type}`);
   }
 
   function stopTimer() {
@@ -106,6 +109,7 @@ export function TestPlayer({
   function goToNextTest() {
     if (testIndex + 1 >= eligible.length) {
       setScreen("done");
+      trackClick(getOrCreateAnonId(), "test_completed", "/tests");
       router.refresh();
       return;
     }
@@ -138,6 +142,7 @@ export function TestPlayer({
         setError("Impossible d'enregistrer ce résultat.");
         return;
       }
+      trackClick(getOrCreateAnonId(), "exercise_completed", `/tests#${current.type}`);
       goToNextTest();
     } finally {
       setSubmitting(false);
@@ -156,6 +161,7 @@ export function TestPlayer({
         <Button
           className="w-full"
           onClick={() => {
+            trackClick(getOrCreateAnonId(), "test_started", "/tests");
             setScreen("test");
             resetTestState();
           }}
@@ -215,9 +221,9 @@ export function TestPlayer({
         )}
         <Button
           className="w-full"
-          onClick={() => router.push(isFirstTime && eligible.length > 0 ? "/onboarding/tour" : "/progression")}
+          onClick={() => router.push(isFirstTime && eligible.length > 0 ? "/onboarding/carte" : "/progression")}
         >
-          {isFirstTime && eligible.length > 0 ? "Découvrir l'application" : "Voir ma carte"}
+          {isFirstTime && eligible.length > 0 ? "Découvrir ma carte" : "Voir ma carte"}
         </Button>
       </div>
     );
