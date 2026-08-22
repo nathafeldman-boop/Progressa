@@ -315,4 +315,36 @@ export const EXERCISE_FRAMES: Partial<Record<string, ExerciseFrameSequence>> = {
       { image: "/exercises/frames/controle-oriente-frappe-rapide/pose-4.png", caption: "Frappe rapide et cadrée, résultat direct du bon contrôle orienté." },
     ],
   },
+  "frappe-pied-faible-cible": {
+    poses: [
+      { image: "/exercises/frames/frappe-pied-faible-cible/pose-1.png", caption: "Balle au sol, choisis volontairement ton pied le moins fort." },
+      { image: "/exercises/frames/frappe-pied-faible-cible/pose-2.png", caption: "Course d'approche identique à ton pied fort, sans hésiter." },
+      { image: "/exercises/frames/frappe-pied-faible-cible/pose-3.png", caption: "Frappe avec le pied faible, concentre-toi sur le contact avec le ballon." },
+      { image: "/exercises/frames/frappe-pied-faible-cible/pose-4.png", caption: "Frappe cadrée : la confiance vient avec la répétition." },
+    ],
+  },
+  "frappe-basse-enroulee-poteau": {
+    poses: [
+      { image: "/exercises/frames/frappe-basse-enroulee-poteau/pose-1.png", caption: "Balle au sol, vise le petit filet près du poteau." },
+      { image: "/exercises/frames/frappe-basse-enroulee-poteau/pose-2.png", caption: "Course d'approche en angle, corps penché vers le ballon." },
+      { image: "/exercises/frames/frappe-basse-enroulee-poteau/pose-3.png", caption: "Frappe de l'intérieur du pied, ballon rasant, effet enroulé." },
+      { image: "/exercises/frames/frappe-basse-enroulee-poteau/pose-4.png", caption: "La trajectoire basse vient frôler le poteau et rentre." },
+    ],
+  },
+  "frappe-exterieur-surprise": {
+    poses: [
+      { image: "/exercises/frames/frappe-exterieur-surprise/pose-1.png", caption: "Balle au sol, garde ton intention cachée jusqu'au dernier moment." },
+      { image: "/exercises/frames/frappe-exterieur-surprise/pose-2.png", caption: "Course d'approche normale, comme pour une frappe classique." },
+      { image: "/exercises/frames/frappe-exterieur-surprise/pose-3.png", caption: "Frappe de l'extérieur du pied, sans changer d'appui — c'est la surprise." },
+      { image: "/exercises/frames/frappe-exterieur-surprise/pose-4.png", caption: "La trajectoire enroulée surprend le gardien, pris à contre-pied." },
+    ],
+  },
+  "tete-plongeante-cage": {
+    poses: [
+      { image: "/exercises/frames/tete-plongeante-cage/pose-1.png", caption: "Position de départ, lis la trajectoire du centre à venir." },
+      { image: "/exercises/frames/tete-plongeante-cage/pose-2.png", caption: "Cours vers le point de chute, yeux fixés sur le ballon." },
+      { image: "/exercises/frames/tete-plongeante-cage/pose-3.png", caption: "Plonge en avant, engage tout le corps, front qui vient frapper le ballon." },
+      { image: "/exercises/frames/tete-plongeante-cage/pose-4.png", caption: "Réception au sol contrôlée — le geste qui surprend toujours le gardien." },
+    ],
+  },
 };
