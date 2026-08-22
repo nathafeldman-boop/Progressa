@@ -27,6 +27,12 @@ export interface ExerciseSeed {
   hardVariant: string;
   durationMinutes: number;
   isFreeTier: boolean;
+  /**
+   * Vrai UNIQUEMENT pour les rares exercices impossibles à faire seul (pas
+   * de mur/plot/"réel ou imaginaire" en repli) — la quasi-totalité du
+   * catalogue est volontairement solo-friendly. Absent = false.
+   */
+  requiresPartner?: boolean;
 }
 
 const ALL_POSITIONS: Position[] = [];
@@ -1966,6 +1972,7 @@ export const EXERCISE_CATALOG: ExerciseSeed[] = [
     hardVariant: "Fais-le avec des passes rapides et un rythme de match.",
     durationMinutes: 7,
     isFreeTier: false,
+    requiresPartner: true,
   },
   {
     slug: "repli-defensif-sprint",
@@ -2495,6 +2502,7 @@ export const EXERCISE_CATALOG: ExerciseSeed[] = [
     hardVariant: "Réduis la distance et augmente la vitesse des frappes.",
     durationMinutes: 7,
     isFreeTier: false,
+    requiresPartner: true,
   },
   {
     slug: "distribution-sous-pression",

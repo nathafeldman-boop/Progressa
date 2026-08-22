@@ -201,6 +201,9 @@ model Exercise {
 
   durationMinutes Int
   isFreeTier      Boolean @default(false)
+  // Vrai UNIQUEMENT pour les rares exercices impossibles à faire seul —
+  // la quasi-totalité du catalogue est volontairement solo-friendly.
+  requiresPartner Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

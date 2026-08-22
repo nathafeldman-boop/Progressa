@@ -29,12 +29,13 @@ export function PreSessionCheckIn({
   onConfirm,
 }: {
   defaultEquipment: Equipment[];
-  onConfirm: (equipment: Equipment[]) => void;
+  onConfirm: (context: { equipment: Equipment[]; solo: boolean }) => void;
 }) {
   const [selected, setSelected] = useState<Set<Equipment>>(
     () => new Set(defaultEquipment.filter((e) => e !== Equipment.NONE))
   );
   const [location, setLocation] = useState<string | null>(null);
+  const [solo, setSolo] = useState<boolean | null>(null);
 
   function toggle(eq: Equipment) {
     setSelected((prev) => {
@@ -84,6 +85,32 @@ export function PreSessionCheckIn({
       </Card>
 
       <Card>
+        <CardTitle className="text-base">Tu es seul ou avec quelqu&apos;un ?</CardTitle>
+        <CardSubtitle className="mt-0.5">
+          Certains exercices se font à deux — je les adapte ou te propose de les passer si tu es seul.
+        </CardSubtitle>
+        <div className="mt-3 flex gap-2">
+          {[
+            { value: true, label: "Seul(e)" },
+            { value: false, label: "Avec un ami / partenaire" },
+          ].map((opt) => (
+            <button
+              key={String(opt.value)}
+              type="button"
+              onClick={() => setSolo(opt.value)}
+              className={`flex-1 rounded-full border px-3 py-2 text-sm font-semibold transition-colors ${
+                solo === opt.value
+                  ? "border-[var(--color-primary)] bg-[var(--color-primary-soft)] text-[var(--color-primary-strong)]"
+                  : "border-[var(--color-border)] text-[var(--color-text-muted)]"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <Card>
         <CardTitle className="text-base">Où es-tu ?</CardTitle>
         <div className="mt-3 flex flex-wrap gap-2">
           {LOCATIONS.map((loc) => (
@@ -103,7 +130,7 @@ export function PreSessionCheckIn({
         </div>
       </Card>
 
-      <Button className="w-full" onClick={() => onConfirm(Array.from(selected))}>
+      <Button className="w-full" onClick={() => onConfirm({ equipment: Array.from(selected), solo: solo ?? true })}>
         C&apos;est parti ⚡
       </Button>
     </div>

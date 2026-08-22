@@ -56,6 +56,7 @@ export interface SessionBlockView {
     hardVariant: string;
     durationMinutes: number;
     equipment: Equipment[];
+    requiresPartner: boolean;
     /** Meilleur temps déjà réalisé par le joueur sur cet exercice, toutes séances confondues — null si jamais fait. */
     personalBest: { seconds: number; feltDifficulty: string | null } | null;
   };
@@ -170,6 +171,7 @@ export function SessionPlayer({
   // (séance déjà terminée qu'on ne fait que consulter).
   const [checkedIn, setCheckedIn] = useState(alreadyCompleted);
   const [todayEquipment, setTodayEquipment] = useState<Equipment[]>(defaultEquipment);
+  const [soloToday, setSoloToday] = useState(true);
   const [difficulty, setDifficulty] = useState<number | null>(null);
   const [recoveryNote, setRecoveryNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -301,8 +303,9 @@ export function SessionPlayer({
     return (
       <PreSessionCheckIn
         defaultEquipment={defaultEquipment}
-        onConfirm={(equipment) => {
+        onConfirm={({ equipment, solo }) => {
           setTodayEquipment(equipment);
+          setSoloToday(solo);
           setCheckedIn(true);
         }}
       />
@@ -428,6 +431,7 @@ export function SessionPlayer({
         total={blocks.length}
         state={blockStates[block.id]}
         todayEquipment={todayEquipment}
+        soloToday={soloToday}
         variant={expandedVariant[block.id] ?? null}
         onSetVariant={(v) => setExpandedVariant((prev) => ({ ...prev, [block.id]: prev[block.id] === v ? null : v }))}
         onSkip={() => skipBlock(block.id)}
@@ -515,6 +519,7 @@ function ActiveExerciseScreen({
   total,
   state,
   todayEquipment,
+  soloToday,
   variant,
   onSetVariant,
   onSkip,
@@ -530,6 +535,7 @@ function ActiveExerciseScreen({
   total: number;
   state: BlockLocalState;
   todayEquipment: Equipment[];
+  soloToday: boolean;
   variant: "easy" | "hard" | null;
   onSetVariant: (v: "easy" | "hard") => void;
   onSkip: () => void;
@@ -551,6 +557,10 @@ function ActiveExerciseScreen({
   // utilise, on propose une substitution plutôt que de le laisser deviner.
   const needsSubstituteCones =
     block.exercise.equipment.includes(Equipment.CONES) && !todayEquipment.includes(Equipment.CONES);
+  // Une poignée d'exercices seulement (voir catalog-data.ts) ont besoin d'un
+  // vrai partenaire — jamais bloquant, on prévient et on laisse la main sur
+  // "Passer" (déjà dans l'écran) plutôt que de retirer le bloc en silence.
+  const needsPartnerWarning = block.exercise.requiresPartner && soloToday;
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-[var(--color-bg)] [padding-top:env(safe-area-inset-top)] [padding-bottom:env(safe-area-inset-bottom)]">
@@ -653,6 +663,12 @@ function ActiveExerciseScreen({
           <p className="mx-auto mt-2 max-w-xs text-center text-xs font-semibold text-[var(--color-primary-strong)]">
             💡 Pas de {EQUIPMENT_LABELS.CONES.toLowerCase()} ? Remplace-les par des chaussettes roulées, un sac ou une
             bouteille au sol.
+          </p>
+        )}
+        {needsPartnerWarning && (
+          <p className="mx-auto mt-2 max-w-xs text-center text-xs font-semibold text-[var(--color-danger)]">
+            🧑‍🤝‍🧑 Cet exercice se fait normalement à deux. Seul aujourd&apos;hui ? Passe-le, ou improvise (mur, auto-lancer)
+            si c&apos;est possible.
           </p>
         )}
 
