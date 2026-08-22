@@ -347,4 +347,12 @@ export const EXERCISE_FRAMES: Partial<Record<string, ExerciseFrameSequence>> = {
       { image: "/exercises/frames/tete-plongeante-cage/pose-4.png", caption: "Réception au sol contrôlée — le geste qui surprend toujours le gardien." },
     ],
   },
+  "frappe-longue-distance": {
+    poses: [
+      { image: "/exercises/frames/frappe-longue-distance/pose-1.png", caption: "Position de départ, à 25m ou plus du but." },
+      { image: "/exercises/frames/frappe-longue-distance/pose-2.png", caption: "Prise d'élan franche, corps qui s'engage vers le ballon." },
+      { image: "/exercises/frames/frappe-longue-distance/pose-3.png", caption: "Frappe du cou-de-pied, cheville verrouillée, tout le corps derrière le geste." },
+      { image: "/exercises/frames/frappe-longue-distance/pose-4.png", caption: "Trajectoire puissante et précise, jambe qui accompagne loin après l'impact." },
+    ],
+  },
 };
