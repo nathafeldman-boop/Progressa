@@ -303,4 +303,12 @@ export const EXERCISE_FRAMES: Partial<Record<string, ExerciseFrameSequence>> = {
       { image: "/exercises/frames/frappe-premiere-intention/pose-4.png", caption: "Réaction rapide, ballon cadré." },
     ],
   },
+  "controle-oriente-frappe-rapide": {
+    poses: [
+      { image: "/exercises/frames/controle-oriente-frappe-rapide/pose-1.png", caption: "Le ballon arrive en passe." },
+      { image: "/exercises/frames/controle-oriente-frappe-rapide/pose-2.png", caption: "Contrôle orienté vers l'espace libre, un seul geste." },
+      { image: "/exercises/frames/controle-oriente-frappe-rapide/pose-3.png", caption: "Enchaîne aussitôt sur la frappe, sans temps mort." },
+      { image: "/exercises/frames/controle-oriente-frappe-rapide/pose-4.png", caption: "Frappe rapide, cadrée." },
+    ],
+  },
 };
