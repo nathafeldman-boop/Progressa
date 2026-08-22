@@ -85,14 +85,6 @@ export const EXERCISE_FRAMES: Partial<Record<string, ExerciseFrameSequence>> = {
       { image: "/exercises/frames/conduite-balle-int-ext/pose-4.png", caption: "Alterne pied gauche et pied droit sans ralentir." },
     ],
   },
-  "feintes-corps-piquet": {
-    poses: [
-      { image: "/exercises/frames/feintes-corps-piquet/pose-1.png", caption: "Approche le piquet ballon au pied." },
-      { image: "/exercises/frames/feintes-corps-piquet/pose-2.png", caption: "Feinte de corps explosive juste avant le piquet." },
-      { image: "/exercises/frames/feintes-corps-piquet/pose-3.png", caption: "Pousse le ballon de l'autre côté du piquet." },
-      { image: "/exercises/frames/feintes-corps-piquet/pose-4.png", caption: "Accélère pour sortir du duel." },
-    ],
-  },
   "gainage-mountain-climbers": {
     poses: [
       { image: "/exercises/frames/gainage-mountain-climbers/pose-1.png", caption: "Position de planche haute, mains sous les épaules." },
