@@ -106,7 +106,7 @@ export function ExerciseFrameViewer({
 
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/40 to-transparent px-4 pb-4 pt-12">
         <div className="flex items-end justify-between gap-3">
-          <p className="text-lg font-bold leading-snug text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.6)]">
+          <p className="min-w-0 flex-1 text-base font-bold leading-snug text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.6)]">
             {pose.caption}
           </p>
           <BrianAvatar state="talking" size={48} className="shrink-0 ring-2 ring-white/80" />

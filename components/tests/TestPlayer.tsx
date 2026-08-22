@@ -16,6 +16,8 @@ import { ExerciseFrameViewer } from "@/components/exercises/ExerciseFrameViewer"
 const TEST_FRAMES_SLUG: Partial<Record<string, string>> = {
   JUGGLING: "jonglages-progressifs",
   PLANK: "gainage-planche-ventrale",
+  TIR_PRECISION: "frappe-enroulee-cible",
+  PASSE_PRECISION: "passes-mur-controle",
 };
 
 export interface TestFlowEntry {

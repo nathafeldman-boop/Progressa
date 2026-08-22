@@ -326,6 +326,8 @@ enum EvaluationTestType {
   SHUTTLE_5X10
   PLANK
   SPRINT_20M
+  TIR_PRECISION
+  PASSE_PRECISION
 }
 
 model EvaluationResult {

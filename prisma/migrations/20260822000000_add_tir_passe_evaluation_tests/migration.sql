@@ -1,0 +1,3 @@
+-- AlterEnum
+ALTER TYPE "EvaluationTestType" ADD VALUE 'TIR_PRECISION';
+ALTER TYPE "EvaluationTestType" ADD VALUE 'PASSE_PRECISION';

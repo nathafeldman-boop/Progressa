@@ -59,6 +59,30 @@ export const TEST_PROTOCOLS: Record<EvaluationTestType, TestProtocol> = {
       "Chronomètre 2 essais avec récupération complète, garde le meilleur temps.",
     ],
   },
+  TIR_PRECISION: {
+    type: "TIR_PRECISION",
+    name: "Précision de tir",
+    emoji: "🎯",
+    unit: "tirs cadrés /10",
+    lowerIsBetter: false,
+    protocol: [
+      "Place une cible (cône, sac, ou zone marquée d'environ 1m) dans un coin du but, ou entre deux repères si tu n'as pas de but.",
+      "Place-toi à 11m (distance d'un penalty) et tire, en visant la cible à chaque fois.",
+      "10 tirs au total: compte uniquement ceux qui touchent réellement la cible.",
+    ],
+  },
+  PASSE_PRECISION: {
+    type: "PASSE_PRECISION",
+    name: "Précision de passe",
+    emoji: "🎯",
+    unit: "passes réussies /10",
+    lowerIsBetter: false,
+    protocol: [
+      "Place deux plots (ou objets) espacés d'1m pour former une petite porte, à 10m de toi.",
+      "Fais des passes précises pour faire passer le ballon entre les deux plots.",
+      "10 tentatives au total: compte uniquement les passes qui traversent vraiment la porte.",
+    ],
+  },
 };
 
 /** Cooldown anti-triche (section 6.6): ~4 semaines entre deux passages du même test. */

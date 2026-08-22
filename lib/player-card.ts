@@ -13,6 +13,8 @@ const RANGES: Record<EvaluationTestType, { min: number; max: number; lowerIsBett
   SHUTTLE_5X10: { min: 14, max: 22, lowerIsBetter: true, skill: "Agilité" },
   PLANK: { min: 20, max: 180, lowerIsBetter: false, skill: "Gainage" },
   SPRINT_20M: { min: 2.6, max: 4.5, lowerIsBetter: true, skill: "Vitesse" },
+  TIR_PRECISION: { min: 1, max: 9, lowerIsBetter: false, skill: "Tir" },
+  PASSE_PRECISION: { min: 1, max: 9, lowerIsBetter: false, skill: "Passe" },
 };
 
 function normalize(value: number, type: EvaluationTestType): number {
@@ -70,16 +72,17 @@ const DEFAULT_STAT_VALUES: StatAxisValues = {
 };
 
 /**
- * Quel axe carte un test d'évaluation vient affiner — les 4 tests actuels
- * ne couvrent pas les 6 axes (TIR/PASSE n'ont pour l'instant aucun test
- * dédié, ils progressent uniquement via les séances). Ajouter un test pour
- * un axe non couvert est le seul endroit à toucher ici.
+ * Quel axe carte un test d'évaluation vient affiner — les 6 tests couvrent
+ * désormais les 6 axes de la carte, un par un. Ajouter un test pour un axe
+ * non couvert est le seul endroit à toucher ici.
  */
 const TEST_AXIS: Partial<Record<EvaluationTestType, StatAxis>> = {
   SPRINT_20M: "VITESSE",
   JUGGLING: "CONDUITE",
   SHUTTLE_5X10: "DEFENSE",
   PLANK: "PHYSIQUE",
+  TIR_PRECISION: "TIR",
+  PASSE_PRECISION: "PASSE",
 };
 
 function statStateToAxisValues(statState: PlayerStatState | null): StatAxisValues {
