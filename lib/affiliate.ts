@@ -4,6 +4,10 @@ import { prisma } from "@/lib/prisma";
 const PAYOUT_DELAY_MS = 5 * 24 * 60 * 60 * 1000; // Stripe reverse les fonds ~5 jours après le prélèvement.
 export const BONUS_TIER_CENTS = 500 * 100; // 500€ de commissions cumulées...
 export const BONUS_AMOUNT_CENTS = 50 * 100; // ...déclenchent +50€ de bonus.
+// Premium offert quand un joueur entre directement le code personnel d'un
+// affilié (celui de son lien ?aff=...) dans le champ "code d'accès" du
+// paywall, plutôt qu'un AccessCode dédié généré depuis l'admin.
+const AFFILIATE_CODE_ACCESS_DAYS = 30;
 
 function randomToken(bytes: number): string {
   return randomBytes(bytes).toString("hex");
@@ -168,8 +172,25 @@ export function normalizeAccessCode(code: string): string {
 }
 
 export async function redeemAccessCode(code: string, userId: string): Promise<{ ok: boolean; days?: number }> {
-  const accessCode = await prisma.accessCode.findUnique({ where: { code: normalizeAccessCode(code) } });
-  if (!accessCode || accessCode.usedAt) return { ok: false };
+  const normalized = normalizeAccessCode(code);
+  const accessCode = await prisma.accessCode.findUnique({ where: { code: normalized } });
+
+  if (!accessCode || accessCode.usedAt) {
+    // Pas un AccessCode dédié (à usage unique) — mais le code personnel
+    // d'un affilié (son lien ?aff=...) fonctionne aussi directement comme
+    // code d'accès, et reste réutilisable par d'autres joueurs, comme le
+    // lien lui-même.
+    const affiliate = await prisma.affiliate.findFirst({ where: { code: normalized, active: true } });
+    if (!affiliate) return { ok: false };
+
+    const bonusPremiumUntil = new Date(Date.now() + AFFILIATE_CODE_ACCESS_DAYS * 24 * 60 * 60 * 1000);
+    await prisma.subscription.upsert({
+      where: { userId },
+      create: { userId, bonusPremiumUntil },
+      update: { bonusPremiumUntil },
+    });
+    return { ok: true, days: AFFILIATE_CODE_ACCESS_DAYS };
+  }
 
   const bonusPremiumUntil = new Date(Date.now() + accessCode.grantsDays * 24 * 60 * 60 * 1000);
 
