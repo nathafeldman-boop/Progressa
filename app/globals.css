@@ -261,3 +261,253 @@ button:not(:disabled):active,
     opacity: 0;
   }
 }
+
+/* ---------------------------------------------------------------------
+   Character3D — silhouette 3D en CSS pur pour la boucle "vidéo" pendant
+   qu'un joueur exécute réellement un exercice (remplace le défilement de
+   photos toutes les 2s). Validé visuellement avec l'utilisateur avant
+   intégration (proportions humaines, articulations à sens anatomique
+   correct, caméra 3/4 fixe).
+
+   Pour ajouter un nouvel exercice: choisis (ou crée) un preset ci-dessous
+   et mappe le slug de l'exercice dans lib/exercises/exercise-3d.ts — la
+   géométrie du personnage (char3d-*) est fixe et partagée, seul un jeu de
+   @keyframes par preset change.
+
+   Convention de signe des rotations (dérivée géométriquement, à respecter
+   pour tout nouveau preset): sur un segment qui pend vers le bas depuis
+   son pivot (cuisse, tibia, bras, avant-bras), une rotateX POSITIVE fait
+   avancer son extrémité vers l'avant (vers la caméra); sur un segment qui
+   part vers le haut depuis son pivot (torse), c'est l'inverse — une
+   rotateX NÉGATIVE le fait avancer. Un genou ou un coude ne plie JAMAIS
+   dans le même sens que son articulation parente (hanche/épaule): le
+   signe doit toujours être opposé, sinon le mouvement devient anatomiquement
+   impossible (typiquement le point le plus signalé lors de la relecture).
+   --------------------------------------------------------------------- */
+:root {
+  --char3d-stage-top: #16241f;
+  --char3d-stage-mid: #0e1a15;
+  --char3d-stage-floor: #060b08;
+  --char3d-jersey-light: #3fd383;
+  --char3d-jersey: #1f8a4f;
+  --char3d-jersey-dark: #146238;
+  --char3d-skin-light: #e8b98c;
+  --char3d-skin: #cf9968;
+  --char3d-skin-dark: #a6764c;
+  --char3d-short-light: #263a30;
+  --char3d-short: #17251d;
+  --char3d-short-dark: #0e1712;
+  --char3d-ink: #eef6f0;
+}
+
+.char3d-stage {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background:
+    radial-gradient(46% 40% at 50% 34%, rgba(120, 190, 255, 0.1), transparent 72%),
+    linear-gradient(180deg, var(--char3d-stage-top) 0%, var(--char3d-stage-mid) 45%, var(--char3d-stage-floor) 100%);
+  perspective: 780px;
+}
+
+.char3d-floor {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 360px;
+  height: 240px;
+  transform: translateX(-50%) rotateX(78deg);
+  transform-origin: 50% 100%;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(93, 219, 143, 0.22) 0 1.5px, transparent 1.5px 36px),
+    repeating-linear-gradient(90deg, rgba(93, 219, 143, 0.22) 0 1.5px, transparent 1.5px 36px);
+  -webkit-mask-image: radial-gradient(58% 62% at 50% 42%, black 35%, transparent 78%);
+          mask-image: radial-gradient(58% 62% at 50% 42%, black 35%, transparent 78%);
+}
+
+.char3d-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  width: 96px;
+  height: 16px;
+  transform: translateX(-50%);
+  background: radial-gradient(50% 100% at 50% 50%, rgba(0, 0, 0, 0.6), transparent 75%);
+  border-radius: 50%;
+  filter: blur(1.5px);
+}
+
+.char3d-rig {
+  position: absolute;
+  left: 50%;
+  bottom: 128px;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+  transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg);
+}
+
+.char3d-pelvis { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-style: preserve-3d; }
+
+.char3d-face, .char3d-side { position: absolute; }
+.char3d-face { inset: 0; }
+.char3d-side { top: 0; left: 100%; transform-origin: 0 0; transform: rotateY(90deg); }
+
+/* Boules d'articulation: centrées exactement sur l'origine de rotation de
+   chaque pivot, donc jamais déformées par la rotation — c'est ce qui les
+   fait lire comme une vraie articulation plutôt que deux blocs qui se
+   touchent bord à bord. */
+.char3d-joint { position: absolute; border-radius: 50%; box-shadow: inset -3px -3px 6px rgba(0, 0, 0, 0.3), inset 2px 2px 4px rgba(255, 255, 255, 0.12); }
+.char3d-joint--shoulder { left: -9px; top: -9px; width: 18px; height: 18px; background: var(--char3d-jersey); }
+.char3d-joint--elbow { left: -7px; top: -7px; width: 14px; height: 14px; background: var(--char3d-skin); }
+.char3d-joint--hip { left: -11px; top: -11px; width: 22px; height: 22px; background: var(--char3d-short); }
+.char3d-joint--knee { left: -8px; top: -8px; width: 16px; height: 16px; background: var(--char3d-skin); }
+
+/* Torse: pivot rigide unique (bascule d'un seul bloc depuis la ligne des
+   hanches); les enfants sont positionnés par un top négatif cumulatif
+   (chaque segment commence exactement où le précédent finit). */
+.char3d-torso { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-style: preserve-3d; transform-origin: center top; }
+
+.char3d-waist { position: absolute; left: -18px; top: -34px; width: 36px; height: 34px; transform-style: preserve-3d; }
+.char3d-waist > .char3d-face { border-radius: 15px; transform: translateZ(11px); background: linear-gradient(160deg, var(--char3d-jersey-light), var(--char3d-jersey)); box-shadow: inset 0 8px 10px rgba(255, 255, 255, 0.12), inset 0 -12px 16px rgba(0, 0, 0, 0.22); }
+.char3d-waist > .char3d-side { width: 22px; height: 34px; border-radius: 0 15px 15px 0; background: var(--char3d-jersey-dark); }
+
+.char3d-chest { position: absolute; left: -23px; top: -66px; width: 46px; height: 32px; transform-style: preserve-3d; }
+.char3d-chest > .char3d-face { border-radius: 14px 14px 10px 10px; transform: translateZ(13px); background: linear-gradient(160deg, var(--char3d-jersey-light), var(--char3d-jersey)); box-shadow: inset 0 8px 10px rgba(255, 255, 255, 0.16), inset 0 -10px 14px rgba(0, 0, 0, 0.2); }
+.char3d-chest > .char3d-side { width: 26px; height: 32px; border-radius: 10px 14px 14px 10px; background: var(--char3d-jersey-dark); }
+
+.char3d-neck { position: absolute; left: -7px; top: -77px; width: 14px; height: 11px; transform-style: preserve-3d; }
+.char3d-neck > .char3d-face { border-radius: 5px; transform: translateZ(6px); background: linear-gradient(180deg, var(--char3d-skin-light), var(--char3d-skin-dark)); }
+
+.char3d-head {
+  position: absolute; left: -15px; top: -112px;
+  width: 30px; height: 35px; border-radius: 48% 48% 44% 44% / 52% 52% 40% 40%;
+  background: radial-gradient(58% 55% at 34% 30%, var(--char3d-skin-light), var(--char3d-skin) 58%, var(--char3d-skin-dark) 100%);
+  box-shadow: inset -5px -5px 9px rgba(0, 0, 0, 0.22), inset 3px 3px 5px rgba(255, 255, 255, 0.15);
+}
+.char3d-hair {
+  position: absolute; left: -1px; top: -3px; width: 32px; height: 20px;
+  border-radius: 50% 50% 40% 40% / 62% 62% 30% 30%;
+  background: linear-gradient(160deg, #2b1c14, #1a110c);
+}
+
+.char3d-shoulder { position: absolute; top: -66px; width: 0; height: 0; transform-style: preserve-3d; transform-origin: center top; }
+.char3d-shoulder-l { left: -25px; }
+.char3d-shoulder-r { left: 25px; }
+
+.char3d-upperarm { position: absolute; left: -7px; top: 0; width: 14px; height: 42px; transform-style: preserve-3d; transform-origin: 50% 0%; }
+.char3d-upperarm > .char3d-face { border-radius: 7px; transform: translateZ(6.5px); background: linear-gradient(160deg, var(--char3d-jersey-light), var(--char3d-jersey)); }
+.char3d-upperarm > .char3d-side { width: 13px; height: 42px; border-radius: 0 7px 7px 0; background: var(--char3d-jersey-dark); }
+
+.char3d-elbow { position: absolute; left: 0; top: 42px; width: 0; height: 0; transform-style: preserve-3d; transform-origin: center top; }
+
+.char3d-forearm { position: absolute; left: -6px; top: 0; width: 12px; height: 36px; transform-style: preserve-3d; transform-origin: 50% 0%; }
+.char3d-forearm > .char3d-face { border-radius: 6px; transform: translateZ(5.5px); background: linear-gradient(160deg, var(--char3d-skin-light), var(--char3d-skin)); }
+.char3d-forearm > .char3d-side { width: 11px; height: 36px; border-radius: 0 6px 6px 0; background: var(--char3d-skin-dark); }
+
+.char3d-hand {
+  position: absolute; left: -6.5px; top: 34px; width: 13px; height: 17px;
+  border-radius: 50% 50% 45% 45% / 55% 55% 45% 45%;
+  background: linear-gradient(160deg, var(--char3d-skin-light), var(--char3d-skin));
+  box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Hanches: attachées au bord de la taille (±18px), pas resserrées vers le
+   centre — sinon le bassin lit comme un point unique au lieu d'une base
+   solide sous le torse. */
+.char3d-hip { position: absolute; top: 0; width: 0; height: 0; transform-style: preserve-3d; transform-origin: center top; }
+.char3d-hip-l { left: -15px; }
+.char3d-hip-r { left: 15px; }
+
+.char3d-thigh { position: absolute; left: -10px; top: 0; width: 20px; height: 56px; transform-style: preserve-3d; transform-origin: 50% 0%; }
+.char3d-thigh > .char3d-face { border-radius: 10px; transform: translateZ(9.5px); background: linear-gradient(170deg, var(--char3d-short-light), var(--char3d-short)); }
+.char3d-thigh > .char3d-side { width: 19px; height: 56px; border-radius: 0 10px 10px 0; background: var(--char3d-short-dark); }
+
+.char3d-knee { position: absolute; left: 0; top: 56px; width: 0; height: 0; transform-style: preserve-3d; transform-origin: center top; }
+
+.char3d-shin { position: absolute; left: -8px; top: 0; width: 16px; height: 50px; transform-style: preserve-3d; transform-origin: 50% 0%; }
+.char3d-shin > .char3d-face { border-radius: 7px; transform: translateZ(7.5px); background: linear-gradient(170deg, var(--char3d-skin-light), var(--char3d-skin)); }
+.char3d-shin > .char3d-side { width: 15px; height: 50px; border-radius: 0 7px 7px 0; background: var(--char3d-skin-dark); }
+
+.char3d-foot {
+  position: absolute; left: -7px; top: 48px; width: 26px; height: 10px;
+  border-radius: 5px 12px 8px 5px / 5px 9px 7px 5px;
+  background: linear-gradient(180deg, #1c2b23, var(--char3d-ink));
+  opacity: 0.95;
+}
+
+/* ===== Preset: squat ===== */
+@keyframes char3d-squat-cam {
+  0%, 100% { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(0); }
+  50%      { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(20px); }
+}
+@keyframes char3d-squat-hip   { 0%, 100% { transform: rotateX(0deg); } 50% { transform: rotateX(52deg); } }
+@keyframes char3d-squat-knee  { 0%, 100% { transform: rotateX(0deg); } 50% { transform: rotateX(-92deg); } }
+@keyframes char3d-squat-torso { 0%, 100% { transform: rotateX(0deg); } 50% { transform: rotateX(-14deg); } }
+@keyframes char3d-squat-arm   { 0%, 100% { transform: rotateX(0deg); } 50% { transform: rotateX(50deg); } }
+
+.char3d-rig--squat { animation: char3d-squat-cam 2.6s ease-in-out infinite; }
+.char3d-rig--squat .char3d-hip-l, .char3d-rig--squat .char3d-hip-r { animation: char3d-squat-hip 2.6s ease-in-out infinite; }
+.char3d-rig--squat .char3d-knee { animation: char3d-squat-knee 2.6s ease-in-out infinite; }
+.char3d-rig--squat .char3d-torso { animation: char3d-squat-torso 2.6s ease-in-out infinite; }
+.char3d-rig--squat .char3d-shoulder-l, .char3d-rig--squat .char3d-shoulder-r { animation: char3d-squat-arm 2.6s ease-in-out infinite; }
+
+/* ===== Preset: squat-jump (même patron + un vrai saut en haut de phase) ===== */
+@keyframes char3d-squatjump-cam {
+  0%   { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(0); }
+  40%  { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(22px); }
+  70%  { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(-26px); }
+  100% { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(0); }
+}
+@keyframes char3d-squatjump-hip   { 0% { transform: rotateX(0deg); } 40% { transform: rotateX(56deg); } 70%, 100% { transform: rotateX(0deg); } }
+@keyframes char3d-squatjump-knee  { 0% { transform: rotateX(0deg); } 40% { transform: rotateX(-98deg); } 70%, 100% { transform: rotateX(0deg); } }
+@keyframes char3d-squatjump-torso { 0% { transform: rotateX(0deg); } 40% { transform: rotateX(-16deg); } 70%, 100% { transform: rotateX(0deg); } }
+@keyframes char3d-squatjump-arm   { 0% { transform: rotateX(0deg); } 40% { transform: rotateX(52deg); } 70% { transform: rotateX(-40deg); } 100% { transform: rotateX(0deg); } }
+
+.char3d-rig--squat-jump { animation: char3d-squatjump-cam 1.3s ease-in-out infinite; }
+.char3d-rig--squat-jump .char3d-hip-l, .char3d-rig--squat-jump .char3d-hip-r { animation: char3d-squatjump-hip 1.3s ease-in-out infinite; }
+.char3d-rig--squat-jump .char3d-knee { animation: char3d-squatjump-knee 1.3s ease-in-out infinite; }
+.char3d-rig--squat-jump .char3d-torso { animation: char3d-squatjump-torso 1.3s ease-in-out infinite; }
+.char3d-rig--squat-jump .char3d-shoulder-l, .char3d-rig--squat-jump .char3d-shoulder-r { animation: char3d-squatjump-arm 1.3s ease-in-out infinite; }
+
+/* ===== Preset: montées de genoux (high-knees) ===== */
+@keyframes char3d-knees-cam {
+  0%, 100% { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(0); }
+  25%      { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(-10px); }
+  75%      { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(-10px); }
+}
+@keyframes char3d-knees-hip-l  { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(85deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-knees-knee-l { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-95deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-knees-arm-l  { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(48deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-knees-arm-l-back { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-48deg); } 50% { transform: rotateX(0deg); } }
+
+.char3d-rig--high-knees { animation: char3d-knees-cam 0.86s ease-in-out infinite; }
+.char3d-rig--high-knees .char3d-hip-l  { animation: char3d-knees-hip-l 0.86s ease-in-out infinite; }
+.char3d-rig--high-knees .char3d-hip-r  { animation: char3d-knees-hip-l 0.86s ease-in-out infinite; animation-delay: -0.43s; }
+.char3d-rig--high-knees .char3d-knee   { animation: char3d-knees-knee-l 0.86s ease-in-out infinite; }
+.char3d-rig--high-knees .char3d-shoulder-r > .char3d-upperarm { animation: char3d-knees-arm-l 0.86s ease-in-out infinite; }
+.char3d-rig--high-knees .char3d-shoulder-l > .char3d-upperarm { animation: char3d-knees-arm-l-back 0.86s ease-in-out infinite; animation-delay: -0.43s; }
+
+/* ===== Preset: jumping jack ===== */
+@keyframes char3d-jack-cam {
+  0%, 100% { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(0); }
+  50%      { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(-22px); }
+}
+@keyframes char3d-jack-hip-l { 0%, 100% { transform: rotateZ(0deg); } 50% { transform: rotateZ(34deg); } }
+@keyframes char3d-jack-hip-r { 0%, 100% { transform: rotateZ(0deg); } 50% { transform: rotateZ(-34deg); } }
+@keyframes char3d-jack-shoulder-l { 0%, 100% { transform: rotateZ(0deg); } 50% { transform: rotateZ(150deg); } }
+@keyframes char3d-jack-shoulder-r { 0%, 100% { transform: rotateZ(0deg); } 50% { transform: rotateZ(-150deg); } }
+
+.char3d-rig--jumping-jack { animation: char3d-jack-cam 1.05s ease-in-out infinite; }
+.char3d-rig--jumping-jack .char3d-hip-l { animation: char3d-jack-hip-l 1.05s ease-in-out infinite; }
+.char3d-rig--jumping-jack .char3d-hip-r { animation: char3d-jack-hip-r 1.05s ease-in-out infinite; }
+.char3d-rig--jumping-jack .char3d-shoulder-l { animation: char3d-jack-shoulder-l 1.05s ease-in-out infinite; }
+.char3d-rig--jumping-jack .char3d-shoulder-r { animation: char3d-jack-shoulder-r 1.05s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .char3d-rig, .char3d-rig * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
