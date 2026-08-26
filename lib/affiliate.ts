@@ -180,7 +180,11 @@ export async function redeemAccessCode(code: string, userId: string): Promise<{ 
     // d'un affilié (son lien ?aff=...) fonctionne aussi directement comme
     // code d'accès, et reste réutilisable par d'autres joueurs, comme le
     // lien lui-même.
-    const affiliate = await prisma.affiliate.findFirst({ where: { code: normalized, active: true } });
+    // Affiliate.code est généré en minuscules (slugify), contrairement à
+    // AccessCode.code — recherche insensible à la casse indispensable ici.
+    const affiliate = await prisma.affiliate.findFirst({
+      where: { code: { equals: normalized, mode: "insensitive" }, active: true },
+    });
     if (!affiliate) return { ok: false };
 
     const bonusPremiumUntil = new Date(Date.now() + AFFILIATE_CODE_ACCESS_DAYS * 24 * 60 * 60 * 1000);
