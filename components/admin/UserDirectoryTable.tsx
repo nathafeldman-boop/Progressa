@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import type { UserDirectoryEntry } from "@/lib/admin/queries";
 
@@ -34,7 +35,11 @@ export function UserDirectoryTable({ users }: { users: UserDirectoryEntry[] }) {
                   title={u.onlineNow ? "En ligne" : "Hors ligne"}
                 />
               </td>
-              <td className="py-2">{u.email}</td>
+              <td className="py-2">
+                <Link href={`/admin/users/${u.id}`} className="underline decoration-dotted hover:text-[var(--color-primary-strong)]">
+                  {u.email}
+                </Link>
+              </td>
               <td className="py-2">{formatDate(u.createdAt)}</td>
               <td className="py-2">{u.isPremium ? "Premium" : "Gratuit"}</td>
               <td className="py-2">{formatEuros(u.ltvCents)}</td>

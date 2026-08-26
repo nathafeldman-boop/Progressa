@@ -166,6 +166,57 @@ export async function getPayableConversions() {
   });
 }
 
+/**
+ * Vue détaillée d'un joueur pour le drill-down admin: parcours complet
+ * (pages vues + clics, dans l'ordre), réponses d'onboarding, séances,
+ * tests, paiements — tout ce qui répond à "je clique sur lui, je veux
+ * tout voir".
+ */
+export async function getUserDetail(userId: string) {
+  const [user, pageViews, clickEvents, sessions, evaluationResults, payments, affiliateConversion] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      include: { profile: true, subscription: true, playerCard: true },
+    }),
+    prisma.pageView.findMany({ where: { userId }, orderBy: { createdAt: "asc" }, take: 300 }),
+    prisma.clickEvent.findMany({ where: { userId }, orderBy: { createdAt: "asc" }, take: 200 }),
+    prisma.programSession.findMany({
+      where: { weeklyProgram: { userId } },
+      orderBy: { dayOfWeek: "asc" },
+      include: { _count: { select: { blocks: true } } },
+    }),
+    prisma.evaluationResult.findMany({ where: { userId }, orderBy: { recordedAt: "desc" } }),
+    prisma.payment.findMany({ where: { userId }, orderBy: { createdAt: "desc" } }),
+    prisma.affiliateConversion.findFirst({ where: { userId }, include: { affiliate: { select: { name: true, code: true } } } }),
+  ]);
+
+  if (!user) return null;
+
+  const since = new Date(Date.now() - ONLINE_WINDOW_MS);
+  const onlineNow = pageViews.some((v) => v.createdAt >= since);
+  const completedSessions = sessions.filter((s) => s.status === "COMPLETED").length;
+  const ltvCents = payments.reduce((sum, p) => sum + p.amountCents, 0);
+
+  // Fusionne pages vues et clics en une seule timeline chronologique — c'est
+  // le "je vois tout ce qu'ils vont faire depuis la LP" demandé.
+  const timeline = [
+    ...pageViews.map((v) => ({ type: "view" as const, at: v.createdAt, label: v.path, referrer: v.referrer })),
+    ...clickEvents.map((c) => ({ type: "click" as const, at: c.createdAt, label: c.label, referrer: c.path })),
+  ].sort((a, b) => a.at.getTime() - b.at.getTime());
+
+  return {
+    user,
+    onlineNow,
+    ltvCents,
+    sessions,
+    completedSessions,
+    evaluationResults,
+    payments,
+    affiliateConversion,
+    timeline,
+  };
+}
+
 export async function getFeatureUsage() {
   const [evaluationResults, testimonials, matchLogs, checkins, badges] = await Promise.all([
     prisma.evaluationResult.count(),
