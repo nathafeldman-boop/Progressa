@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { BrianAvatar } from "@/components/brian/BrianAvatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { PlayerCardView } from "@/components/card/PlayerCardView";
 import { trackClick } from "@/lib/analytics/track";
 import { getOrCreateAnonId } from "@/lib/onboarding/storage";
 import { getStoredAffCode } from "@/lib/affiliate-client";
 import { AccessCodeForm } from "@/components/paywall/AccessCodeForm";
+import type { PlayerCardStats } from "@/lib/player-card";
 
 const BENEFITS = [
   "Coach Brian personnel, qui suit tes vraies performances",
@@ -25,7 +27,25 @@ const EVOLUTION_TEASER = [
   { label: "Endurance", delta: 1 },
 ];
 
-export function HardPaywall({ firstName, overall }: { firstName: string; overall: number | null }) {
+export function HardPaywall({
+  firstName,
+  cardStats,
+  positionLabel,
+  ageCategoryLabel,
+  country,
+  department,
+  niveauLabel,
+  photoUrl,
+}: {
+  firstName: string;
+  cardStats: PlayerCardStats | null;
+  positionLabel: string | null;
+  ageCategoryLabel: string | null;
+  country: string | null;
+  department: string | null;
+  niveauLabel: string | null;
+  photoUrl: string | null;
+}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
@@ -74,27 +94,40 @@ export function HardPaywall({ firstName, overall }: { firstName: string; overall
           </div>
         </div>
 
-        {overall != null && (
-          <Card className="border-white/10 bg-white/[0.04] text-white">
-            <p className="text-center text-[0.65rem] font-bold uppercase tracking-widest text-white/50">
-              Ta carte va évoluer
-            </p>
-            <div className="mt-2 flex items-center justify-center gap-3">
-              <span className="font-display text-3xl font-extrabold">{overall}</span>
-              <span className="text-white/40">→</span>
-              <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-left">
-                {EVOLUTION_TEASER.map((s) => (
-                  <span key={s.label} className="text-xs font-bold text-[var(--color-primary)]">
-                    {s.label} +{s.delta}
-                  </span>
-                ))}
-              </div>
+        {cardStats && positionLabel && (
+          <div className="w-full">
+            <PlayerCardView
+              firstName={firstName}
+              positionLabel={positionLabel}
+              ageCategoryLabel={ageCategoryLabel}
+              country={country}
+              department={department}
+              niveauLabel={niveauLabel}
+              photoUrl={photoUrl}
+              stats={cardStats}
+            />
+            <div className="mt-3 flex flex-wrap justify-center gap-x-3 gap-y-1 text-center">
+              {EVOLUTION_TEASER.map((s) => (
+                <span key={s.label} className="text-xs font-bold text-[var(--color-primary)]">
+                  {s.label} +{s.delta}
+                </span>
+              ))}
             </div>
-            <p className="mt-2 text-center text-[0.65rem] text-white/40">
+            <p className="mt-1 text-center text-[0.65rem] text-white/40">
               Exemple d&apos;évolution possible sur tes premières séances — jamais garanti, ça dépend de toi.
             </p>
-          </Card>
+          </div>
         )}
+
+        <div className="overflow-hidden rounded-[1.25rem] border border-white/10">
+          <video className="block w-full" poster="/landing/demo-poster.jpg" autoPlay muted loop playsInline preload="metadata">
+            <source src="/landing/demo.webm" type="video/webm" />
+            <source src="/landing/demo.mp4" type="video/mp4" />
+          </video>
+          <p className="bg-white/[0.04] px-3 py-2 text-center text-xs text-white/60">
+            Ce que tu débloques avec Premium: tableau de bord, Coach Brian pose par pose, ta carte qui évolue.
+          </p>
+        </div>
 
         <Card className="border-white/10 bg-white/[0.04] text-white">
           <ul className="space-y-2.5">
