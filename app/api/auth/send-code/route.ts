@@ -38,7 +38,15 @@ export async function POST(request: Request) {
     }
 
     const { subject, html } = otpCodeEmail(data.properties.email_otp, data.properties.action_link);
-    await getResendClient().emails.send({ from: EMAIL_FROM, to: email, subject, html });
+    // L'API Resend ne lève jamais d'exception sur un échec (domaine non
+    // vérifié, clé invalide...): elle renvoie { error } — sans cette
+    // vérification explicite, un envoi refusé passait pour un succès (200
+    // renvoyé au client alors qu'aucun email n'était réellement parti).
+    const { error: resendError } = await getResendClient().emails.send({ from: EMAIL_FROM, to: email, subject, html });
+    if (resendError) {
+      console.error("[auth/send-code] Resend send failed", resendError);
+      return NextResponse.json({ error: "send_failed" }, { status: 500 });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err) {
