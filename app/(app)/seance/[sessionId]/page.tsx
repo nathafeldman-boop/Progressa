@@ -53,6 +53,7 @@ export default async function SeancePage({ params }: { params: Promise<{ session
       block.exercise.durationMinutes * 60
     ),
     exercise: {
+      id: block.exercise.id,
       slug: block.exercise.slug,
       name: block.exercise.name,
       emoji: block.exercise.emoji,

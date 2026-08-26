@@ -65,6 +65,7 @@ model User {
   statDeltas           StatDelta[]
   badges               UserBadge[]
   testimonials         Testimonial[]
+  exerciseRatings      ExerciseRating[]
   emailSendLogs        EmailSendLog[]
   pushSubscriptions    PushSubscription[]
   microSurveyResponses MicroSurveyResponse[]
@@ -208,10 +209,31 @@ model Exercise {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  blocks SessionBlock[]
+  blocks  SessionBlock[]
+  ratings ExerciseRating[]
 
   @@index([category])
   @@index([minAge])
+}
+
+/**
+ * Avis laissé par un joueur juste après avoir terminé un exercice précis —
+ * distinct du Testimonial (avis global sur l'app, modéré, affiché sur la
+ * LP). Non modéré: sert d'abord de signal interne pour repérer les
+ * exercices mal reçus, jamais affiché publiquement tel quel.
+ */
+model ExerciseRating {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exerciseId String
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  rating     Int // 1-5
+  feedback   String?
+  createdAt  DateTime @default(now())
+
+  @@index([exerciseId])
+  @@index([userId])
 }
 
 // ---------------------------------------------------------------------------

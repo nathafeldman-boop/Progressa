@@ -361,3 +361,25 @@
   .lp-phone-float { animation: none; }
   .lp-phones-track { transition: none; }
 }
+
+/* Carrousel d'avis: défilement horizontal continu, rapide, en boucle
+   infinie (deux copies de la liste mises bout à bout). */
+@keyframes lp-reviews-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.lp-reviews-track {
+  display: flex;
+  width: max-content;
+  animation: lp-reviews-marquee linear infinite;
+}
+.lp-reviews-track:hover {
+  animation-play-state: paused;
+}
+.lp-reviews-card {
+  flex: 0 0 auto;
+  width: 240px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-reviews-track { animation: none; }
+}

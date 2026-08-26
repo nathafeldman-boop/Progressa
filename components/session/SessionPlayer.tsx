@@ -47,6 +47,7 @@ export interface SessionBlockView {
   /** Plancher réaliste (secondes) sous lequel "Terminé" reste désactivé — évite de valider un bloc à répétitions en quelques secondes. */
   minimumSeconds: number;
   exercise: {
+    id: string;
     slug: string;
     name: string;
     emoji: string;
@@ -119,6 +120,67 @@ function RatingCard({ onRate }: { onRate: (v: string) => void }) {
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+/** Avis rapide et facultatif sur l'exercice qu'on vient de terminer — jamais bloquant, distinct du ressenti de difficulté. */
+function ExerciseFeedbackPrompt({ exerciseId }: { exerciseId: string }) {
+  const [stars, setStars] = useState(0);
+  const [comment, setComment] = useState("");
+  const [expanded, setExpanded] = useState(false);
+  const [status, setStatus] = useState<"idle" | "sending" | "done">("idle");
+
+  async function send(rating: number) {
+    setStars(rating);
+    setExpanded(true);
+  }
+
+  async function submit() {
+    if (!stars) return;
+    setStatus("sending");
+    try {
+      await fetch(`/api/exercises/${exerciseId}/rating`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating: stars, feedback: comment.trim() || null }),
+      });
+    } finally {
+      setStatus("done");
+    }
+  }
+
+  if (status === "done") {
+    return <p className="mt-4 text-center text-xs font-semibold text-[var(--color-primary-strong)]">Merci pour ton avis 🙌</p>;
+  }
+
+  return (
+    <div className="mt-4 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface-alt)] p-3">
+      <p className="text-center text-xs font-bold uppercase tracking-wide text-[var(--color-text-muted)]">
+        Note cet exercice
+      </p>
+      <div className="mt-2 flex justify-center gap-1.5">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button key={n} type="button" onClick={() => send(n)} className="text-2xl leading-none">
+            {n <= stars ? "⭐" : "☆"}
+          </button>
+        ))}
+      </div>
+      {expanded && (
+        <div className="mt-2 space-y-2">
+          <textarea
+            className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm"
+            placeholder="Un commentaire (facultatif)"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            maxLength={500}
+            rows={2}
+          />
+          <Button className="w-full" onClick={submit} disabled={status === "sending"}>
+            {status === "sending" ? "..." : "Envoyer"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -733,6 +795,8 @@ function ActiveExerciseScreen({
             className="mt-5 border-none bg-[var(--color-surface-alt)] p-3 shadow-none"
           />
         )}
+
+        {state.phase === "done" && <ExerciseFeedbackPrompt exerciseId={block.exercise.id} />}
       </div>
 
       <div className="border-t border-[var(--color-border)] p-4">
