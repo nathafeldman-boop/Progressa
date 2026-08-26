@@ -1,6 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { detectInAppBrowser } from "@/lib/in-app-browser";
+
+const OPEN_IN_BROWSER_PATH = "/ouvrir-dans-navigateur";
+// Jamais réécrit vers l'écran "ouvre ton navigateur", même depuis un
+// navigateur intégré: appels programmatiques (fetch côté client) et le
+// flux OAuth déjà en cours ne doivent jamais recevoir du HTML à la place.
+const IN_APP_BROWSER_EXEMPT_PREFIXES = ["/api/", "/auth/callback", OPEN_IN_BROWSER_PATH];
 
 // Next.js 16 renamed the `middleware` file convention to `proxy`.
 const PUBLIC_PREFIXES = [
@@ -26,6 +33,7 @@ const PUBLIC_PREFIXES = [
   "/mentions-legales",
   "/r/",
   "/carte/", // carte joueur partagée publiquement (mais pas /carte tout court, privé)
+  OPEN_IN_BROWSER_PATH,
 ];
 
 function isPublicRoute(pathname: string): boolean {
@@ -81,7 +89,24 @@ function clientIp(request: NextRequest): string {
 }
 
 export async function proxy(request: NextRequest) {
-  const isPublic = isPublicRoute(request.nextUrl.pathname);
+  const pathname = request.nextUrl.pathname;
+
+  // TikTok/Instagram/Facebook... webviews cassent souvent Google Sign-In et
+  // parfois le paiement Stripe — un joueur venu d'un lien affilié ou d'un
+  // post ne doit jamais découvrir ça au milieu du funnel. On sert l'écran
+  // "ouvre ton navigateur" à la place de N'IMPORTE QUELLE page (LP, lien
+  // d'affilié avec ?aff=..., etc.) sans changer l'URL affichée, pour que
+  // tout continue normalement une fois ouvert dans un vrai navigateur.
+  if (!IN_APP_BROWSER_EXEMPT_PREFIXES.some((p) => pathname.startsWith(p))) {
+    const { detected } = detectInAppBrowser(request.headers.get("user-agent"));
+    if (detected) {
+      const url = request.nextUrl.clone();
+      url.pathname = OPEN_IN_BROWSER_PATH;
+      return NextResponse.rewrite(url);
+    }
+  }
+
+  const isPublic = isPublicRoute(pathname);
 
   const rule = rateLimitFor(request.nextUrl.pathname);
   if (rule) {
