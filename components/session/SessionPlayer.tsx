@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Equipment, type StatAxis } from "@prisma/client";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
@@ -630,6 +630,15 @@ function ActiveExerciseScreen({
   // "Passer" (déjà dans l'écran) plutôt que de retirer le bloc en silence.
   const needsPartnerWarning = block.exercise.requiresPartner && soloToday;
 
+  // Le bouton "Suivant" est toujours visible (pied de page fixe, hors zone
+  // de défilement) — sans ça, un joueur qui tape dessus dès que l'exercice
+  // passe à "terminé" ne voyait jamais le message de Coach Brian, qui
+  // n'apparaissait qu'après avoir fait défiler le contenu vers le bas.
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (state.phase === "done") scrollAreaRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }, [state.phase]);
+
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-[var(--color-bg)] [padding-top:env(safe-area-inset-top)] [padding-bottom:env(safe-area-inset-bottom)]">
       <div className="flex items-center gap-3 border-b border-[var(--color-border)] px-4 py-3">
@@ -661,7 +670,7 @@ function ActiveExerciseScreen({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
+      <div ref={scrollAreaRef} className="flex-1 overflow-y-auto p-4">
         {state.phase === "idle" && !frames && (
           <BrianTip
             tipKey="seance-exercice-intro"
@@ -722,6 +731,23 @@ function ActiveExerciseScreen({
 
         {state.phase === "rating" && <RatingCard onRate={onRate} />}
 
+        {state.phase === "done" && state.reaction?.isPersonalRecord && (
+          <div className="mt-4 animate-[pulse_1.6s_ease-in-out_2] rounded-[var(--radius-control)] border-2 border-[var(--color-primary)] bg-[var(--color-primary-soft)] p-3 text-center">
+            <p className="font-display text-base font-extrabold uppercase tracking-wide text-[var(--color-primary-strong)]">
+              🏆 Nouveau record personnel !
+            </p>
+          </div>
+        )}
+
+        {state.phase === "done" && state.reaction && (
+          <BrianMessageCard
+            category={state.reaction.category}
+            text={state.reaction.text}
+            deltas={state.reaction.deltas}
+            className="mt-4 border-none bg-[var(--color-surface-alt)] p-3 shadow-none"
+          />
+        )}
+
         <CardTitle className="mt-4 text-center text-xl">
           {block.exercise.emoji} {block.exercise.name}
         </CardTitle>
@@ -778,23 +804,6 @@ function ActiveExerciseScreen({
         </div>
         {variant === "easy" && <p className="mt-2 text-center text-sm text-[var(--color-text-muted)]">{block.exercise.easyVariant}</p>}
         {variant === "hard" && <p className="mt-2 text-center text-sm text-[var(--color-text-muted)]">{block.exercise.hardVariant}</p>}
-
-        {state.phase === "done" && state.reaction?.isPersonalRecord && (
-          <div className="mt-5 animate-[pulse_1.6s_ease-in-out_2] rounded-[var(--radius-control)] border-2 border-[var(--color-primary)] bg-[var(--color-primary-soft)] p-3 text-center">
-            <p className="font-display text-base font-extrabold uppercase tracking-wide text-[var(--color-primary-strong)]">
-              🏆 Nouveau record personnel !
-            </p>
-          </div>
-        )}
-
-        {state.phase === "done" && state.reaction && (
-          <BrianMessageCard
-            category={state.reaction.category}
-            text={state.reaction.text}
-            deltas={state.reaction.deltas}
-            className="mt-5 border-none bg-[var(--color-surface-alt)] p-3 shadow-none"
-          />
-        )}
 
         {state.phase === "done" && <ExerciseFeedbackPrompt exerciseId={block.exercise.id} />}
       </div>
