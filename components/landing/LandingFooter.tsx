@@ -8,6 +8,7 @@ const LINKS = [
   { href: "#faq", label: "FAQ" },
   { href: "/tarifs", label: "Tarifs" },
   { href: "/avis", label: "Avis" },
+  { href: "/affiliation", label: "Devenir affilié" },
   { href: "/contact", label: "Contact" },
   { href: "/cgu", label: "CGU" },
   { href: "/cgv", label: "CGV" },

@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 import { getStripeClient, STRIPE_PRICE_IDS } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { creditReferralOnFriendPayment } from "@/lib/referral";
+import { recordAffiliateConversion } from "@/lib/affiliate";
 
 function planFromPriceId(priceId: string | undefined): "MONTHLY" | "ANNUAL" | undefined {
   if (priceId === STRIPE_PRICE_IDS.MONTHLY) return "MONTHLY";
@@ -101,6 +102,39 @@ export async function POST(request: Request) {
           where: { stripeCustomerId: customerId },
           data: { status: "CANCELED" },
         });
+        break;
+      }
+      case "invoice.payment_succeeded": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
+        // Snapshot immuable des metadata de l'abonnement au moment de la
+        // facture — pas besoin d'un appel API supplémentaire pour lire affCode.
+        const affCode = invoice.parent?.subscription_details?.metadata?.affCode;
+
+        if (customerId && invoice.amount_paid > 0) {
+          const localSub = await prisma.subscription.findUnique({ where: { stripeCustomerId: customerId } });
+          if (localSub) {
+            // Idempotent: un même paiement Stripe ne doit jamais compter deux
+            // fois côté LTV, même si le webhook est rejoué.
+            await prisma.payment
+              .create({
+                data: { userId: localSub.userId, stripeInvoiceId: invoice.id!, amountCents: invoice.amount_paid },
+              })
+              .catch(() => {
+                // Contrainte unique sur stripeInvoiceId: rejeu du webhook, on ignore.
+              });
+
+            if (affCode) {
+              await recordAffiliateConversion({
+                affiliateCode: affCode,
+                userId: localSub.userId,
+                stripeInvoiceId: invoice.id!,
+                amountCents: invoice.amount_paid,
+                chargedAt: new Date(),
+              });
+            }
+          }
+        }
         break;
       }
       case "invoice.payment_failed": {

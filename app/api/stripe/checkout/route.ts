@@ -6,6 +6,7 @@ import { getStripeClient, STRIPE_PRICE_IDS } from "@/lib/stripe";
 
 const bodySchema = z.object({
   plan: z.enum(["MONTHLY", "ANNUAL"]),
+  affCode: z.string().max(64).nullable().optional(),
 });
 
 /**
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
     cancel_url: `${origin}/paywall?canceled=1`,
     client_reference_id: user.id,
     subscription_data: {
-      metadata: { userId: user.id },
+      metadata: parsed.data.affCode ? { userId: user.id, affCode: parsed.data.affCode } : { userId: user.id },
     },
     metadata: { userId: user.id, plan: parsed.data.plan },
   });

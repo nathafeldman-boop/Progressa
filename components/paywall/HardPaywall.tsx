@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { trackClick } from "@/lib/analytics/track";
 import { getOrCreateAnonId } from "@/lib/onboarding/storage";
+import { getStoredAffCode } from "@/lib/affiliate-client";
+import { AccessCodeForm } from "@/components/paywall/AccessCodeForm";
 
 const BENEFITS = [
   "Coach Brian personnel, qui suit tes vraies performances",
@@ -39,7 +41,7 @@ export function HardPaywall({ firstName, overall }: { firstName: string; overall
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: "MONTHLY" }),
+        body: JSON.stringify({ plan: "MONTHLY", affCode: getStoredAffCode() }),
       });
       const data = await res.json();
       if (data.url) {
@@ -130,6 +132,8 @@ export function HardPaywall({ firstName, overall }: { firstName: string; overall
             </a>{" "}
             et reconnais que l&apos;accès Premium débute immédiatement (renonciation au délai de rétractation).
           </p>
+
+          <AccessCodeForm />
         </div>
       </div>
     </div>

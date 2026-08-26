@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Barlow_Condensed, Inter } from "next/font/google";
 import { PageViewTracker } from "@/components/analytics/PageViewTracker";
 import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
+import { AffiliateClickTracker } from "@/components/affiliate/AffiliateClickTracker";
 import { APP_NAME, APP_TAGLINE } from "@/lib/app-config";
 import "./globals.css";
 
@@ -50,6 +51,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-[var(--color-bg)] text-[var(--color-text)]">
         <PageViewTracker />
         <ServiceWorkerRegistration />
+        <AffiliateClickTracker />
         {children}
       </body>
     </html>

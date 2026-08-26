@@ -9,8 +9,10 @@ const PUBLIC_PREFIXES = [
   "/connexion",
   "/auth/callback",
   "/api/track",
+  "/api/affiliate",
   "/api/webhooks",
   "/api/cron",
+  "/affiliation",
   "/admin", // protégé par son propre secret, indépendant de Supabase
   "/api/admin",
   "/ressources",

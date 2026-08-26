@@ -1,8 +1,21 @@
 import { isAdminAuthenticated } from "@/lib/admin/auth";
-import { getFeatureUsage, getGlobalStats, getOnboardingFunnel, getOnlineNow } from "@/lib/admin/queries";
+import {
+  getFeatureUsage,
+  getGlobalStats,
+  getOnboardingFunnel,
+  getOnlineNow,
+  getUserDirectory,
+  getAffiliateDirectory,
+  getAccessCodes,
+  getPayableConversions,
+} from "@/lib/admin/queries";
 import { AdminLoginForm } from "@/components/admin/AdminLoginForm";
 import { TestimonialModeration } from "@/components/admin/TestimonialModeration";
 import { SeedCatalogButton } from "@/components/admin/SeedCatalogButton";
+import { UserDirectoryTable } from "@/components/admin/UserDirectoryTable";
+import { AffiliateAdminPanel } from "@/components/admin/AffiliateAdminPanel";
+import { AccessCodeAdminPanel } from "@/components/admin/AccessCodeAdminPanel";
+import { PayableConversionsPanel } from "@/components/admin/PayableConversionsPanel";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { prisma } from "@/lib/prisma";
 
@@ -10,13 +23,18 @@ export default async function AdminPage() {
   const authenticated = await isAdminAuthenticated();
   if (!authenticated) return <AdminLoginForm />;
 
-  const [online, stats, funnel, usage, pendingTestimonials] = await Promise.all([
-    getOnlineNow(),
-    getGlobalStats(),
-    getOnboardingFunnel(),
-    getFeatureUsage(),
-    prisma.testimonial.findMany({ where: { status: "PENDING" }, orderBy: { createdAt: "asc" } }),
-  ]);
+  const [online, stats, funnel, usage, pendingTestimonials, users, affiliates, accessCodes, payableConversions] =
+    await Promise.all([
+      getOnlineNow(),
+      getGlobalStats(),
+      getOnboardingFunnel(),
+      getFeatureUsage(),
+      prisma.testimonial.findMany({ where: { status: "PENDING" }, orderBy: { createdAt: "asc" } }),
+      getUserDirectory(),
+      getAffiliateDirectory(),
+      getAccessCodes(),
+      getPayableConversions(),
+    ]);
 
   const firstScreenViews = funnel[0]?.viewed ?? 0;
 
@@ -96,6 +114,44 @@ export default async function AdminPage() {
           Avis en attente de modération ({pendingTestimonials.length})
         </h2>
         <TestimonialModeration testimonials={pendingTestimonials} />
+      </section>
+
+      <section>
+        <h2 className="mb-2 font-display text-sm font-bold uppercase tracking-wide text-[var(--color-text-muted)]">
+          Visiteurs ({users.length} derniers inscrits)
+        </h2>
+        <UserDirectoryTable users={users} />
+      </section>
+
+      <section>
+        <h2 className="mb-2 font-display text-sm font-bold uppercase tracking-wide text-[var(--color-text-muted)]">
+          Commissions à verser ({payableConversions.length})
+        </h2>
+        <PayableConversionsPanel
+          conversions={payableConversions.map((c) => ({
+            id: c.id,
+            commissionCents: c.commissionCents,
+            payableAt: c.payableAt,
+            affiliate: c.affiliate,
+          }))}
+        />
+      </section>
+
+      <section>
+        <h2 className="mb-2 font-display text-sm font-bold uppercase tracking-wide text-[var(--color-text-muted)]">
+          Affiliés ({affiliates.length})
+        </h2>
+        <AffiliateAdminPanel affiliates={affiliates} />
+      </section>
+
+      <section>
+        <h2 className="mb-2 font-display text-sm font-bold uppercase tracking-wide text-[var(--color-text-muted)]">
+          Codes d&apos;accès ({accessCodes.length})
+        </h2>
+        <AccessCodeAdminPanel
+          codes={accessCodes}
+          affiliates={affiliates.map((a) => ({ id: a.id, name: a.name }))}
+        />
       </section>
 
       <section>

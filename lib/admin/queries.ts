@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { affiliateEarningsSummary } from "@/lib/affiliate";
 
 const ONLINE_WINDOW_MS = 5 * 60 * 1000;
 
@@ -65,6 +66,104 @@ export async function getOnboardingFunnel() {
   return Array.from(screens.entries())
     .sort(([a], [b]) => a - b)
     .map(([screen, data]) => ({ screen, ...data }));
+}
+
+export interface UserDirectoryEntry {
+  id: string;
+  email: string;
+  firstName: string;
+  createdAt: Date;
+  isPremium: boolean;
+  ltvCents: number;
+  affiliateName: string | null;
+  onlineNow: boolean;
+}
+
+/** Annuaire visiteurs pour le drill-down admin: email, LTV réelle, attribution affilié, présence en ligne. */
+export async function getUserDirectory(): Promise<UserDirectoryEntry[]> {
+  const since = new Date(Date.now() - ONLINE_WINDOW_MS);
+  const [users, onlineUserIds, payments, conversions] = await Promise.all([
+    prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 100,
+      include: { subscription: true },
+    }),
+    prisma.pageView.findMany({
+      where: { createdAt: { gte: since }, userId: { not: null } },
+      select: { userId: true },
+      distinct: ["userId"],
+    }),
+    prisma.payment.groupBy({ by: ["userId"], _sum: { amountCents: true } }),
+    prisma.affiliateConversion.findMany({ select: { userId: true, affiliate: { select: { name: true } } } }),
+  ]);
+
+  const onlineSet = new Set(onlineUserIds.map((v) => v.userId));
+  const ltvByUser = new Map(payments.map((p) => [p.userId, p._sum.amountCents ?? 0]));
+  const affiliateByUser = new Map(conversions.map((c) => [c.userId, c.affiliate.name]));
+
+  return users.map((u) => ({
+    id: u.id,
+    email: u.email,
+    firstName: u.firstName,
+    createdAt: u.createdAt,
+    isPremium:
+      u.subscription?.status === "ACTIVE" || (!!u.subscription?.bonusPremiumUntil && u.subscription.bonusPremiumUntil > new Date()),
+    ltvCents: ltvByUser.get(u.id) ?? 0,
+    affiliateName: affiliateByUser.get(u.id) ?? null,
+    onlineNow: onlineSet.has(u.id),
+  }));
+}
+
+export interface AffiliateDirectoryEntry {
+  id: string;
+  code: string;
+  name: string;
+  email: string;
+  active: boolean;
+  clickCount: number;
+  conversionCount: number;
+  pendingCents: number;
+  payableCents: number;
+  paidCents: number;
+  bonusCents: number;
+}
+
+export async function getAffiliateDirectory(): Promise<AffiliateDirectoryEntry[]> {
+  const affiliates = await prisma.affiliate.findMany({ orderBy: { createdAt: "desc" } });
+  return Promise.all(
+    affiliates.map(async (a) => {
+      const summary = await affiliateEarningsSummary(a.id);
+      return {
+        id: a.id,
+        code: a.code,
+        name: a.name,
+        email: a.email,
+        active: a.active,
+        clickCount: summary.clickCount,
+        conversionCount: summary.conversionCount,
+        pendingCents: summary.pendingCents,
+        payableCents: summary.payableCents,
+        paidCents: summary.paidCents,
+        bonusCents: summary.bonusCents,
+      };
+    })
+  );
+}
+
+export async function getAccessCodes() {
+  return prisma.accessCode.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 100,
+    include: { affiliate: { select: { name: true } }, usedByUser: { select: { firstName: true, email: true } } },
+  });
+}
+
+export async function getPayableConversions() {
+  return prisma.affiliateConversion.findMany({
+    where: { paidAt: null, payableAt: { lte: new Date() }, amountCents: { gt: 0 } },
+    orderBy: { payableAt: "asc" },
+    include: { affiliate: { select: { name: true, email: true } } },
+  });
 }
 
 export async function getFeatureUsage() {

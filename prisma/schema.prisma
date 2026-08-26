@@ -66,6 +66,9 @@ model User {
   badges               UserBadge[]
   testimonials         Testimonial[]
   exerciseRatings      ExerciseRating[]
+  payments             Payment[]
+  affiliateConversions AffiliateConversion[]
+  usedAccessCodes      AccessCode[]
   emailSendLogs        EmailSendLog[]
   pushSubscriptions    PushSubscription[]
   microSurveyResponses MicroSurveyResponse[]
@@ -791,6 +794,96 @@ model MicroSurveyResponse {
   createdAt DateTime @default(now())
 
   @@unique([userId, surveyKey])
+}
+
+// ---------------------------------------------------------------------------
+// Affiliation externe (créateurs/partenaires) — distincte du parrainage
+// joueur-à-joueur ci-dessus: paiement en argent réel (commission), pas en
+// Premium offert. Pas de vrai compte utilisateur: accès au dashboard perso
+// via un token secret dans l'URL (section 8: outil interne à faible
+// surface d'attaque, cohérent avec ADMIN_DASHBOARD_SECRET).
+// ---------------------------------------------------------------------------
+
+model Affiliate {
+  id             String   @id @default(cuid())
+  code           String   @unique
+  name           String
+  email          String   @unique
+  commissionRate Float    @default(0.8)
+  dashboardToken String   @unique
+  // Nombre de paliers de 500€ de commissions déjà bonifiés (+50€ chacun) —
+  // compteur explicite pour ne jamais accorder deux fois le même palier.
+  bonusesGranted Int      @default(0)
+  createdByAdmin Boolean  @default(false)
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  clicks      AffiliateClick[]
+  conversions AffiliateConversion[]
+  accessCodes AccessCode[]
+}
+
+model AffiliateClick {
+  id          String    @id @default(cuid())
+  affiliateId String
+  affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  anonId      String
+  createdAt   DateTime  @default(now())
+
+  @@index([affiliateId])
+}
+
+// Une ligne par facture Stripe payée avec succès attribuée à un affilié —
+// jamais recalculée depuis Stripe après coup, verrouillée par
+// stripeInvoiceId pour rester idempotente si le webhook est rejoué.
+model AffiliateConversion {
+  id              String    @id @default(cuid())
+  affiliateId     String
+  affiliate       Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeInvoiceId String    @unique
+  amountCents     Int
+  commissionCents Int
+  chargedAt       DateTime
+  // Stripe reverse les fonds au marchand ~5 jours après le prélèvement —
+  // la commission n'est réellement payable qu'à partir de cette date.
+  payableAt       DateTime
+  paidAt          DateTime?
+  createdAt       DateTime  @default(now())
+
+  @@index([affiliateId])
+  @@index([userId])
+}
+
+// Code offrant du Premium instantané sans paiement — soit émis par un
+// affilié pour son audience, soit créé manuellement par un admin (compte de
+// secours si un lien d'inscription casse).
+model AccessCode {
+  id             String     @id @default(cuid())
+  code           String     @unique
+  grantsDays     Int        @default(30)
+  affiliateId    String?
+  affiliate      Affiliate? @relation(fields: [affiliateId], references: [id], onDelete: SetNull)
+  createdByAdmin Boolean    @default(true)
+  usedByUserId   String?
+  usedByUser     User?      @relation(fields: [usedByUserId], references: [id], onDelete: SetNull)
+  usedAt         DateTime?
+  createdAt      DateTime   @default(now())
+}
+
+// Ledger minimal des paiements réussis — sert à la fois de source pour la
+// LTV affichée à l'admin et de verrou d'idempotence webhook
+// (stripeInvoiceId unique), indépendamment du calcul de commission affilié.
+model Payment {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeInvoiceId String   @unique
+  amountCents     Int
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
 }
 
 // ---------------------------------------------------------------------------
