@@ -10,6 +10,7 @@ const PUBLIC_PREFIXES = [
   "/auth/callback",
   "/api/track",
   "/api/affiliate",
+  "/api/auth/send-code",
   "/api/webhooks",
   "/api/cron",
   "/affiliation",
@@ -66,7 +67,7 @@ function tooManyRequests(): NextResponse {
 const RATE_LIMIT_EXEMPT_PREFIXES = ["/api/webhooks", "/api/cron"];
 // Endpoints qui coûtent réellement de l'argent par appel (LLM) ou sont des
 // cibles de spam évidentes: limite plus stricte que le reste de l'API.
-const STRICT_RATE_LIMIT_PREFIXES = ["/api/coach", "/api/track"];
+const STRICT_RATE_LIMIT_PREFIXES = ["/api/coach", "/api/track", "/api/auth"];
 
 function rateLimitFor(pathname: string): { limit: number; windowMs: number } | null {
   if (!pathname.startsWith("/api/")) return null;

@@ -12,6 +12,31 @@ function wrapper(bodyHtml: string): string {
   `;
 }
 
+/**
+ * Code de connexion — envoyé nous-mêmes via Resend (au lieu du mailer
+ * intégré de Supabase) pour garder un email français et cohérent avec ce
+ * que dit l'app ("un code à 6 chiffres"), sans dépendre du template par
+ * défaut de Supabase (anglais, "Your sign-in link"). Le code lui-même
+ * (`{{ .Token }}` côté Supabase) est généré par supabase.auth.admin.generateLink()
+ * — voir app/api/auth/send-code/route.ts.
+ */
+export function otpCodeEmail(code: string, actionLink?: string) {
+  return {
+    subject: "Ton code à 6 chiffres",
+    html: wrapper(`
+      <p>Entre ce code dans l'application pour te connecter :</p>
+      <p style="font-size: 32px; font-weight: bold; letter-spacing: 6px; margin: 24px 0; text-align: center;">${code}</p>
+      <p style="font-size: 13px; color: #5c6b63;">Ce code expire rapidement et ne peut servir qu'une fois.</p>
+      ${
+        actionLink
+          ? `<p>Tu peux aussi cliquer directement sur ce lien :</p>
+      <p><a href="${actionLink}" style="display:inline-block;background:#1c8a4b;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold;">Se connecter</a></p>`
+          : ""
+      }
+    `),
+  };
+}
+
 export function welcomeEmail(firstName: string, appUrl: string) {
   return {
     subject: `${firstName}, ton premier programme t'attend 💪`,
