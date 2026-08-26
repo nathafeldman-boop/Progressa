@@ -38,7 +38,18 @@ export default async function AffiliateDashboardPage({ params }: { params: Promi
         <CardTitle className="text-base">Ton lien à partager</CardTitle>
         <p className="break-all rounded-[var(--radius-control)] bg-[var(--color-surface-alt)] px-3 py-2 text-sm">{shareLink}</p>
         <CopyLinkButton link={shareLink} />
-        <CardSubtitle>Code: {affiliate.code} · Commission: {Math.round(affiliate.commissionRate * 100)}%</CardSubtitle>
+        <CardSubtitle>Commission: {Math.round(affiliate.commissionRate * 100)}%</CardSubtitle>
+      </Card>
+
+      <Card className="space-y-2 border-2 border-[var(--color-primary)]">
+        <CardTitle className="text-base">Ton code d&apos;accès Premium</CardTitle>
+        <CardSubtitle>
+          Donne ce code à un joueur : il l&apos;entre dans &quot;J&apos;ai un code d&apos;accès&quot; sur la page d&apos;abonnement pour débloquer 30 jours de Premium gratuits, sans payer.
+        </CardSubtitle>
+        <p className="rounded-[var(--radius-control)] bg-[var(--color-surface-alt)] px-3 py-3 text-center font-display text-2xl font-extrabold uppercase tracking-widest">
+          {affiliate.code}
+        </p>
+        <CopyLinkButton link={affiliate.code} label="Copier le code" />
       </Card>
 
       <div className="grid grid-cols-2 gap-3">

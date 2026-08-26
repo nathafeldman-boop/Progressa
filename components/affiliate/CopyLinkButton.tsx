@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 
-export function CopyLinkButton({ link }: { link: string }) {
+export function CopyLinkButton({ link, label = "Copier le lien" }: { link: string; label?: string }) {
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -18,7 +18,7 @@ export function CopyLinkButton({ link }: { link: string }) {
 
   return (
     <Button variant="secondary" className="w-full" onClick={copy}>
-      {copied ? "Copié ✓" : "Copier le lien"}
+      {copied ? "Copié ✓" : label}
     </Button>
   );
 }

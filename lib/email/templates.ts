@@ -59,6 +59,19 @@ export function j1ReminderEmail(firstName: string, appUrl: string) {
   };
 }
 
+export function affiliateWelcomeEmail(name: string, dashboardUrl: string, code: string) {
+  return {
+    subject: "Ton lien et ton code d'affilié",
+    html: wrapper(`
+      <p>Salut ${name},</p>
+      <p>Voici ton tableau de bord d'affilié — garde ce lien précieusement, c'est le seul moyen d'y accéder :</p>
+      <p><a href="${dashboardUrl}" style="display:inline-block;background:#1c8a4b;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold;">Voir mon tableau de bord</a></p>
+      <p>Ton code personnel (à donner à un joueur pour lui offrir 30 jours de Premium) :</p>
+      <p style="font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 16px 0; text-align: center;">${code}</p>
+    `),
+  };
+}
+
 export function j3PremiumPitchEmail(firstName: string, appUrl: string) {
   return {
     subject: "Un préparateur physique, mais accessible",

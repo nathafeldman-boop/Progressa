@@ -26,7 +26,7 @@ export function AffiliateSignupForm() {
       if (!res.ok) {
         setError(
           data.error === "already_registered"
-            ? "Cet email a déjà un compte affilié — contacte-nous si tu as perdu ton lien."
+            ? "Cet email a déjà un compte affilié — on vient de renvoyer ton lien et ton code par email."
             : "Impossible de créer ton compte pour l'instant."
         );
         return;
