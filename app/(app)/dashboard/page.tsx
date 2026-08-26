@@ -17,7 +17,8 @@ import { ensureTodayObjectives } from "@/lib/brian/daily-objectives";
 import { RankCardBadge } from "@/components/card/RankCardBadge";
 import { todayAsWeekday } from "@/lib/week";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ erreur?: string }> }) {
+  const { erreur } = await searchParams;
   const user = await getCurrentInternalUser();
 
   if (!user) {
@@ -91,6 +92,15 @@ export default async function DashboardPage() {
         </div>
         <RegenerateButton />
       </div>
+
+      {erreur === "entrainement-cible-indisponible" && (
+        <Card className="border-[var(--color-danger)] bg-[var(--color-danger)]/5">
+          <CardSubtitle className="text-[var(--color-danger)]">
+            Pas assez d&apos;exercices disponibles pour ce besoin avec ton profil actuel (poste, matériel) —
+            essaie un autre thème d&apos;entraînement ciblé, ou réessaie dans quelques jours.
+          </CardSubtitle>
+        </Card>
+      )}
 
       <DailyObjectives objectives={objectives} />
 
