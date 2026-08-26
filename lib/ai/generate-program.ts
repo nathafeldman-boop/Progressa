@@ -1,5 +1,5 @@
-import Anthropic from "@anthropic-ai/sdk";
 import type { Weekday, Objective, Position, Equipment } from "@prisma/client";
+import { getMistralClient } from "@/lib/ai/mistral-client";
 import { getAiAgeBand } from "@/lib/age-category";
 import { filterCatalogForProfile, excludePainfulAreas } from "@/lib/ai/catalog-filter";
 import { buildProgramSchema, type ProgramOutput } from "@/lib/ai/program-schema";
@@ -40,21 +40,23 @@ export interface GenerateProgramResult {
 
 type ModelCaller = (system: string, user: string) => Promise<{ text: string; refused: boolean }>;
 
-async function callClaude(system: string, user: string): Promise<{ text: string; refused: boolean }> {
-  const client = new Anthropic();
-  const response = await client.messages.create({
-    model: "claude-opus-5",
-    max_tokens: 8000,
-    system,
-    messages: [{ role: "user", content: user }],
+async function callMistral(system: string, user: string): Promise<{ text: string; refused: boolean }> {
+  const client = getMistralClient();
+  if (!client) return { text: "", refused: false };
+
+  const response = await client.chat.complete({
+    model: "mistral-large-latest",
+    maxTokens: 8000,
+    temperature: 0.7,
+    responseFormat: { type: "json_object" },
+    messages: [
+      { role: "system", content: system },
+      { role: "user", content: user },
+    ],
   });
 
-  if (response.stop_reason === "refusal") {
-    return { text: "", refused: true };
-  }
-
-  const textBlock = response.content.find((b): b is Anthropic.TextBlock => b.type === "text");
-  return { text: textBlock?.text ?? "", refused: false };
+  const text = response.choices?.[0]?.message?.content;
+  return { text: typeof text === "string" ? text : "", refused: false };
 }
 
 function extractJson(raw: string): unknown {
@@ -80,7 +82,7 @@ export async function generateWeeklyProgram(
   input: GenerateProgramInput,
   options?: { callModel?: ModelCaller }
 ): Promise<GenerateProgramResult> {
-  const callModel = options?.callModel ?? callClaude;
+  const callModel = options?.callModel ?? callMistral;
   const referenceDate = input.referenceDate ?? new Date();
 
   const baseCatalog = filterCatalogForProfile({

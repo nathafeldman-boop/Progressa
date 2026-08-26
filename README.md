@@ -14,9 +14,10 @@ par IA, toujours en complément — jamais en remplacement — du calendrier clu
 - **Supabase Postgres** comme base de données (accédée via Prisma)
 - **Stripe** (Checkout + Customer Portal + webhooks) — paiement direct, sans
   essai gratuit
-- **API Claude (Anthropic)**, `claude-opus-5`, pour la génération de
-  programme — sortie validée par Zod contre le catalogue d'exercices, avec
-  garde-fou anti-hallucination et repli déterministe (`lib/ai/`)
+- **API Mistral**, `mistral-large-latest`, pour la génération de programme —
+  sortie validée par Zod contre le catalogue d'exercices, avec garde-fou
+  anti-hallucination et repli déterministe (`lib/ai/`). Le même fournisseur
+  (`mistral-small-latest`) alimente la discussion libre avec Coach Brian.
 - **Resend** pour les emails transactionnels
 - **Design system** en tokens CSS (thème clair, accent vert,
   `app/globals.css`), prêt pour un futur toggle sombre
@@ -46,10 +47,10 @@ npm run dev
 | `DATABASE_URL` | Connexion PostgreSQL utilisée par l'app en runtime (peut être un pooler en mode transaction, ex: Supabase Supavisor port 6543) |
 | `DIRECT_URL` | Connexion PostgreSQL utilisée uniquement par `prisma migrate` — doit être une connexion directe ou un pooler en **mode session** (port 5432) ; un pooler en mode transaction ne supporte pas les verrous que les migrations nécessitent, et fait planter/bloquer `prisma migrate deploy` (vécu en prod : un build a mis 45 minutes avant de timeout). Optionnelle: `scripts/derive-direct-url.mjs` la dérive automatiquement de `DATABASE_URL` au build si elle n'est pas définie (remplace `:6543` par `:5432`) — aucune variable à ajouter manuellement sur Vercel. À définir explicitement seulement si ce calcul automatique ne convient pas à ton hébergeur de base de données. |
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | Auth + base de données Supabase |
-| `ANTHROPIC_API_KEY` | Génération de programme (Claude API) |
+| `MISTRAL_API_KEY` | Génération de programme + discussion libre Coach Brian (API Mistral) |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Paiement |
 | `STRIPE_PRICE_ID_MONTHLY`, `STRIPE_PRICE_ID_ANNUAL` | Prix Stripe (les réductions/coupons se configurent côté Stripe, jamais en dur dans le code) |
-| `RESEND_API_KEY`, `EMAIL_FROM` | Emails transactionnels |
+| `RESEND_API_KEY`, `EMAIL_FROM` | Emails transactionnels — `EMAIL_FROM` doit être une adresse `quelquechose@tondomaine.fr` sur un domaine **vérifié** dans Resend (Domains → Add Domain → enregistrements DNS). Tant que le domaine n'est pas vérifié, utilise le sandbox `onboarding@resend.dev` (n'envoie qu'à l'adresse du compte Resend — développement uniquement, jamais en prod). |
 | `ADMIN_DASHBOARD_SECRET` | Accès au dashboard admin (`/admin`), protection par secret simple |
 | `CRON_SECRET` | Vérifie que les appels aux routes `/api/cron/*` viennent bien de Vercel Cron |
 | `NEXT_PUBLIC_APP_URL` | URL publique (liens dans les emails, redirections Stripe) |

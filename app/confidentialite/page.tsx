@@ -16,7 +16,7 @@ const SECTIONS = [
   },
   {
     title: "Qui traite tes données pour nous",
-    body: "Supabase (authentification, base de données), Vercel (hébergement), Stripe (paiement, uniquement si tu prends Premium), Resend (emails), et les fournisseurs d'IA Anthropic et Mistral (génération de ton programme — reçoivent ton prénom, ton âge, ton poste et tes points faibles/douleurs signalées, jamais ton email ni tes identifiants). Certains de ces prestataires sont situés hors Union Européenne (États-Unis) ; leurs garanties contractuelles (clauses contractuelles types) encadrent ce transfert.",
+    body: "Supabase (authentification, base de données), Vercel (hébergement), Stripe (paiement, uniquement si tu prends Premium), Resend (emails), et Mistral (génération de ton programme et discussion avec Coach Brian — reçoit ton prénom, ton âge, ton poste et tes points faibles/douleurs signalées, jamais ton email ni tes identifiants). Certains de ces prestataires sont situés hors Union Européenne ; leurs garanties contractuelles (clauses contractuelles types) encadrent ce transfert.",
   },
   {
     title: "Combien de temps on garde tes données",

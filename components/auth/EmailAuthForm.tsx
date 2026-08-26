@@ -18,6 +18,17 @@ export function EmailAuthForm({ redirectTo }: { redirectTo: string }) {
   const [resent, setResent] = useState(false);
   const [awaitingCode, setAwaitingCode] = useState(false);
 
+  // Le mail Supabase contient à la fois le code à 6 chiffres ET un lien de
+  // confirmation. Sur mobile, beaucoup de joueurs tapent le lien plutôt que
+  // de recopier le code — sans emailRedirectTo, Supabase renvoie alors vers
+  // le Site URL du projet (donc la landing page) au lieu de poursuivre le
+  // funnel. On force ce lien à repasser par /auth/callback avec la bonne
+  // destination, exactement comme la connexion Google.
+  const emailRedirectTo =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`
+      : undefined;
+
   async function handleSendCode(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -27,7 +38,7 @@ export function EmailAuthForm({ redirectTo }: { redirectTo: string }) {
       return;
     }
     setLoading(true);
-    const { error: otpError } = await supabase.auth.signInWithOtp({ email });
+    const { error: otpError } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo } });
     setLoading(false);
     if (otpError) {
       setError("Impossible d'envoyer le code pour l'instant.");
@@ -58,7 +69,7 @@ export function EmailAuthForm({ redirectTo }: { redirectTo: string }) {
     setError(null);
     const supabase = createClient();
     if (!supabase) return;
-    const { error: resendError } = await supabase.auth.signInWithOtp({ email });
+    const { error: resendError } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo } });
     if (resendError) {
       setError("Impossible de renvoyer le code pour l'instant.");
       return;

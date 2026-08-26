@@ -16,7 +16,6 @@
     "db:migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.117.1",
     "@mistralai/mistralai": "^2.6.3",
     "@prisma/client": "^6.19.3",
     "@supabase/ssr": "^0.12.4",
