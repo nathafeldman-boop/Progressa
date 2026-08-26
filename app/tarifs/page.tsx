@@ -37,7 +37,7 @@ export default function TarifsPage() {
         </p>
       </Card>
 
-      <Link href="/onboarding">
+      <Link href="/inscription">
         <Button className="w-full">Commencer mon évaluation</Button>
       </Link>
 

@@ -16,5 +16,10 @@ export default async function OnboardingPage() {
     if (profile) redirect("/dashboard");
   }
 
-  return <OnboardingWizard />;
+  // Funnel: LP -> Connexion/Inscription -> Onboarding -> test -> carte ->
+  // paywall — un joueur qui arrive ici est déjà authentifié dans le cas
+  // normal, donc l'étape "Créer mon compte" en fin de parcours doit
+  // s'effacer. On garde le repli "pas encore authentifié" pour un lien
+  // /onboarding partagé/deep-linké directement, hors funnel normal.
+  return <OnboardingWizard alreadyAuthenticated={!!user} />;
 }

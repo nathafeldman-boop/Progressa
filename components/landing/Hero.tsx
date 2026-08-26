@@ -57,7 +57,7 @@ export function Hero() {
             </p>
 
             <div className="flex w-full flex-col items-start gap-3 sm:flex-row sm:items-center">
-              <Link href="/onboarding" className="lp-btn-primary w-full sm:w-auto sm:whitespace-nowrap">
+              <Link href="/inscription" className="lp-btn-primary w-full sm:w-auto sm:whitespace-nowrap">
                 Commencer mon évaluation →
               </Link>
               <a

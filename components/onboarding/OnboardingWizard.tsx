@@ -54,7 +54,7 @@ function BrianAsks({ children, celebrating = false }: { children: ReactNode; cel
   );
 }
 
-export function OnboardingWizard() {
+export function OnboardingWizard({ alreadyAuthenticated = false }: { alreadyAuthenticated?: boolean }) {
   const [step, setStep] = useState(0);
   // Initialisation paresseuse plutôt qu'un effet: localStorage n'est lisible
   // que côté client, mais useState((..) => ..) s'exécute déjà lors du rendu
@@ -195,7 +195,12 @@ export function OnboardingWizard() {
           />
         )}
         {ONBOARDING_SCREEN_KEYS[step] === "revelation" && (
-          <ScreenRevelation data={data} ageCategoryLabel={ageCategory?.label ?? null} anonId={anonId} />
+          <ScreenRevelation
+            data={data}
+            ageCategoryLabel={ageCategory?.label ?? null}
+            anonId={anonId}
+            alreadyAuthenticated={alreadyAuthenticated}
+          />
         )}
 
         {error && <p className="mt-4 text-sm font-semibold text-[var(--color-danger)]">{error}</p>}
@@ -594,10 +599,12 @@ function ScreenRevelation({
   data,
   ageCategoryLabel,
   anonId,
+  alreadyAuthenticated,
 }: {
   data: OnboardingData;
   ageCategoryLabel: string | null;
   anonId: string;
+  alreadyAuthenticated: boolean;
 }) {
   return (
     <div className="text-center">
@@ -611,23 +618,43 @@ function ScreenRevelation({
           </Chip>
         )}
       </div>
-      <p className="mt-4 text-sm text-[var(--color-text-muted)]">
-        Crée ton compte pour débloquer ton premier programme personnalisé.
-      </p>
-      <Link href="/inscription" className="mt-6 block">
-        <Button
-          className="w-full"
-          onClick={() => {
-            trackOnboardingFunnel(anonId, 7, "revelation", "COMPLETED");
-            trackClick(anonId, "onboarding_create_account");
-          }}
-        >
-          Créer mon compte
-        </Button>
-      </Link>
-      <Link href="/connexion" className="mt-3 block text-sm font-semibold text-[var(--color-text-muted)] underline">
-        J&apos;ai déjà un compte
-      </Link>
+      {alreadyAuthenticated ? (
+        // Funnel normal: le compte existe déjà (créé juste après la LP, avant
+        // l'onboarding) — on enchaîne directement sur la génération du programme.
+        <>
+          <p className="mt-4 text-sm text-[var(--color-text-muted)]">Ton profil est prêt.</p>
+          <Link href="/onboarding/finish" className="mt-6 block">
+            <Button
+              className="w-full"
+              onClick={() => trackOnboardingFunnel(anonId, 7, "revelation", "COMPLETED")}
+            >
+              Continuer
+            </Button>
+          </Link>
+        </>
+      ) : (
+        // Repli si /onboarding a été atteint sans passer par Connexion/Inscription
+        // en amont (lien partagé, deep link) — on demande la création de compte ici.
+        <>
+          <p className="mt-4 text-sm text-[var(--color-text-muted)]">
+            Crée ton compte pour débloquer ton premier programme personnalisé.
+          </p>
+          <Link href="/inscription" className="mt-6 block">
+            <Button
+              className="w-full"
+              onClick={() => {
+                trackOnboardingFunnel(anonId, 7, "revelation", "COMPLETED");
+                trackClick(anonId, "onboarding_create_account");
+              }}
+            >
+              Créer mon compte
+            </Button>
+          </Link>
+          <Link href="/connexion" className="mt-3 block text-sm font-semibold text-[var(--color-text-muted)] underline">
+            J&apos;ai déjà un compte
+          </Link>
+        </>
+      )}
     </div>
   );
 }

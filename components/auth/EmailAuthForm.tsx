@@ -57,11 +57,15 @@ export function EmailAuthForm({ redirectTo }: { redirectTo: string }) {
     }
     setLoading(true);
     const { error: verifyError } = await supabase.auth.verifyOtp({ email, token: code, type: "email" });
-    setLoading(false);
     if (verifyError) {
+      setLoading(false);
       setError("Code invalide ou expiré.");
       return;
     }
+    // Crée la ligne User interne tout de suite — sans ça, le reste de l'app
+    // (dashboard, onboarding...) ne "voit" pas ce joueur tant qu'il n'a pas
+    // fini l'onboarding, et le renvoie sur la landing page.
+    await fetch("/api/auth/sync", { method: "POST" }).catch(() => {});
     window.location.href = redirectTo;
   }
 

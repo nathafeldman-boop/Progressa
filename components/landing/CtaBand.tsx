@@ -24,7 +24,7 @@ export function CtaBand({ variant = "mid" }: { variant?: "mid" | "final" }) {
             ? "Commence ton parcours aujourd'hui."
             : "Commence gratuitement ton premier entraînement et découvre ton niveau de départ."}
         </p>
-        <Link href="/onboarding" className={`lp-btn-primary ${isFinal ? "px-10 py-5 text-lg" : ""}`}>
+        <Link href="/inscription" className={`lp-btn-primary ${isFinal ? "px-10 py-5 text-lg" : ""}`}>
           Commencer mon parcours
         </Link>
         {isFinal && (
