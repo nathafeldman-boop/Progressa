@@ -162,8 +162,13 @@ export async function affiliateEarningsSummary(affiliateId: string): Promise<Aff
   };
 }
 
+/** Les codes sont toujours générés en majuscules — sans cette normalisation, un joueur qui tape le code en minuscules (clavier mobile, autocorrection...) se voit refuser un code pourtant valide. */
+export function normalizeAccessCode(code: string): string {
+  return code.trim().toUpperCase();
+}
+
 export async function redeemAccessCode(code: string, userId: string): Promise<{ ok: boolean; days?: number }> {
-  const accessCode = await prisma.accessCode.findUnique({ where: { code } });
+  const accessCode = await prisma.accessCode.findUnique({ where: { code: normalizeAccessCode(code) } });
   if (!accessCode || accessCode.usedAt) return { ok: false };
 
   const bonusPremiumUntil = new Date(Date.now() + accessCode.grantsDays * 24 * 60 * 60 * 1000);

@@ -51,10 +51,17 @@ export function AccessCodeForm() {
         <input
           type="text"
           value={code}
-          onChange={(e) => setCode(e.target.value)}
+          // Les codes sont toujours en majuscules — on affiche exactement ce
+          // qui sera comparé côté serveur, pour éviter tout code "invalide"
+          // à cause d'une casse différente entre ce que le joueur voit et
+          // ce qui est réellement envoyé.
+          onChange={(e) => setCode(e.target.value.toUpperCase())}
           placeholder="Code d'accès"
           autoFocus
-          className="w-full rounded-[var(--radius-control)] border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40"
+          autoCapitalize="characters"
+          autoCorrect="off"
+          spellCheck={false}
+          className="w-full rounded-[var(--radius-control)] border border-white/20 bg-white/10 px-3 py-2 text-sm uppercase tracking-widest text-white placeholder:text-white/40 placeholder:normal-case placeholder:tracking-normal"
         />
         <button
           type="submit"

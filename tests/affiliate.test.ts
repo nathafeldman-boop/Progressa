@@ -4,6 +4,7 @@ import {
   computeCommissionCents,
   computePayableAt,
   computeBonusTiersEarned,
+  normalizeAccessCode,
   BONUS_TIER_CENTS,
 } from "../lib/affiliate";
 
@@ -38,4 +39,10 @@ test("exactly one bonus tier at 500€, two at 1000€", () => {
 
 test("a partial amount past a tier doesn't grant the next tier early", () => {
   assert.equal(computeBonusTiersEarned(BONUS_TIER_CENTS + 1), 1);
+});
+
+test("access code lookup is case-insensitive and ignores surrounding whitespace", () => {
+  assert.equal(normalizeAccessCode("a1b2c3d4"), "A1B2C3D4");
+  assert.equal(normalizeAccessCode("  A1B2C3D4  "), "A1B2C3D4");
+  assert.equal(normalizeAccessCode("A1b2C3d4"), "A1B2C3D4");
 });
