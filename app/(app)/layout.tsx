@@ -4,6 +4,7 @@ import { UserMenu } from "@/components/auth/UserMenu";
 import { BrianFab } from "@/components/brian/BrianFab";
 import { BrianAvatar, type BrianState } from "@/components/brian/BrianAvatar";
 import { CoachNavLink } from "@/components/coach/CoachNavLink";
+import { InstallAppBanner } from "@/components/pwa/InstallAppBanner";
 import { APP_NAME } from "@/lib/app-config";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -40,6 +41,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <main className="flex-1 pb-20">{children}</main>
 
       <BrianFab />
+      <InstallAppBanner />
 
       <nav className="fixed inset-x-0 bottom-0 z-10 flex justify-around border-t border-[var(--color-border)] bg-[var(--color-surface)] py-2 [padding-bottom:env(safe-area-inset-bottom)]">
         <Link
