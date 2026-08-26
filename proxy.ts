@@ -7,7 +7,10 @@ const OPEN_IN_BROWSER_PATH = "/ouvrir-dans-navigateur";
 // Jamais réécrit vers l'écran "ouvre ton navigateur", même depuis un
 // navigateur intégré: appels programmatiques (fetch côté client) et le
 // flux OAuth déjà en cours ne doivent jamais recevoir du HTML à la place.
-const IN_APP_BROWSER_EXEMPT_PREFIXES = ["/api/", "/auth/callback", OPEN_IN_BROWSER_PATH];
+// Ni Google Sign-In ni Stripe n'entrent en jeu sur /admin (simple secret,
+// pas d'OAuth) — un navigateur intégré n'y casse rien, donc pas de raison
+// de bloquer l'accès à un lien admin partagé via Messenger/Instagram.
+const IN_APP_BROWSER_EXEMPT_PREFIXES = ["/api/", "/auth/callback", "/admin", OPEN_IN_BROWSER_PATH];
 
 // Next.js 16 renamed the `middleware` file convention to `proxy`.
 const PUBLIC_PREFIXES = [

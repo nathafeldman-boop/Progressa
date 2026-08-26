@@ -19,7 +19,7 @@ export function AdminLoginForm() {
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ secret }),
+        body: JSON.stringify({ secret: secret.trim() }),
       });
       if (res.ok) {
         router.refresh();
