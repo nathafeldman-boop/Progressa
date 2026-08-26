@@ -7,6 +7,7 @@ import { getAgeCategory } from "@/lib/age-category";
 import { POSITION_LABELS, WEEKDAY_LABELS } from "@/lib/labels";
 import { SessionPlayer, type SessionBlockView } from "@/components/session/SessionPlayer";
 import { getPersonalBests } from "@/lib/brian/service";
+import { estimateMinimumSeconds } from "@/lib/pacing";
 
 export default async function SeancePage({ params }: { params: Promise<{ sessionId: string }> }) {
   const { sessionId } = await params;
@@ -45,6 +46,12 @@ export default async function SeancePage({ params }: { params: Promise<{ session
     restSeconds: block.restSeconds,
     customInstruction: block.customInstruction,
     status: block.status,
+    minimumSeconds: estimateMinimumSeconds(
+      block.reps,
+      block.sets,
+      block.exercise.category,
+      block.exercise.durationMinutes * 60
+    ),
     exercise: {
       slug: block.exercise.slug,
       name: block.exercise.name,

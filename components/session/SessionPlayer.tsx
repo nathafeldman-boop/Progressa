@@ -44,6 +44,8 @@ export interface SessionBlockView {
   restSeconds: number | null;
   customInstruction: string;
   status: "PLANNED" | "COMPLETED" | "SKIPPED" | "ABANDONED";
+  /** Plancher réaliste (secondes) sous lequel "Terminé" reste désactivé — évite de valider un bloc à répétitions en quelques secondes. */
+  minimumSeconds: number;
   exercise: {
     slug: string;
     name: string;
@@ -548,6 +550,10 @@ function ActiveExerciseScreen({
 }) {
   useTicker(state.phase === "active");
   const elapsed = state.phase === "active" ? (elapsedSeconds(state.startedAt) ?? 0) : 0;
+  // Empêche de marquer un bloc à répétitions "terminé" en quelques secondes
+  // (ex: 45 abdos ne peut pas être fait en 3s) — plancher réaliste calculé
+  // côté serveur à partir des reps/séries, jamais bloquant au-delà de ça.
+  const remainingBeforeFinish = state.phase === "active" ? Math.max(0, block.minimumSeconds - elapsed) : 0;
   // Les poses Coach Brian générées par IA priment toujours quand elles
   // existent pour cet exercice — la vidéo Pexels ne sert que de repli pour
   // les exercices sans pose IA (voir scripts/videos/).
@@ -745,8 +751,8 @@ function ActiveExerciseScreen({
             <Button variant="ghost" onClick={onAbandon}>
               Abandonner
             </Button>
-            <Button className="flex-1" onClick={onFinish}>
-              Terminé
+            <Button className="flex-1" onClick={onFinish} disabled={remainingBeforeFinish > 0}>
+              {remainingBeforeFinish > 0 ? `Terminé (encore ${remainingBeforeFinish}s)` : "Terminé"}
             </Button>
           </div>
         )}

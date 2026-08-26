@@ -85,6 +85,22 @@ export const TEST_PROTOCOLS: Record<EvaluationTestType, TestProtocol> = {
   },
 };
 
+/**
+ * Plancher de plausibilité physique (secondes) sous lequel le chrono ne peut
+ * pas encore être arrêté — évite un résultat impossible (ex: sprint de 20m
+ * en 0,8s) obtenu en appuyant sur "Arrêter" immédiatement. Uniquement sur
+ * les tests où finir trop vite fausse le résultat dans le bon sens
+ * (chronométrés ou comptage nécessitant un vrai temps d'exécution) — pas sur
+ * JUGGLING, où un temps très court (perte immédiate du ballon) est un
+ * résultat réel et légitime.
+ */
+export const MIN_PLAUSIBLE_SECONDS: Partial<Record<EvaluationTestType, number>> = {
+  SHUTTLE_5X10: 11,
+  SPRINT_20M: 2.3,
+  TIR_PRECISION: 45,
+  PASSE_PRECISION: 35,
+};
+
 /** Cooldown anti-triche (section 6.6): ~4 semaines entre deux passages du même test. */
 export const TEST_COOLDOWN_DAYS = 28;
 

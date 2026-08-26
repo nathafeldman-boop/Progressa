@@ -8,6 +8,7 @@ import { BrianAvatar } from "@/components/brian/BrianAvatar";
 import { BrianTip } from "@/components/brian/BrianTip";
 import { ConeTimer } from "@/components/tests/ConeTimer";
 import { composeTestFlowIntro } from "@/lib/brian/messages";
+import { MIN_PLAUSIBLE_SECONDS } from "@/lib/evaluation-tests";
 import { elapsedSeconds, nowMs } from "@/lib/time";
 import { EXERCISE_FRAMES } from "@/lib/exercises/exercise-frames";
 import { ExerciseFrameViewer } from "@/components/exercises/ExerciseFrameViewer";
@@ -231,6 +232,11 @@ export function TestPlayer({
 
   // screen === "test"
   const liveSeconds = timerPhase === "running" ? elapsedSeconds(startedAt) ?? 0 : frozenSeconds;
+  // Empêche d'arrêter le chrono avant un temps physiquement plausible (ex:
+  // un sprint de 20m ne peut pas être fait en moins de ~2,3s) — sur les
+  // tests concernés uniquement, voir MIN_PLAUSIBLE_SECONDS.
+  const minPlausible = (MIN_PLAUSIBLE_SECONDS as Record<string, number>)[current.type] ?? 0;
+  const remainingBeforeStop = timerPhase === "running" ? Math.max(0, Math.ceil(minPlausible - liveSeconds)) : 0;
   const frames = TEST_FRAMES_SLUG[current.type] ? EXERCISE_FRAMES[TEST_FRAMES_SLUG[current.type]!] : undefined;
   const showFrameIntro = !!frames && timerPhase === "idle";
 
@@ -288,8 +294,8 @@ export function TestPlayer({
               Lancer le chrono
             </Button>
           ) : (
-            <Button className="flex-1" onClick={stopTimer}>
-              Arrêter
+            <Button className="flex-1" onClick={stopTimer} disabled={remainingBeforeStop > 0}>
+              {remainingBeforeStop > 0 ? `Arrêter (encore ${remainingBeforeStop}s)` : "Arrêter"}
             </Button>
           )}
         </div>
