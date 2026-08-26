@@ -1,5 +1,7 @@
+import { redirect } from "next/navigation";
 import "./landing.css";
 import { prisma } from "@/lib/prisma";
+import { getCurrentInternalUser } from "@/lib/auth";
 import { Hero } from "@/components/landing/Hero";
 import { PlayerCardShowcase } from "@/components/landing/PlayerCardShowcase";
 import { CoachBrian } from "@/components/landing/CoachBrian";
@@ -19,12 +21,24 @@ import { LandingFooter } from "@/components/landing/LandingFooter";
 // dès qu'un avis est modéré — pas figée sur un instantané pris au build.
 export const dynamic = "force-dynamic";
 
+/**
+ * "/" est le start_url du manifest PWA (section installation): un joueur
+ * qui ouvre l'app installée depuis son écran d'accueil doit retomber sur
+ * son tableau de bord s'il a déjà un compte + un profil, jamais revoir la
+ * landing page ni pire — un mur de connexion prématuré (start_url ne peut
+ * pas pointer directement sur une route protégée par le proxy).
+ */
 export default async function Home() {
-  const approved = await prisma.testimonial.findMany({
-    where: { status: "APPROVED" },
-    orderBy: { createdAt: "desc" },
-    take: 20,
-  });
+  const [user, approved] = await Promise.all([
+    getCurrentInternalUser(),
+    prisma.testimonial.findMany({ where: { status: "APPROVED" }, orderBy: { createdAt: "desc" }, take: 20 }),
+  ]);
+
+  if (user) {
+    const profile = await prisma.playerProfile.findUnique({ where: { userId: user.id } });
+    if (profile) redirect("/dashboard");
+  }
+
   const testimonials = approved.map((t) => ({ id: t.id, name: t.firstNameSnapshot, rating: t.rating, text: t.text }));
 
   return (
