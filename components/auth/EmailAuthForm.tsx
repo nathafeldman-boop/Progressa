@@ -115,10 +115,13 @@ export function EmailAuthForm({ redirectTo }: { redirectTo: string }) {
   return (
     <div className="w-full max-w-sm space-y-4">
       <GoogleButton redirectTo={redirectTo} />
+      <p className="text-center text-xs font-semibold text-[var(--color-text-muted)]">
+        Le plus rapide — pas de code à saisir
+      </p>
 
       <div className="flex items-center gap-3 text-xs text-[var(--color-text-muted)]">
         <span className="h-px flex-1 bg-[var(--color-border)]" />
-        ou
+        ou par email
         <span className="h-px flex-1 bg-[var(--color-border)]" />
       </div>
 
@@ -126,7 +129,6 @@ export function EmailAuthForm({ redirectTo }: { redirectTo: string }) {
         <input
           type="email"
           required
-          autoFocus
           placeholder="Ton email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}

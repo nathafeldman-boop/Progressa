@@ -9,6 +9,7 @@ const LINKS = [
   { href: "/tarifs", label: "Tarifs" },
   { href: "/contact", label: "Contact" },
   { href: "/cgu", label: "CGU" },
+  { href: "/cgv", label: "CGV" },
   { href: "/confidentialite", label: "Politique de confidentialité" },
   { href: "/mentions-legales", label: "Mentions légales" },
 ];

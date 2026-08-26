@@ -124,7 +124,11 @@ export function HardPaywall({ firstName, overall }: { firstName: string; overall
           )}
 
           <p className="text-center text-[0.65rem] text-white/40">
-            {firstName}, paiement sécurisé par Stripe. Aucun engagement de durée.
+            {firstName}, paiement sécurisé par Stripe. Aucun engagement de durée. En continuant, tu acceptes les{" "}
+            <a href="/cgv" target="_blank" rel="noopener noreferrer" className="underline">
+              CGV
+            </a>{" "}
+            et reconnais que l&apos;accès Premium débute immédiatement (renonciation au délai de rétractation).
           </p>
         </div>
       </div>
