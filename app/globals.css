@@ -275,14 +275,26 @@ button:not(:disabled):active,
    @keyframes par preset change.
 
    Convention de signe des rotations (dérivée géométriquement, à respecter
-   pour tout nouveau preset): sur un segment qui pend vers le bas depuis
-   son pivot (cuisse, tibia, bras, avant-bras), une rotateX POSITIVE fait
-   avancer son extrémité vers l'avant (vers la caméra); sur un segment qui
-   part vers le haut depuis son pivot (torse), c'est l'inverse — une
-   rotateX NÉGATIVE le fait avancer. Un genou ou un coude ne plie JAMAIS
-   dans le même sens que son articulation parente (hanche/épaule): le
-   signe doit toujours être opposé, sinon le mouvement devient anatomiquement
-   impossible (typiquement le point le plus signalé lors de la relecture).
+   pour tout nouveau preset):
+   - Hanche/épaule (segment qui pend vers le bas depuis son pivot — cuisse,
+     bras): rotateX POSITIVE fait avancer l'extrémité vers l'avant (vers la
+     caméra). Torse (part vers le HAUT depuis son pivot): c'est l'inverse,
+     rotateX NÉGATIVE le fait avancer.
+   - Genou/coude: rotateX est TOUJOURS négatif pour une flexion normale
+     (le tibia/avant-bras replie vers l'arrière), quel que soit le signe de
+     la hanche/épaule parente — genou et coude tournent sur le même axe X
+     que leur parent, donc leur rotation s'additionne simplement à celle-ci
+     (pas de "signe opposé à la hanche": c'est TOUJOURS négatif, y compris
+     quand la cuisse elle-même recule, ex. la jambe arrière d'une fente).
+   - Abduction latérale (hanche/épaule en rotateZ, ex. jumping jack, fentes
+     latérales): POSITIVE pour un membre GAUCHE qui s'écarte vers
+     l'extérieur, NÉGATIVE pour un membre DROIT qui s'écarte — jamais le
+     même signe des deux côtés, sinon les jambes/bras se croisent au lieu
+     de s'écarter.
+   Une rotation dans le mauvais sens = mouvement anatomiquement impossible,
+   le point le plus souvent signalé lors des relectures. Dans le doute, ne
+   mappe pas un exercice à un preset qui ne correspond pas vraiment à son
+   mouvement réel: une photo reste une démonstration correcte.
    --------------------------------------------------------------------- */
 :root {
   --char3d-stage-top: #16241f;
@@ -485,7 +497,8 @@ button:not(:disabled):active,
 .char3d-rig--high-knees { animation: char3d-knees-cam 0.86s ease-in-out infinite; }
 .char3d-rig--high-knees .char3d-hip-l  { animation: char3d-knees-hip-l 0.86s ease-in-out infinite; }
 .char3d-rig--high-knees .char3d-hip-r  { animation: char3d-knees-hip-l 0.86s ease-in-out infinite; animation-delay: -0.43s; }
-.char3d-rig--high-knees .char3d-knee   { animation: char3d-knees-knee-l 0.86s ease-in-out infinite; }
+.char3d-rig--high-knees .char3d-hip-l .char3d-knee { animation: char3d-knees-knee-l 0.86s ease-in-out infinite; }
+.char3d-rig--high-knees .char3d-hip-r .char3d-knee { animation: char3d-knees-knee-l 0.86s ease-in-out infinite; animation-delay: -0.43s; }
 .char3d-rig--high-knees .char3d-shoulder-r > .char3d-upperarm { animation: char3d-knees-arm-l 0.86s ease-in-out infinite; }
 .char3d-rig--high-knees .char3d-shoulder-l > .char3d-upperarm { animation: char3d-knees-arm-l-back 0.86s ease-in-out infinite; animation-delay: -0.43s; }
 
@@ -504,6 +517,132 @@ button:not(:disabled):active,
 .char3d-rig--jumping-jack .char3d-hip-r { animation: char3d-jack-hip-r 1.05s ease-in-out infinite; }
 .char3d-rig--jumping-jack .char3d-shoulder-l { animation: char3d-jack-shoulder-l 1.05s ease-in-out infinite; }
 .char3d-rig--jumping-jack .char3d-shoulder-r { animation: char3d-jack-shoulder-r 1.05s ease-in-out infinite; }
+
+/* ===== Preset: fentes avant alternées (lunge) ===== */
+@keyframes char3d-lunge-cam {
+  0%, 50%, 100% { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(0); }
+  25%, 75%      { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(10px); }
+}
+@keyframes char3d-lunge-hip {
+  0%   { transform: rotateX(38deg); }
+  25%  { transform: rotateX(0deg); }
+  50%  { transform: rotateX(-32deg); }
+  75%  { transform: rotateX(0deg); }
+  100% { transform: rotateX(38deg); }
+}
+@keyframes char3d-lunge-knee {
+  0%   { transform: rotateX(-82deg); }
+  25%  { transform: rotateX(0deg); }
+  50%  { transform: rotateX(-95deg); }
+  75%  { transform: rotateX(0deg); }
+  100% { transform: rotateX(-82deg); }
+}
+.char3d-rig--lunge { animation: char3d-lunge-cam 2s ease-in-out infinite; }
+.char3d-rig--lunge .char3d-hip-l { animation: char3d-lunge-hip 2s ease-in-out infinite; }
+.char3d-rig--lunge .char3d-hip-l .char3d-knee { animation: char3d-lunge-knee 2s ease-in-out infinite; }
+.char3d-rig--lunge .char3d-hip-r { animation: char3d-lunge-hip 2s ease-in-out infinite; animation-delay: -1s; }
+.char3d-rig--lunge .char3d-hip-r .char3d-knee { animation: char3d-lunge-knee 2s ease-in-out infinite; animation-delay: -1s; }
+/* Mains sur les hanches (pose statique, pas d'animation — comme sur les photos de référence). */
+.char3d-rig--lunge .char3d-shoulder-l, .char3d-rig--lunge .char3d-shoulder-r { transform: rotateX(55deg); }
+.char3d-rig--lunge .char3d-elbow { transform: rotateX(-95deg); }
+
+/* ===== Preset: talons-fesses (butt kick) ===== */
+@keyframes char3d-buttkick-hip  { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-10deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-buttkick-knee { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-120deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-buttkick-arm  { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(26deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-buttkick-arm-back { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-26deg); } 50% { transform: rotateX(0deg); } }
+
+.char3d-rig--butt-kick { animation: char3d-knees-cam 0.8s ease-in-out infinite; }
+.char3d-rig--butt-kick .char3d-hip-l { animation: char3d-buttkick-hip 0.8s ease-in-out infinite; }
+.char3d-rig--butt-kick .char3d-hip-l .char3d-knee { animation: char3d-buttkick-knee 0.8s ease-in-out infinite; }
+.char3d-rig--butt-kick .char3d-hip-r { animation: char3d-buttkick-hip 0.8s ease-in-out infinite; animation-delay: -0.4s; }
+.char3d-rig--butt-kick .char3d-hip-r .char3d-knee { animation: char3d-buttkick-knee 0.8s ease-in-out infinite; animation-delay: -0.4s; }
+.char3d-rig--butt-kick .char3d-shoulder-r > .char3d-upperarm { animation: char3d-buttkick-arm 0.8s ease-in-out infinite; }
+.char3d-rig--butt-kick .char3d-shoulder-l > .char3d-upperarm { animation: char3d-buttkick-arm-back 0.8s ease-in-out infinite; animation-delay: -0.4s; }
+
+/* ===== Preset: pas chassés défensifs (élastique marche latérale, jockey défensif) ===== */
+@keyframes char3d-shuffle-cam {
+  0%   { transform: translateX(calc(-50% - 15px)) rotateY(-20deg) rotateX(-4deg); }
+  50%  { transform: translateX(calc(-50% + 15px)) rotateY(-20deg) rotateX(-4deg); }
+  100% { transform: translateX(calc(-50% - 15px)) rotateY(-20deg) rotateX(-4deg); }
+}
+@keyframes char3d-shuffle-hip  { 0%, 100% { transform: rotateX(0deg); } 25% { transform: rotateX(28deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-shuffle-knee { 0%, 100% { transform: rotateX(0deg); } 25% { transform: rotateX(-42deg); } 50% { transform: rotateX(0deg); } }
+
+.char3d-rig--shuffle { animation: char3d-shuffle-cam 1.4s ease-in-out infinite; }
+.char3d-rig--shuffle .char3d-hip-l { animation: char3d-shuffle-hip 1.4s ease-in-out infinite; }
+.char3d-rig--shuffle .char3d-hip-l .char3d-knee { animation: char3d-shuffle-knee 1.4s ease-in-out infinite; }
+.char3d-rig--shuffle .char3d-hip-r { animation: char3d-shuffle-hip 1.4s ease-in-out infinite; animation-delay: -0.7s; }
+.char3d-rig--shuffle .char3d-hip-r .char3d-knee { animation: char3d-shuffle-knee 1.4s ease-in-out infinite; animation-delay: -0.7s; }
+/* Bras légèrement écartés, position de garde défensive statique. */
+.char3d-rig--shuffle .char3d-shoulder-l { transform: rotateZ(26deg); }
+.char3d-rig--shuffle .char3d-shoulder-r { transform: rotateZ(-26deg); }
+
+/* ===== Preset: bondissements latéraux (lateral bound) ===== */
+@keyframes char3d-bound-cam {
+  0%   { transform: translateX(calc(-50% - 26px)) rotateY(-20deg) rotateX(-4deg) translateY(0); }
+  15%  { transform: translateX(calc(-50% - 10px)) rotateY(-20deg) rotateX(-4deg) translateY(-20px); }
+  50%  { transform: translateX(calc(-50% + 26px)) rotateY(-20deg) rotateX(-4deg) translateY(0); }
+  65%  { transform: translateX(calc(-50% + 10px)) rotateY(-20deg) rotateX(-4deg) translateY(-20px); }
+  100% { transform: translateX(calc(-50% - 26px)) rotateY(-20deg) rotateX(-4deg) translateY(0); }
+}
+@keyframes char3d-bound-hip  { 0% { transform: rotateX(38deg); } 15% { transform: rotateX(0deg); } 50% { transform: rotateX(38deg); } 65% { transform: rotateX(0deg); } 100% { transform: rotateX(38deg); } }
+@keyframes char3d-bound-knee { 0% { transform: rotateX(-75deg); } 15% { transform: rotateX(0deg); } 50% { transform: rotateX(-75deg); } 65% { transform: rotateX(0deg); } 100% { transform: rotateX(-75deg); } }
+
+.char3d-rig--bound { animation: char3d-bound-cam 1.3s ease-in-out infinite; }
+.char3d-rig--bound .char3d-hip-l, .char3d-rig--bound .char3d-hip-r { animation: char3d-bound-hip 1.3s ease-in-out infinite; }
+.char3d-rig--bound .char3d-knee { animation: char3d-bound-knee 1.3s ease-in-out infinite; }
+
+/* ===== Preset: course (sprint court / côte courte) — même patron que
+   les montées de genoux, amplitude et cadence différentes. ===== */
+@keyframes char3d-sprint-cam {
+  0%, 100% { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(0); }
+  25%      { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(-8px); }
+  75%      { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(-8px); }
+}
+@keyframes char3d-sprint-torso { 0%, 100% { transform: rotateX(0deg); } 50% { transform: rotateX(-20deg); } }
+@keyframes char3d-sprint-hip   { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(92deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-sprint-knee  { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-105deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-sprint-arm   { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(55deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-sprint-arm-back { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-55deg); } 50% { transform: rotateX(0deg); } }
+
+.char3d-rig--sprint { animation: char3d-sprint-cam 0.55s ease-in-out infinite; }
+.char3d-rig--sprint .char3d-torso { animation: char3d-sprint-torso 0.55s ease-in-out infinite; }
+.char3d-rig--sprint .char3d-hip-l { animation: char3d-sprint-hip 0.55s ease-in-out infinite; }
+.char3d-rig--sprint .char3d-hip-l .char3d-knee { animation: char3d-sprint-knee 0.55s ease-in-out infinite; }
+.char3d-rig--sprint .char3d-hip-r { animation: char3d-sprint-hip 0.55s ease-in-out infinite; animation-delay: -0.275s; }
+.char3d-rig--sprint .char3d-hip-r .char3d-knee { animation: char3d-sprint-knee 0.55s ease-in-out infinite; animation-delay: -0.275s; }
+.char3d-rig--sprint .char3d-shoulder-r > .char3d-upperarm { animation: char3d-sprint-arm 0.55s ease-in-out infinite; }
+.char3d-rig--sprint .char3d-shoulder-l > .char3d-upperarm { animation: char3d-sprint-arm-back 0.55s ease-in-out infinite; animation-delay: -0.275s; }
+
+/* ===== Preset: course lente / relâchement (light jog) — même patron,
+   amplitude réduite, cadence détendue. ===== */
+@keyframes char3d-jog-torso { 0%, 100% { transform: rotateX(0deg); } 50% { transform: rotateX(-6deg); } }
+@keyframes char3d-jog-hip   { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(34deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-jog-knee  { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-48deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-jog-arm   { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(22deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-jog-arm-back { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-22deg); } 50% { transform: rotateX(0deg); } }
+
+.char3d-rig--light-jog { animation: char3d-knees-cam 0.72s ease-in-out infinite; }
+.char3d-rig--light-jog .char3d-torso { animation: char3d-jog-torso 0.72s ease-in-out infinite; }
+.char3d-rig--light-jog .char3d-hip-l { animation: char3d-jog-hip 0.72s ease-in-out infinite; }
+.char3d-rig--light-jog .char3d-hip-l .char3d-knee { animation: char3d-jog-knee 0.72s ease-in-out infinite; }
+.char3d-rig--light-jog .char3d-hip-r { animation: char3d-jog-hip 0.72s ease-in-out infinite; animation-delay: -0.36s; }
+.char3d-rig--light-jog .char3d-hip-r .char3d-knee { animation: char3d-jog-knee 0.72s ease-in-out infinite; animation-delay: -0.36s; }
+.char3d-rig--light-jog .char3d-shoulder-r > .char3d-upperarm { animation: char3d-jog-arm 0.72s ease-in-out infinite; }
+.char3d-rig--light-jog .char3d-shoulder-l > .char3d-upperarm { animation: char3d-jog-arm-back 0.72s ease-in-out infinite; animation-delay: -0.36s; }
+
+/* ===== Preset: équilibre unipodal (balance hold) — pose quasi statique,
+   léger balancement du buste entier pour suggérer l'effort d'équilibre. ===== */
+@keyframes char3d-balance-sway {
+  0%, 100% { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) rotateZ(0deg); }
+  50%      { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) rotateZ(2.5deg); }
+}
+.char3d-rig--balance-hold { animation: char3d-balance-sway 2.8s ease-in-out infinite; }
+.char3d-rig--balance-hold .char3d-hip-r { transform: rotateX(50deg); }
+.char3d-rig--balance-hold .char3d-hip-r .char3d-knee { transform: rotateX(-100deg); }
+.char3d-rig--balance-hold .char3d-shoulder-l { transform: rotateZ(22deg); }
+.char3d-rig--balance-hold .char3d-shoulder-r { transform: rotateZ(-22deg); }
 
 @media (prefers-reduced-motion: reduce) {
   .char3d-rig, .char3d-rig * {

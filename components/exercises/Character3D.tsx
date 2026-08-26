@@ -1,6 +1,17 @@
 import { cn } from "@/lib/cn";
 
-export type Character3DPreset = "squat" | "squat-jump" | "high-knees" | "jumping-jack";
+export type Character3DPreset =
+  | "squat"
+  | "squat-jump"
+  | "high-knees"
+  | "jumping-jack"
+  | "lunge"
+  | "butt-kick"
+  | "shuffle"
+  | "bound"
+  | "sprint"
+  | "light-jog"
+  | "balance-hold";
 
 /**
  * Silhouette 3D en CSS pur (aucune image, aucune librairie) — géométrie
