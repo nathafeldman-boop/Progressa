@@ -187,6 +187,31 @@ function ExerciseFeedbackPrompt({ exerciseId }: { exerciseId: string }) {
   );
 }
 
+/** Avertit clairement qu'un exercice passé ne compte pour rien — évite les
+ * clics accidentels sur "Passer" et la confusion "pourquoi ma stat n'a pas
+ * bougé ?" côté joueur. */
+function SkipConfirmDialog({ onCancel, onConfirm }: { onCancel: () => void; onConfirm: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="w-full max-w-xs rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 text-center shadow-xl">
+        <p className="text-3xl">⚠️</p>
+        <CardTitle className="mt-2 text-base">Passer cet exercice ?</CardTitle>
+        <CardSubtitle className="mt-2">
+          Il ne sera pas comptabilisé dans ta progression ni dans tes stats. Tu es sûr de vouloir le passer ?
+        </CardSubtitle>
+        <div className="mt-4 flex gap-2">
+          <Button variant="ghost" className="flex-1" onClick={onCancel}>
+            Annuler
+          </Button>
+          <Button className="flex-1" onClick={onConfirm}>
+            Oui, passer
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 type BlockPhaseState = "idle" | "active" | "rating" | "done";
 
 interface BlockLocalState {
@@ -618,6 +643,60 @@ function ActiveExerciseScreen({
   // (ex: 45 abdos ne peut pas être fait en 3s) — plancher réaliste calculé
   // côté serveur à partir des reps/séries, jamais bloquant au-delà de ça.
   const remainingBeforeFinish = state.phase === "active" ? Math.max(0, block.minimumSeconds - elapsed) : 0;
+
+  // Système de séries: un exercice à séries (sets non nul) s'exécute
+  // série par série avec son propre minuteur, plutôt qu'un seul long
+  // chrono pour tout le bloc — repos chronométré entre les séries. Les
+  // blocs sans "sets" (échauffement/retour au calme, généralement continus)
+  // gardent l'ancien chrono unique ci-dessus.
+  const usesSetFlow = (block.sets ?? 0) > 0;
+  const totalSets = block.sets ?? 1;
+  const [currentSet, setCurrentSet] = useState(1);
+  const [resting, setResting] = useState(false);
+  // null tant que le joueur n'a pas encore terminé une série: la 1re série
+  // démarre en même temps que le bloc (state.startedAt, déjà posé par
+  // onStart côté parent) — pas besoin d'un effet pour l'initialiser.
+  const [localSetStartedAt, setLocalSetStartedAt] = useState<number | null>(null);
+  const setStartedAt = localSetStartedAt ?? state.startedAt;
+  const [restStartedAt, setRestStartedAt] = useState<number | null>(null);
+
+  // Plancher anti-triche réparti par série (approximation: le plancher
+  // total calculé côté serveur, divisé par le nombre de séries).
+  const perSetMinimum = Math.max(3, Math.round(block.minimumSeconds / totalSets));
+  const setElapsed = usesSetFlow && state.phase === "active" && !resting ? (elapsedSeconds(setStartedAt) ?? 0) : 0;
+  const remainingBeforeSetFinish = Math.max(0, perSetMinimum - setElapsed);
+  const restElapsed = resting ? (elapsedSeconds(restStartedAt) ?? 0) : 0;
+  const restRemaining = Math.max(0, (block.restSeconds ?? 0) - restElapsed);
+  const isLastSet = currentSet >= totalSets;
+
+  function goToNextSet() {
+    setResting(false);
+    setCurrentSet((s) => s + 1);
+    setLocalSetStartedAt(nowMs());
+  }
+
+  function handleSetDone() {
+    if (isLastSet) {
+      onFinish();
+      return;
+    }
+    if (block.restSeconds && block.restSeconds > 0) {
+      setResting(true);
+      setRestStartedAt(nowMs());
+    } else {
+      goToNextSet();
+    }
+  }
+
+  // Minuteur de repos: un vrai setTimeout (système externe), pas une
+  // dérivation recalculée à chaque tick — le setState vit dans le callback
+  // du timer, jamais dans le corps de l'effet.
+  useEffect(() => {
+    if (!resting) return;
+    const remainingMs = Math.max(0, (block.restSeconds ?? 0) * 1000 - (nowMs() - (restStartedAt ?? nowMs())));
+    const id = window.setTimeout(goToNextSet, remainingMs);
+    return () => window.clearTimeout(id);
+  }, [resting, restStartedAt, block.restSeconds]);
   // Les poses Coach Brian générées par IA priment toujours quand elles
   // existent pour cet exercice — la vidéo Pexels ne sert que de repli pour
   // les exercices sans pose IA (voir scripts/videos/).
@@ -647,8 +726,19 @@ function ActiveExerciseScreen({
     if (state.phase === "done") scrollAreaRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   }, [state.phase]);
 
+  const [confirmSkip, setConfirmSkip] = useState(false);
+
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-[var(--color-bg)] [padding-top:env(safe-area-inset-top)] [padding-bottom:env(safe-area-inset-bottom)]">
+      {confirmSkip && (
+        <SkipConfirmDialog
+          onCancel={() => setConfirmSkip(false)}
+          onConfirm={() => {
+            setConfirmSkip(false);
+            onSkip();
+          }}
+        />
+      )}
       <div className="flex items-center gap-3 border-b border-[var(--color-border)] px-4 py-3">
         <button
           type="button"
@@ -690,7 +780,7 @@ function ActiveExerciseScreen({
             <ExerciseFrameViewer sequence={frames} onReady={onStart} />
             <button
               type="button"
-              onClick={onSkip}
+              onClick={() => setConfirmSkip(true)}
               className="mx-auto mt-3 block text-xs font-semibold text-[var(--color-text-muted)] underline"
             >
               Passer cet exercice
@@ -731,9 +821,19 @@ function ActiveExerciseScreen({
             <div className="absolute bottom-2 right-2">
               <BrianAvatar state={BRIAN_STATE_FOR_PHASE[state.phase]} size={56} className="ring-2 ring-[var(--color-surface)]" />
             </div>
-            {state.phase === "active" && (
+            {state.phase === "active" && !usesSetFlow && (
               <div className="absolute left-1/2 top-3 -translate-x-1/2 rounded-full bg-[var(--color-text)]/85 px-4 py-1.5 font-display text-2xl font-extrabold tabular-nums text-white">
                 {formatMmSs(elapsed)}
+              </div>
+            )}
+            {state.phase === "active" && usesSetFlow && (
+              <div className="absolute left-1/2 top-3 flex -translate-x-1/2 flex-col items-center gap-1">
+                <div className="rounded-full bg-[var(--color-text)]/85 px-4 py-1 font-display text-xs font-extrabold uppercase tracking-wide text-white">
+                  {resting ? "Repos" : `Série ${currentSet}/${totalSets}`}
+                </div>
+                <div className="rounded-full bg-[var(--color-text)]/85 px-4 py-1.5 font-display text-2xl font-extrabold tabular-nums text-white">
+                  {resting ? formatMmSs(restRemaining) : formatMmSs(setElapsed)}
+                </div>
               </div>
             )}
           </div>
@@ -821,7 +921,7 @@ function ActiveExerciseScreen({
       <div className="border-t border-[var(--color-border)] p-4">
         {state.phase === "idle" && !frames && (
           <div className="flex gap-2">
-            <Button variant="ghost" onClick={onSkip}>
+            <Button variant="ghost" onClick={() => setConfirmSkip(true)}>
               Passer
             </Button>
             <Button className="flex-1" onClick={onStart}>
@@ -829,13 +929,37 @@ function ActiveExerciseScreen({
             </Button>
           </div>
         )}
-        {state.phase === "active" && (
+        {state.phase === "active" && !usesSetFlow && (
           <div className="flex gap-2">
             <Button variant="ghost" onClick={onAbandon}>
               Abandonner
             </Button>
             <Button className="flex-1" onClick={onFinish} disabled={remainingBeforeFinish > 0}>
               {remainingBeforeFinish > 0 ? `Terminé (encore ${remainingBeforeFinish}s)` : "Terminé"}
+            </Button>
+          </div>
+        )}
+        {state.phase === "active" && usesSetFlow && !resting && (
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={onAbandon}>
+              Abandonner
+            </Button>
+            <Button className="flex-1" onClick={handleSetDone} disabled={remainingBeforeSetFinish > 0}>
+              {remainingBeforeSetFinish > 0
+                ? `Encore ${remainingBeforeSetFinish}s`
+                : isLastSet
+                  ? "Terminé"
+                  : `Série ${currentSet} terminée`}
+            </Button>
+          </div>
+        )}
+        {state.phase === "active" && usesSetFlow && resting && (
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={onAbandon}>
+              Abandonner
+            </Button>
+            <Button className="flex-1" onClick={goToNextSet}>
+              Passer le repos ({restRemaining}s)
             </Button>
           </div>
         )}

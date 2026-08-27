@@ -355,4 +355,48 @@ export const EXERCISE_FRAMES: Partial<Record<string, ExerciseFrameSequence>> = {
       { image: "/exercises/frames/frappe-longue-distance/pose-4.png", caption: "Trajectoire puissante et précise, jambe qui accompagne loin après l'impact." },
     ],
   },
+
+  // --- Gardien (remplacent le générique vidéo Pexels, peu lisible sur ces gestes précis) ---
+  "prise-balle-haute": {
+    poses: [
+      { image: "/exercises/frames/prise-balle-haute/pose-1.png", caption: "Position basse, jambes fléchies, prêt à sauter dans la zone de saut." },
+      { image: "/exercises/frames/prise-balle-haute/pose-2.png", caption: "Détends-toi vers le ballon au point le plus haut, mains bien ouvertes devant toi." },
+      { image: "/exercises/frames/prise-balle-haute/pose-3.png", caption: "Capte le ballon avec les mains en premier, coudes fléchis pour amortir." },
+      { image: "/exercises/frames/prise-balle-haute/pose-4.png", caption: "Ramène le ballon contre toi et protège-le avec un genou levé en retombant." },
+    ],
+  },
+  "relance-pied-courte-longue": {
+    poses: [
+      { image: "/exercises/frames/relance-pied-courte-longue/pose-1.png", caption: "Ballon en main, analyse le placement de tes coéquipiers avant de choisir." },
+      { image: "/exercises/frames/relance-pied-courte-longue/pose-2.png", caption: "Relance courte: pose le ballon et passe-le placé vers un appui proche démarqué." },
+      { image: "/exercises/frames/relance-pied-courte-longue/pose-3.png", caption: "Relance longue: prends de l'élan et frappe fort et haut vers la zone libre." },
+      { image: "/exercises/frames/relance-pied-courte-longue/pose-4.png", caption: "Suis la trajectoire des yeux pour ajuster ta prochaine relance." },
+    ],
+  },
+  "reflexes-mains-rapprochees": {
+    poses: [
+      { image: "/exercises/frames/reflexes-mains-rapprochees/pose-1.png", caption: "Position de départ face au tireur, appuis légers et équilibrés." },
+      { image: "/exercises/frames/reflexes-mains-rapprochees/pose-2.png", caption: "Réagis vite: mains rapprochées, paumes tournées vers le ballon." },
+      { image: "/exercises/frames/reflexes-mains-rapprochees/pose-3.png", caption: "Bloque le tir avec les mains en opposition, coudes fléchis pour amortir le choc." },
+      { image: "/exercises/frames/reflexes-mains-rapprochees/pose-4.png", caption: "Contrôle le ballon repoussé, reste tout de suite prêt pour l'action suivante." },
+    ],
+  },
+  "sorties-aeriennes": {
+    poses: [
+      { image: "/exercises/frames/sorties-aeriennes/pose-1.png", caption: "Position basse, analyse la trajectoire du centre avant de sortir de ta ligne." },
+      { image: "/exercises/frames/sorties-aeriennes/pose-2.png", caption: "Décide tôt et pars franchement vers le ballon, sans hésiter." },
+      { image: "/exercises/frames/sorties-aeriennes/pose-3.png", caption: "Saute au point culminant, mains hautes, capte le ballon avec conviction." },
+      { image: "/exercises/frames/sorties-aeriennes/pose-4.png", caption: "Retombe en sécurité, ballon serré contre toi, genou levé pour te protéger." },
+    ],
+  },
+
+  // --- Attaque ---
+  "protection-ballon-dos-adversaire": {
+    poses: [
+      { image: "/exercises/frames/protection-ballon-dos-adversaire/pose-1.png", caption: "Reçois le ballon en te plaçant dos au défenseur, corps entre lui et le ballon." },
+      { image: "/exercises/frames/protection-ballon-dos-adversaire/pose-2.png", caption: "Contrôle orienté loin du défenseur, utilise ton corps comme un écran." },
+      { image: "/exercises/frames/protection-ballon-dos-adversaire/pose-3.png", caption: "Garde le bras déployé pour sentir la position du défenseur sans le pousser." },
+      { image: "/exercises/frames/protection-ballon-dos-adversaire/pose-4.png", caption: "Écarte-toi ou repars vers l'avant dès que l'espace s'ouvre." },
+    ],
+  },
 };

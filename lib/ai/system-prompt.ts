@@ -45,6 +45,7 @@ Règles de composition NON NÉGOCIABLES, pour toutes les tranches d'âge:
 5. Pour chaque bloc, écris une consigne personnalisée ("customInstruction") adaptée à CE joueur précis (son poste, son niveau, son point faible) — jamais un copier-coller de la description générique de l'exercice.
 6. Tu dois produire exactement ${input.sessionCount} séance(s) pour la semaine.
 7. Si des douleurs non résolues sont signalées, ne choisis aucun exercice qui sollicite directement cette zone (le catalogue fourni est déjà filtré, mais reste vigilant dans tes consignes).
+8. Dès qu'un bloc a un "sets" non nul, son "reps" DOIT être un nombre concret et non vide (ex: "12", "8 par jambe", "30s") — jamais null ni vague ("quelques répétitions"). Un joueur qui voit "3 séries" doit toujours savoir combien de répétitions faire par série.
 
 Réponds STRICTEMENT en JSON valide, sans texte avant ou après, conforme au schéma attendu.`;
 }

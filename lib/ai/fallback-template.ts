@@ -1,6 +1,7 @@
 import { BlockPhase, Equipment, ExerciseCategory, type Objective, type Weekday } from "@prisma/client";
 import type { ExerciseSeed } from "@/lib/exercises/catalog-data";
 import type { ProgramOutput } from "@/lib/ai/program-schema";
+import { defaultRepsForCategory } from "@/lib/exercises/default-reps";
 
 export interface FallbackTemplateInput {
   sessionCount: number;
@@ -110,7 +111,7 @@ export function buildFallbackProgram(input: FallbackTemplateInput): ProgramOutpu
         exerciseSlug: exercise.slug,
         phase: BlockPhase.MAIN,
         sets: 3,
-        reps: null,
+        reps: defaultRepsForCategory(exercise.category),
         restSeconds: 45,
         customInstruction: instructionFor(exercise),
       });

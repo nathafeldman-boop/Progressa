@@ -14,17 +14,26 @@ export function buildProgramSchema(allowedSlugs: string[]) {
       ? z.enum(allowedSlugs as [string, ...string[]])
       : z.never({ message: "Aucun exercice disponible pour ce profil" });
 
-  const blockSchema = z.object({
-    exerciseSlug: slugEnum,
-    phase: z.enum(BlockPhase),
-    sets: z.number().int().positive().nullable(),
-    reps: z.string().min(1).nullable(),
-    restSeconds: z.number().int().nonnegative().nullable(),
-    // Consigne personnalisée pour CE bloc précis — jamais la description
-    // générique du catalogue. On impose une longueur minimale comme proxy
-    // de personnalisation réelle.
-    customInstruction: z.string().min(12),
-  });
+  const blockSchema = z
+    .object({
+      exerciseSlug: slugEnum,
+      phase: z.enum(BlockPhase),
+      sets: z.number().int().positive().nullable(),
+      reps: z.string().min(1).nullable(),
+      restSeconds: z.number().int().nonnegative().nullable(),
+      // Consigne personnalisée pour CE bloc précis — jamais la description
+      // générique du catalogue. On impose une longueur minimale comme proxy
+      // de personnalisation réelle.
+      customInstruction: z.string().min(12),
+    })
+    // Un bloc à séries sans nombre de répétitions laisse le joueur deviner
+    // combien en faire — si l'IA ne s'y conforme pas, la réponse est
+    // rejetée (retry, puis repli sur le template déterministe qui, lui,
+    // fournit toujours des reps).
+    .refine((block) => block.sets === null || block.reps !== null, {
+      message: "reps ne peut pas être null quand sets est renseigné",
+      path: ["reps"],
+    });
 
   const sessionSchema = z.object({
     dayOfWeek: z.enum(Weekday),

@@ -19,6 +19,7 @@ export const EXERCISE_3D_PRESETS: Partial<Record<string, Character3DPreset>> = {
   "talons-fesses": "butt-kick",
   "elastique-marche-laterale": "shuffle",
   "jockey-defensif-pas-chasses": "shuffle",
+  "repositionnement-lateral-pas-chasses": "shuffle",
   "bondissements-lateraux": "bound",
   "sprints-courts-10m": "sprint",
   "course-cote-courte": "sprint",

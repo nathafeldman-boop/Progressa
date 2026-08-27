@@ -600,11 +600,17 @@ button:not(:disabled):active,
   25%      { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(-8px); }
   75%      { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(-8px); }
 }
-@keyframes char3d-sprint-torso { 0%, 100% { transform: rotateX(0deg); } 50% { transform: rotateX(-20deg); } }
+@keyframes char3d-sprint-torso { 0%, 100% { transform: rotateX(0deg); } 50% { transform: rotateX(-22deg); } }
 @keyframes char3d-sprint-hip   { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(92deg); } 50% { transform: rotateX(0deg); } }
 @keyframes char3d-sprint-knee  { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-105deg); } 50% { transform: rotateX(0deg); } }
-@keyframes char3d-sprint-arm   { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(55deg); } 50% { transform: rotateX(0deg); } }
-@keyframes char3d-sprint-arm-back { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-55deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-sprint-arm   { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(62deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-sprint-arm-back { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-62deg); } 50% { transform: rotateX(0deg); } }
+/* Le coude fléchi (jamais tendu) sort l'avant-bras — couleur peau — de la
+   masse verte du torse: sans lui, un bras qui se balance en restant tendu
+   reste de la même couleur (maillot) que la poitrine et se "fond" dedans,
+   ce qui donne l'impression que seules les jambes bougent. */
+@keyframes char3d-sprint-elbow      { 0%, 100% { transform: rotateX(-35deg); } 22% { transform: rotateX(-105deg); } 50% { transform: rotateX(-35deg); } }
+@keyframes char3d-sprint-elbow-back { 0%, 100% { transform: rotateX(-35deg); } 22% { transform: rotateX(-55deg); } 50% { transform: rotateX(-35deg); } }
 
 .char3d-rig--sprint { animation: char3d-sprint-cam 0.55s ease-in-out infinite; }
 .char3d-rig--sprint .char3d-torso { animation: char3d-sprint-torso 0.55s ease-in-out infinite; }
@@ -613,15 +619,22 @@ button:not(:disabled):active,
 .char3d-rig--sprint .char3d-hip-r { animation: char3d-sprint-hip 0.55s ease-in-out infinite; animation-delay: -0.275s; }
 .char3d-rig--sprint .char3d-hip-r .char3d-knee { animation: char3d-sprint-knee 0.55s ease-in-out infinite; animation-delay: -0.275s; }
 .char3d-rig--sprint .char3d-shoulder-r > .char3d-upperarm { animation: char3d-sprint-arm 0.55s ease-in-out infinite; }
+.char3d-rig--sprint .char3d-shoulder-r > .char3d-upperarm > .char3d-elbow { animation: char3d-sprint-elbow 0.55s ease-in-out infinite; }
 .char3d-rig--sprint .char3d-shoulder-l > .char3d-upperarm { animation: char3d-sprint-arm-back 0.55s ease-in-out infinite; animation-delay: -0.275s; }
+.char3d-rig--sprint .char3d-shoulder-l > .char3d-upperarm > .char3d-elbow { animation: char3d-sprint-elbow-back 0.55s ease-in-out infinite; animation-delay: -0.275s; }
 
 /* ===== Preset: course lente / relâchement (light jog) — même patron,
    amplitude réduite, cadence détendue. ===== */
-@keyframes char3d-jog-torso { 0%, 100% { transform: rotateX(0deg); } 50% { transform: rotateX(-6deg); } }
+@keyframes char3d-jog-torso { 0%, 100% { transform: rotateX(0deg); } 50% { transform: rotateX(-9deg); } }
 @keyframes char3d-jog-hip   { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(34deg); } 50% { transform: rotateX(0deg); } }
 @keyframes char3d-jog-knee  { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-48deg); } 50% { transform: rotateX(0deg); } }
-@keyframes char3d-jog-arm   { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(22deg); } 50% { transform: rotateX(0deg); } }
-@keyframes char3d-jog-arm-back { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-22deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-jog-arm   { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(38deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-jog-arm-back { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-38deg); } 50% { transform: rotateX(0deg); } }
+/* Même raison que le sprint: sans flexion du coude, l'avant-bras (couleur
+   maillot car tendu) se confond avec le torse et le balancement du bras
+   devient invisible. */
+@keyframes char3d-jog-elbow      { 0%, 100% { transform: rotateX(-25deg); } 22% { transform: rotateX(-70deg); } 50% { transform: rotateX(-25deg); } }
+@keyframes char3d-jog-elbow-back { 0%, 100% { transform: rotateX(-25deg); } 22% { transform: rotateX(-40deg); } 50% { transform: rotateX(-25deg); } }
 
 .char3d-rig--light-jog { animation: char3d-knees-cam 0.72s ease-in-out infinite; }
 .char3d-rig--light-jog .char3d-torso { animation: char3d-jog-torso 0.72s ease-in-out infinite; }
@@ -630,7 +643,9 @@ button:not(:disabled):active,
 .char3d-rig--light-jog .char3d-hip-r { animation: char3d-jog-hip 0.72s ease-in-out infinite; animation-delay: -0.36s; }
 .char3d-rig--light-jog .char3d-hip-r .char3d-knee { animation: char3d-jog-knee 0.72s ease-in-out infinite; animation-delay: -0.36s; }
 .char3d-rig--light-jog .char3d-shoulder-r > .char3d-upperarm { animation: char3d-jog-arm 0.72s ease-in-out infinite; }
+.char3d-rig--light-jog .char3d-shoulder-r > .char3d-upperarm > .char3d-elbow { animation: char3d-jog-elbow 0.72s ease-in-out infinite; }
 .char3d-rig--light-jog .char3d-shoulder-l > .char3d-upperarm { animation: char3d-jog-arm-back 0.72s ease-in-out infinite; animation-delay: -0.36s; }
+.char3d-rig--light-jog .char3d-shoulder-l > .char3d-upperarm > .char3d-elbow { animation: char3d-jog-elbow-back 0.72s ease-in-out infinite; animation-delay: -0.36s; }
 
 /* ===== Preset: équilibre unipodal (balance hold) — pose quasi statique,
    léger balancement du buste entier pour suggérer l'effort d'équilibre. ===== */

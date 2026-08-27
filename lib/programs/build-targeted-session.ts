@@ -2,6 +2,7 @@ import { BlockPhase, type Objective } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { filterCatalogForProfile } from "@/lib/ai/catalog-filter";
 import type { ExerciseSeed } from "@/lib/exercises/catalog-data";
+import { defaultRepsForCategory } from "@/lib/exercises/default-reps";
 import { isPremiumActive } from "@/lib/subscription";
 import {
   TRAINING_NEEDS,
@@ -216,7 +217,7 @@ export async function buildTargetedSession(userId: string, need: TrainingNeed, v
       order: order++,
       phase: "MAIN",
       sets: 3,
-      reps: null,
+      reps: defaultRepsForCategory(exercise.category),
       restSeconds: 45,
       customInstruction: instructionForNeed(exercise, need),
     });
