@@ -35,8 +35,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     );
   }
 
-  const [profile, subscription, streak, program, playerCard, objectives] = await Promise.all([
-    prisma.playerProfile.findUnique({ where: { userId: user.id } }),
+  const profile = await prisma.playerProfile.findUnique({ where: { userId: user.id } });
+  // Un compte authentifié sans profil est un onboarding abandonné en cours
+  // de route (ex: session coupée avant la fin) — le renvoyer ici plutôt
+  // que de lui montrer un tableau de bord vide (pas de test, pas de carte)
+  // qui l'amenait jusqu'au paywall sans jamais avoir vu la valeur du produit.
+  if (!profile) redirect("/onboarding");
+
+  const [subscription, streak, program, playerCard, objectives] = await Promise.all([
     prisma.subscription.findUnique({ where: { userId: user.id } }),
     prisma.streakState.findUnique({ where: { userId: user.id } }),
     getCurrentWeeklyProgram(user.id),
@@ -45,14 +51,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   ]);
 
   const premium = isPremiumActive(subscription);
-  // Hard paywall: un profil sans abonnement actif n'accède pas au tableau
-  // de bord — mais on ne le renvoie jamais vers le paywall avant d'avoir
-  // fini l'onboarding (pas encore de profil = encore en cours d'inscription).
-  if (profile && !premium) redirect("/paywall");
-  const ageCategory = profile ? getAgeCategory(profile.birthYear) : null;
+  // Hard paywall: un profil sans abonnement actif n'accède pas au tableau de bord.
+  if (!premium) redirect("/paywall");
+  const ageCategory = getAgeCategory(profile.birthYear);
   const cardStats = playerCard?.stats as { overall: number; rankTier?: string; rankKey?: string } | undefined;
   const todaySession = program?.sessions.find((s) => s.dayOfWeek === todayAsWeekday()) ?? null;
-  const isMatchDayToday = !!profile?.matchDay && profile.matchDay === todayAsWeekday();
+  const isMatchDayToday = !!profile.matchDay && profile.matchDay === todayAsWeekday();
 
   return (
     <div className="mx-auto max-w-md space-y-4 p-4">
@@ -60,12 +64,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         <h1 className="font-display text-base font-bold uppercase tracking-wide text-[var(--color-text-muted)]">
           Salut {user.firstName}
         </h1>
-        {profile && (
-          <div className="flex flex-wrap gap-1.5">
-            {ageCategory && <Chip>{ageCategory.label}</Chip>}
-            <Chip>{POSITION_LABELS[profile.position]}</Chip>
-          </div>
-        )}
+        <div className="flex flex-wrap gap-1.5">
+          <Chip>{ageCategory.label}</Chip>
+          <Chip>{POSITION_LABELS[profile.position]}</Chip>
+        </div>
       </div>
 
       <DashboardHero
@@ -108,7 +110,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
       <DailyObjectives objectives={objectives} />
 
-      <TargetedTrainingPicker position={profile?.position ?? null} />
+      <TargetedTrainingPicker position={profile.position} />
 
       <Link href="/exercices" className="block">
         <Card className="flex items-center justify-between gap-3">
@@ -119,18 +121,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           <span className="text-[var(--color-text-muted)]">→</span>
         </Card>
       </Link>
-
-      {!premium && (
-        <Card className="border-[var(--color-primary)] bg-[var(--color-primary-soft)]">
-          <CardTitle className="text-[var(--color-primary-strong)]">Passe Premium</CardTitle>
-          <CardSubtitle className="mt-1 text-[var(--color-primary-strong)]">
-            Jusqu&apos;à 3 séances/semaine, programme 100% personnalisé, tests d&apos;évaluation et carte joueur.
-          </CardSubtitle>
-          <Link href="/parametres/abonnement" className="mt-3 block">
-            <Button className="w-full">Découvrir Premium</Button>
-          </Link>
-        </Card>
-      )}
     </div>
   );
 }

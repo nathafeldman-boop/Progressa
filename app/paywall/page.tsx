@@ -22,19 +22,23 @@ export default async function PaywallPage() {
   ]);
 
   if (isPremiumActive(subscription)) redirect("/dashboard");
+  // Un compte sans profil (onboarding jamais fini) n'a ni test ni carte à
+  // montrer — un paywall vide n'a aucune chance de convertir. Renvoie
+  // finir l'onboarding, où le funnel normal le ramènera ici avec sa carte.
+  if (!profile) redirect("/onboarding");
 
   const stats = card ? (card.stats as unknown as PlayerCardStats) : null;
-  const ageCategory = profile ? getAgeCategory(profile.birthYear) : null;
+  const ageCategory = getAgeCategory(profile.birthYear);
 
   return (
     <HardPaywall
       firstName={user.firstName}
       cardStats={stats}
-      positionLabel={profile ? POSITION_LABELS[profile.position] : null}
-      ageCategoryLabel={ageCategory?.label ?? null}
-      country={profile?.country ?? null}
-      department={profile?.district ?? null}
-      niveauLabel={profile?.levelLabel ?? null}
+      positionLabel={POSITION_LABELS[profile.position]}
+      ageCategoryLabel={ageCategory.label}
+      country={profile.country}
+      department={profile.district}
+      niveauLabel={profile.levelLabel}
       photoUrl={user.photoUrl}
     />
   );
