@@ -4,6 +4,7 @@ import { BrianAvatar, type BrianState } from "@/components/brian/BrianAvatar";
 
 const LINKS: { href: string; brianState: BrianState; label: string; desc: string }[] = [
   { href: "/parametres/abonnement", brianState: "confident", label: "Abonnement", desc: "Passer Premium, gérer mon paiement" },
+  { href: "/parametres/materiel", brianState: "encouraging", label: "Mon matériel", desc: "Ballon, plots, élastique... à jour selon ce que tu as" },
   { href: "/parametres/parrainage", brianState: "happy", label: "Parrainage", desc: "Invite tes potes, gagne du Premium" },
   { href: "/parametres/installer-app", brianState: "motivated", label: "Installer l'app", desc: "Ajoute Progressa à ton écran d'accueil" },
   { href: "/parametres/compte", brianState: "idle", label: "Compte", desc: "Confidentialité, suppression du compte" },

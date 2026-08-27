@@ -97,7 +97,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         <Card className="border-[var(--color-danger)] bg-[var(--color-danger)]/5">
           <CardSubtitle className="text-[var(--color-danger)]">
             Pas assez d&apos;exercices disponibles pour ce besoin avec ton profil actuel (poste, matériel) —
-            essaie un autre thème d&apos;entraînement ciblé, ou réessaie dans quelques jours.
+            essaie un autre thème d&apos;entraînement ciblé, ou{" "}
+            <Link href="/parametres/materiel" className="underline">
+              mets à jour ton matériel
+            </Link>
+            .
           </CardSubtitle>
         </Card>
       )}
