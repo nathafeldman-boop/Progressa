@@ -390,65 +390,77 @@ export function SessionPlayer({
     }
   }
 
+  // Écrans "en direct" d'une séance en cours (check-in, sondages, bilan,
+  // ressenti final): protégés en plein écran comme ActiveExerciseScreen —
+  // sans ça, le bouton Coach Brian et la barre de nav (toujours affichés
+  // par le layout, voir app/(app)/layout.tsx) restent cliquables, démontent
+  // SessionPlayer, et l'utilisateur perd l'état de la séance en cours
+  // (rien n'est persisté avant la vraie fin de la séance).
   if (!checkedIn) {
     return (
-      <PreSessionCheckIn
-        defaultEquipment={defaultEquipment}
-        onConfirm={({ equipment, solo }) => {
-          setTodayEquipment(equipment);
-          setSoloToday(solo);
-          setCheckedIn(true);
-        }}
-      />
+      <div className="fixed inset-0 z-40 overflow-y-auto bg-[var(--color-bg)] [padding-top:env(safe-area-inset-top)] [padding-bottom:env(safe-area-inset-bottom)]">
+        <PreSessionCheckIn
+          defaultEquipment={defaultEquipment}
+          onConfirm={({ equipment, solo }) => {
+            setTodayEquipment(equipment);
+            setSoloToday(solo);
+            setCheckedIn(true);
+          }}
+        />
+      </div>
     );
   }
 
   if (pendingSurvey) {
     return (
-      <div className="mx-auto max-w-md p-4">
-        <MicroSurveyPrompt {...pendingSurvey} onDone={goToDashboard} />
+      <div className="fixed inset-0 z-40 overflow-y-auto bg-[var(--color-bg)] [padding-top:env(safe-area-inset-top)] [padding-bottom:env(safe-area-inset-bottom)]">
+        <div className="mx-auto max-w-md p-4">
+          <MicroSurveyPrompt {...pendingSurvey} onDone={goToDashboard} />
+        </div>
       </div>
     );
   }
 
   if (sessionSummary) {
     return (
-      <div className="mx-auto max-w-md space-y-4 p-4">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-primary-strong)]">
-            Entraînement terminé
-          </p>
-          <h1 className="mt-1 font-display text-2xl font-extrabold uppercase tracking-wide">Bilan de la séance</h1>
-        </div>
-
-        <BrianMessageCard category="SESSION_SUMMARY" text={sessionSummary.text} deltas={sessionSummary.deltas} />
-
-        {sessionSummary.card && (
-          <div className="space-y-3">
-            {sessionSummary.rankedUp && (
-              <div className="animate-[pulse_1.6s_ease-in-out_2] rounded-[var(--radius-control)] border border-[var(--color-primary)] bg-[var(--color-primary-soft)] p-3 text-center text-sm font-bold text-[var(--color-primary-strong)]">
-                🎉 Nouveau rang débloqué : {sessionSummary.rankTierAfter} !
-              </div>
-            )}
-            <div className="flex items-center justify-center gap-3">
-              <span className="text-sm font-semibold text-[var(--color-text-muted)]">Note générale</span>
-              <span className="font-display text-lg font-extrabold text-[var(--color-primary-strong)]">
-                {sessionSummary.overallBefore} → {sessionSummary.overallAfter}
-              </span>
-            </div>
-            <PlayerCardView
-              firstName={sessionSummary.firstName}
-              positionLabel={sessionSummary.positionLabel}
-              ageCategoryLabel={null}
-              stats={sessionSummary.card}
-              animateFromOverall={sessionSummary.overallBefore}
-            />
+      <div className="fixed inset-0 z-40 overflow-y-auto bg-[var(--color-bg)] [padding-top:env(safe-area-inset-top)] [padding-bottom:env(safe-area-inset-bottom)]">
+        <div className="mx-auto max-w-md space-y-4 p-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-primary-strong)]">
+              Entraînement terminé
+            </p>
+            <h1 className="mt-1 font-display text-2xl font-extrabold uppercase tracking-wide">Bilan de la séance</h1>
           </div>
-        )}
 
-        <Button className="w-full" onClick={() => continueAfterCompletion(sessionSummary.totalCompleted)}>
-          Voir mon tableau de bord
-        </Button>
+          <BrianMessageCard category="SESSION_SUMMARY" text={sessionSummary.text} deltas={sessionSummary.deltas} />
+
+          {sessionSummary.card && (
+            <div className="space-y-3">
+              {sessionSummary.rankedUp && (
+                <div className="animate-[pulse_1.6s_ease-in-out_2] rounded-[var(--radius-control)] border border-[var(--color-primary)] bg-[var(--color-primary-soft)] p-3 text-center text-sm font-bold text-[var(--color-primary-strong)]">
+                  🎉 Nouveau rang débloqué : {sessionSummary.rankTierAfter} !
+                </div>
+              )}
+              <div className="flex items-center justify-center gap-3">
+                <span className="text-sm font-semibold text-[var(--color-text-muted)]">Note générale</span>
+                <span className="font-display text-lg font-extrabold text-[var(--color-primary-strong)]">
+                  {sessionSummary.overallBefore} → {sessionSummary.overallAfter}
+                </span>
+              </div>
+              <PlayerCardView
+                firstName={sessionSummary.firstName}
+                positionLabel={sessionSummary.positionLabel}
+                ageCategoryLabel={null}
+                stats={sessionSummary.card}
+                animateFromOverall={sessionSummary.overallBefore}
+              />
+            </div>
+          )}
+
+          <Button className="w-full" onClick={() => continueAfterCompletion(sessionSummary.totalCompleted)}>
+            Voir mon tableau de bord
+          </Button>
+        </div>
       </div>
     );
   }
@@ -538,62 +550,64 @@ export function SessionPlayer({
 
   // Tous les exercices sont faits: ressenti global de la séance.
   return (
-    <div className="mx-auto max-w-md space-y-4 p-4">
-      <div>
-        <h1 className="font-display text-2xl font-extrabold uppercase tracking-wide">{title}</h1>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {chips.map((c) => (
-            <Chip key={c}>{c}</Chip>
-          ))}
+    <div className="fixed inset-0 z-40 overflow-y-auto bg-[var(--color-bg)] [padding-top:env(safe-area-inset-top)] [padding-bottom:env(safe-area-inset-bottom)]">
+      <div className="mx-auto max-w-md space-y-4 p-4">
+        <div>
+          <h1 className="font-display text-2xl font-extrabold uppercase tracking-wide">{title}</h1>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {chips.map((c) => (
+              <Chip key={c}>{c}</Chip>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {showPremiumBanner && (
-        <Card className="border-[var(--color-primary)] bg-[var(--color-primary-soft)] text-sm">
-          <p className="font-semibold text-[var(--color-primary-strong)]">
-            ⭐ Passe Premium pour un programme 100% personnalisé, jusqu&apos;à 3 séances/semaine et la bibliothèque complète.
-          </p>
+        {showPremiumBanner && (
+          <Card className="border-[var(--color-primary)] bg-[var(--color-primary-soft)] text-sm">
+            <p className="font-semibold text-[var(--color-primary-strong)]">
+              ⭐ Passe Premium pour un programme 100% personnalisé, jusqu&apos;à 3 séances/semaine et la bibliothèque complète.
+            </p>
+          </Card>
+        )}
+
+        <Card>
+          <CardTitle>Comment c&apos;était, dans l&apos;ensemble ?</CardTitle>
+          <CardSubtitle className="mt-1">Ton ressenti ajuste le programme de la semaine prochaine.</CardSubtitle>
+          <div className="mt-3 flex justify-between gap-1">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setDifficulty(n)}
+                className={`flex-1 rounded-[var(--radius-control)] border py-3 text-sm font-bold ${
+                  difficulty === n
+                    ? "border-[var(--color-primary)] bg-[var(--color-primary-soft)] text-[var(--color-primary-strong)]"
+                    : "border-[var(--color-border)]"
+                }`}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+          <p className="mt-1 text-xs text-[var(--color-text-muted)]">1 = facile · 5 = très difficile</p>
+
+          <textarea
+            className="mt-4 w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 text-sm"
+            placeholder="Note de récupération (facultatif)"
+            value={recoveryNote}
+            onChange={(e) => setRecoveryNote(e.target.value)}
+            maxLength={300}
+          />
+
+          <div className="mt-4 flex gap-2">
+            <Button variant="ghost" onClick={skip} disabled={submitting}>
+              Passer cette séance
+            </Button>
+            <Button className="flex-1" onClick={complete} disabled={!difficulty || submitting}>
+              {submitting ? "..." : "Terminer la séance"}
+            </Button>
+          </div>
         </Card>
-      )}
-
-      <Card>
-        <CardTitle>Comment c&apos;était, dans l&apos;ensemble ?</CardTitle>
-        <CardSubtitle className="mt-1">Ton ressenti ajuste le programme de la semaine prochaine.</CardSubtitle>
-        <div className="mt-3 flex justify-between gap-1">
-          {[1, 2, 3, 4, 5].map((n) => (
-            <button
-              key={n}
-              type="button"
-              onClick={() => setDifficulty(n)}
-              className={`flex-1 rounded-[var(--radius-control)] border py-3 text-sm font-bold ${
-                difficulty === n
-                  ? "border-[var(--color-primary)] bg-[var(--color-primary-soft)] text-[var(--color-primary-strong)]"
-                  : "border-[var(--color-border)]"
-              }`}
-            >
-              {n}
-            </button>
-          ))}
-        </div>
-        <p className="mt-1 text-xs text-[var(--color-text-muted)]">1 = facile · 5 = très difficile</p>
-
-        <textarea
-          className="mt-4 w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 text-sm"
-          placeholder="Note de récupération (facultatif)"
-          value={recoveryNote}
-          onChange={(e) => setRecoveryNote(e.target.value)}
-          maxLength={300}
-        />
-
-        <div className="mt-4 flex gap-2">
-          <Button variant="ghost" onClick={skip} disabled={submitting}>
-            Passer cette séance
-          </Button>
-          <Button className="flex-1" onClick={complete} disabled={!difficulty || submitting}>
-            {submitting ? "..." : "Terminer la séance"}
-          </Button>
-        </div>
-      </Card>
+      </div>
     </div>
   );
 }
