@@ -1,15 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
+import { triggerInstallPrompt } from "@/lib/pwa/install-prompt";
+import { useInstallPromptAvailable } from "@/lib/pwa/use-install-prompt";
 
 const DISMISS_KEY = "progressa_install_banner_dismissed_at";
 const DISMISS_DAYS = 10;
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
 
 function isStandalone(): boolean {
   if (typeof window === "undefined") return false;
@@ -39,35 +36,26 @@ function wasDismissedRecently(): boolean {
  * pas (Partage → Sur l'écran d'accueil).
  */
 export function InstallAppBanner() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const promptAvailable = useInstallPromptAvailable();
   const [ios] = useState(() => isIos());
+  // Calculé une seule fois au montage: si déjà installée ou fermée
+  // récemment, le bandeau reste caché pour toute la vie du composant (le
+  // seul autre moyen de le refermer est le bouton "dismiss" ci-dessous).
+  const [hiddenAtMount] = useState(() => isStandalone() || wasDismissedRecently());
+  const [dismissed, setDismissed] = useState(false);
+
   // iOS n'a pas d'événement "beforeinstallprompt": si on doit montrer le
   // bandeau, on peut le savoir tout de suite. Android/Chrome attend l'event.
-  const [visible, setVisible] = useState(() => ios && !isStandalone() && !wasDismissedRecently());
-
-  useEffect(() => {
-    if (ios || isStandalone() || wasDismissedRecently()) return;
-
-    function onBeforeInstallPrompt(e: Event) {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setVisible(true);
-    }
-    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
-    return () => window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
-  }, [ios]);
+  const visible = !hiddenAtMount && !dismissed && (ios || promptAvailable);
 
   function dismiss() {
     window.localStorage.setItem(DISMISS_KEY, String(Date.now()));
-    setVisible(false);
+    setDismissed(true);
   }
 
   async function install() {
-    if (!deferredPrompt) return;
-    await deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    setDeferredPrompt(null);
-    setVisible(false);
+    await triggerInstallPrompt();
+    setDismissed(true);
   }
 
   if (!visible) return null;

@@ -1,14 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { APP_NAME } from "@/lib/app-config";
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
+import { triggerInstallPrompt } from "@/lib/pwa/install-prompt";
+import { useInstallPromptAvailable } from "@/lib/pwa/use-install-prompt";
 
 function isStandalone(): boolean {
   if (typeof window === "undefined") return false;
@@ -36,23 +33,11 @@ const IOS_STEPS = [
 ];
 
 export function InstallInstructions() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const promptAvailable = useInstallPromptAvailable();
   const [installed] = useState(() => isStandalone());
 
-  useEffect(() => {
-    function onBeforeInstallPrompt(e: Event) {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-    }
-    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
-    return () => window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
-  }, []);
-
   async function install() {
-    if (!deferredPrompt) return;
-    await deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    setDeferredPrompt(null);
+    await triggerInstallPrompt();
   }
 
   if (installed) {
@@ -68,7 +53,7 @@ export function InstallInstructions() {
     <div className="space-y-4">
       <Card>
         <CardTitle className="text-base">📱 Android / Chrome</CardTitle>
-        {deferredPrompt ? (
+        {promptAvailable ? (
           <>
             <CardSubtitle className="mt-1">En un clic:</CardSubtitle>
             <Button className="mt-3 w-full" onClick={install}>
@@ -82,7 +67,7 @@ export function InstallInstructions() {
             ))}
           </ol>
         )}
-        {deferredPrompt && (
+        {promptAvailable && (
           <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-sm text-[var(--color-text-muted)]">
             {ANDROID_STEPS.map((s, i) => (
               <li key={i}>{s}</li>
