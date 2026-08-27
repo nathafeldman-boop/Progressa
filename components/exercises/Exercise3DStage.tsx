@@ -7,7 +7,9 @@ export function Exercise3DStage({ preset }: { preset: Character3DPreset }) {
     <div className="char3d-stage">
       <div className="char3d-floor" />
       <div className="char3d-shadow" />
-      <Character3D preset={preset} />
+      <div className="char3d-camera">
+        <Character3D preset={preset} />
+      </div>
       <div className="absolute left-3 top-3 flex items-center gap-2 rounded-full bg-black/40 py-1 pl-1 pr-3 backdrop-blur-sm">
         <BrianAvatar state="encouraging" size={32} className="ring-2 ring-white/70" />
         <span className="text-xs font-bold uppercase tracking-wide text-white">En boucle</span>

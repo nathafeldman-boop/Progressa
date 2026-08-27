@@ -350,14 +350,45 @@ button:not(:disabled):active,
   filter: blur(1.5px);
 }
 
-.char3d-rig {
+/* Caméra qui tourne lentement autour du personnage — face, 3/4, profil
+   gauche, dos, profil droit, environ toutes les 3-4 secondes — pour
+   comprendre un geste sous plusieurs angles plutôt qu'un seul plan fixe.
+   Rotation toujours dans le même sens (0 -> -360) pour boucler sans jamais
+   repartir en arrière. Pas de vrai "dessus"/"dessous": la géométrie du
+   personnage n'a pas de face modélisée pour ces angles-là (capsules avec
+   juste face avant + côté droit) et rendrait quelque chose d'incohérent —
+   on varie donc seulement une légère inclinaison (rotateX) pour la
+   variété, jamais une vue plongeante complète. */
+.char3d-camera {
   position: absolute;
   left: 50%;
   bottom: 128px;
   width: 0;
   height: 0;
   transform-style: preserve-3d;
-  transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg);
+  animation: char3d-camera-orbit 17.5s ease-in-out infinite;
+}
+@keyframes char3d-camera-orbit {
+  0%    { transform: translateX(-50%) scale(1.25) rotateY(0deg)    rotateX(-4deg); }
+  14%   { transform: translateX(-50%) scale(1.25) rotateY(0deg)    rotateX(-4deg); }
+  20%   { transform: translateX(-50%) scale(1.25) rotateY(-45deg)  rotateX(-4deg); }
+  34%   { transform: translateX(-50%) scale(1.25) rotateY(-45deg)  rotateX(-4deg); }
+  40%   { transform: translateX(-50%) scale(1.25) rotateY(-90deg)  rotateX(4deg); }
+  54%   { transform: translateX(-50%) scale(1.25) rotateY(-90deg)  rotateX(4deg); }
+  60%   { transform: translateX(-50%) scale(1.25) rotateY(-180deg) rotateX(-4deg); }
+  74%   { transform: translateX(-50%) scale(1.25) rotateY(-180deg) rotateX(-4deg); }
+  80%   { transform: translateX(-50%) scale(1.25) rotateY(-270deg) rotateX(4deg); }
+  94%   { transform: translateX(-50%) scale(1.25) rotateY(-270deg) rotateX(4deg); }
+  100%  { transform: translateX(-50%) scale(1.25) rotateY(-360deg) rotateX(-4deg); }
+}
+
+.char3d-rig {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
 }
 
 .char3d-pelvis { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-style: preserve-3d; }
@@ -451,8 +482,8 @@ button:not(:disabled):active,
 
 /* ===== Preset: squat ===== */
 @keyframes char3d-squat-cam {
-  0%, 100% { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(0); }
-  50%      { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(20px); }
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(20px); }
 }
 @keyframes char3d-squat-hip   { 0%, 100% { transform: rotateX(0deg); } 50% { transform: rotateX(52deg); } }
 @keyframes char3d-squat-knee  { 0%, 100% { transform: rotateX(0deg); } 50% { transform: rotateX(-92deg); } }
@@ -467,10 +498,10 @@ button:not(:disabled):active,
 
 /* ===== Preset: squat-jump (même patron + un vrai saut en haut de phase) ===== */
 @keyframes char3d-squatjump-cam {
-  0%   { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(0); }
-  40%  { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(22px); }
-  70%  { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(-26px); }
-  100% { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(0); }
+  0%   { transform: translateY(0); }
+  40%  { transform: translateY(22px); }
+  70%  { transform: translateY(-26px); }
+  100% { transform: translateY(0); }
 }
 @keyframes char3d-squatjump-hip   { 0% { transform: rotateX(0deg); } 40% { transform: rotateX(56deg); } 70%, 100% { transform: rotateX(0deg); } }
 @keyframes char3d-squatjump-knee  { 0% { transform: rotateX(0deg); } 40% { transform: rotateX(-98deg); } 70%, 100% { transform: rotateX(0deg); } }
@@ -485,14 +516,18 @@ button:not(:disabled):active,
 
 /* ===== Preset: montées de genoux (high-knees) ===== */
 @keyframes char3d-knees-cam {
-  0%, 100% { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(0); }
-  25%      { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(-10px); }
-  75%      { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(-10px); }
+  0%, 100% { transform: translateY(0); }
+  25%      { transform: translateY(-10px); }
+  75%      { transform: translateY(-10px); }
 }
 @keyframes char3d-knees-hip-l  { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(85deg); } 50% { transform: rotateX(0deg); } }
 @keyframes char3d-knees-knee-l { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-95deg); } 50% { transform: rotateX(0deg); } }
-@keyframes char3d-knees-arm-l  { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(48deg); } 50% { transform: rotateX(0deg); } }
-@keyframes char3d-knees-arm-l-back { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-48deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-knees-arm-l  { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(55deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-knees-arm-l-back { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-55deg); } 50% { transform: rotateX(0deg); } }
+/* Même raison que le sprint/jog: sans coude fléchi, le bras tendu reste
+   couleur maillot et se confond avec le torse en swing. */
+@keyframes char3d-knees-elbow      { 0%, 100% { transform: rotateX(-30deg); } 22% { transform: rotateX(-95deg); } 50% { transform: rotateX(-30deg); } }
+@keyframes char3d-knees-elbow-back { 0%, 100% { transform: rotateX(-30deg); } 22% { transform: rotateX(-50deg); } 50% { transform: rotateX(-30deg); } }
 
 .char3d-rig--high-knees { animation: char3d-knees-cam 0.86s ease-in-out infinite; }
 .char3d-rig--high-knees .char3d-hip-l  { animation: char3d-knees-hip-l 0.86s ease-in-out infinite; }
@@ -500,12 +535,14 @@ button:not(:disabled):active,
 .char3d-rig--high-knees .char3d-hip-l .char3d-knee { animation: char3d-knees-knee-l 0.86s ease-in-out infinite; }
 .char3d-rig--high-knees .char3d-hip-r .char3d-knee { animation: char3d-knees-knee-l 0.86s ease-in-out infinite; animation-delay: -0.43s; }
 .char3d-rig--high-knees .char3d-shoulder-r > .char3d-upperarm { animation: char3d-knees-arm-l 0.86s ease-in-out infinite; }
+.char3d-rig--high-knees .char3d-shoulder-r > .char3d-upperarm > .char3d-elbow { animation: char3d-knees-elbow 0.86s ease-in-out infinite; }
 .char3d-rig--high-knees .char3d-shoulder-l > .char3d-upperarm { animation: char3d-knees-arm-l-back 0.86s ease-in-out infinite; animation-delay: -0.43s; }
+.char3d-rig--high-knees .char3d-shoulder-l > .char3d-upperarm > .char3d-elbow { animation: char3d-knees-elbow-back 0.86s ease-in-out infinite; animation-delay: -0.43s; }
 
 /* ===== Preset: jumping jack ===== */
 @keyframes char3d-jack-cam {
-  0%, 100% { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(0); }
-  50%      { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(-22px); }
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-22px); }
 }
 @keyframes char3d-jack-hip-l { 0%, 100% { transform: rotateZ(0deg); } 50% { transform: rotateZ(34deg); } }
 @keyframes char3d-jack-hip-r { 0%, 100% { transform: rotateZ(0deg); } 50% { transform: rotateZ(-34deg); } }
@@ -520,8 +557,8 @@ button:not(:disabled):active,
 
 /* ===== Preset: fentes avant alternées (lunge) ===== */
 @keyframes char3d-lunge-cam {
-  0%, 50%, 100% { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(0); }
-  25%, 75%      { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(10px); }
+  0%, 50%, 100% { transform: translateY(0); }
+  25%, 75%      { transform: translateY(10px); }
 }
 @keyframes char3d-lunge-hip {
   0%   { transform: rotateX(38deg); }
@@ -549,8 +586,10 @@ button:not(:disabled):active,
 /* ===== Preset: talons-fesses (butt kick) ===== */
 @keyframes char3d-buttkick-hip  { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-10deg); } 50% { transform: rotateX(0deg); } }
 @keyframes char3d-buttkick-knee { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-120deg); } 50% { transform: rotateX(0deg); } }
-@keyframes char3d-buttkick-arm  { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(26deg); } 50% { transform: rotateX(0deg); } }
-@keyframes char3d-buttkick-arm-back { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-26deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-buttkick-arm  { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(30deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-buttkick-arm-back { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(-30deg); } 50% { transform: rotateX(0deg); } }
+@keyframes char3d-buttkick-elbow      { 0%, 100% { transform: rotateX(-30deg); } 22% { transform: rotateX(-85deg); } 50% { transform: rotateX(-30deg); } }
+@keyframes char3d-buttkick-elbow-back { 0%, 100% { transform: rotateX(-30deg); } 22% { transform: rotateX(-50deg); } 50% { transform: rotateX(-30deg); } }
 
 .char3d-rig--butt-kick { animation: char3d-knees-cam 0.8s ease-in-out infinite; }
 .char3d-rig--butt-kick .char3d-hip-l { animation: char3d-buttkick-hip 0.8s ease-in-out infinite; }
@@ -558,13 +597,15 @@ button:not(:disabled):active,
 .char3d-rig--butt-kick .char3d-hip-r { animation: char3d-buttkick-hip 0.8s ease-in-out infinite; animation-delay: -0.4s; }
 .char3d-rig--butt-kick .char3d-hip-r .char3d-knee { animation: char3d-buttkick-knee 0.8s ease-in-out infinite; animation-delay: -0.4s; }
 .char3d-rig--butt-kick .char3d-shoulder-r > .char3d-upperarm { animation: char3d-buttkick-arm 0.8s ease-in-out infinite; }
+.char3d-rig--butt-kick .char3d-shoulder-r > .char3d-upperarm > .char3d-elbow { animation: char3d-buttkick-elbow 0.8s ease-in-out infinite; }
 .char3d-rig--butt-kick .char3d-shoulder-l > .char3d-upperarm { animation: char3d-buttkick-arm-back 0.8s ease-in-out infinite; animation-delay: -0.4s; }
+.char3d-rig--butt-kick .char3d-shoulder-l > .char3d-upperarm > .char3d-elbow { animation: char3d-buttkick-elbow-back 0.8s ease-in-out infinite; animation-delay: -0.4s; }
 
 /* ===== Preset: pas chassés défensifs (élastique marche latérale, jockey défensif) ===== */
 @keyframes char3d-shuffle-cam {
-  0%   { transform: translateX(calc(-50% - 15px)) rotateY(-20deg) rotateX(-4deg); }
-  50%  { transform: translateX(calc(-50% + 15px)) rotateY(-20deg) rotateX(-4deg); }
-  100% { transform: translateX(calc(-50% - 15px)) rotateY(-20deg) rotateX(-4deg); }
+  0%   { transform: translateX(-15px); }
+  50%  { transform: translateX(15px); }
+  100% { transform: translateX(-15px); }
 }
 @keyframes char3d-shuffle-hip  { 0%, 100% { transform: rotateX(0deg); } 25% { transform: rotateX(28deg); } 50% { transform: rotateX(0deg); } }
 @keyframes char3d-shuffle-knee { 0%, 100% { transform: rotateX(0deg); } 25% { transform: rotateX(-42deg); } 50% { transform: rotateX(0deg); } }
@@ -580,11 +621,11 @@ button:not(:disabled):active,
 
 /* ===== Preset: bondissements latéraux (lateral bound) ===== */
 @keyframes char3d-bound-cam {
-  0%   { transform: translateX(calc(-50% - 26px)) rotateY(-20deg) rotateX(-4deg) translateY(0); }
-  15%  { transform: translateX(calc(-50% - 10px)) rotateY(-20deg) rotateX(-4deg) translateY(-20px); }
-  50%  { transform: translateX(calc(-50% + 26px)) rotateY(-20deg) rotateX(-4deg) translateY(0); }
-  65%  { transform: translateX(calc(-50% + 10px)) rotateY(-20deg) rotateX(-4deg) translateY(-20px); }
-  100% { transform: translateX(calc(-50% - 26px)) rotateY(-20deg) rotateX(-4deg) translateY(0); }
+  0%   { transform: translateX(-26px) translateY(0); }
+  15%  { transform: translateX(-10px) translateY(-20px); }
+  50%  { transform: translateX(26px) translateY(0); }
+  65%  { transform: translateX(10px) translateY(-20px); }
+  100% { transform: translateX(-26px) translateY(0); }
 }
 @keyframes char3d-bound-hip  { 0% { transform: rotateX(38deg); } 15% { transform: rotateX(0deg); } 50% { transform: rotateX(38deg); } 65% { transform: rotateX(0deg); } 100% { transform: rotateX(38deg); } }
 @keyframes char3d-bound-knee { 0% { transform: rotateX(-75deg); } 15% { transform: rotateX(0deg); } 50% { transform: rotateX(-75deg); } 65% { transform: rotateX(0deg); } 100% { transform: rotateX(-75deg); } }
@@ -596,9 +637,9 @@ button:not(:disabled):active,
 /* ===== Preset: course (sprint court / côte courte) — même patron que
    les montées de genoux, amplitude et cadence différentes. ===== */
 @keyframes char3d-sprint-cam {
-  0%, 100% { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(0); }
-  25%      { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(-8px); }
-  75%      { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) translateY(-8px); }
+  0%, 100% { transform: translateY(0); }
+  25%      { transform: translateY(-8px); }
+  75%      { transform: translateY(-8px); }
 }
 @keyframes char3d-sprint-torso { 0%, 100% { transform: rotateX(0deg); } 50% { transform: rotateX(-22deg); } }
 @keyframes char3d-sprint-hip   { 0%, 100% { transform: rotateX(0deg); } 22% { transform: rotateX(92deg); } 50% { transform: rotateX(0deg); } }
@@ -650,8 +691,8 @@ button:not(:disabled):active,
 /* ===== Preset: équilibre unipodal (balance hold) — pose quasi statique,
    léger balancement du buste entier pour suggérer l'effort d'équilibre. ===== */
 @keyframes char3d-balance-sway {
-  0%, 100% { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) rotateZ(0deg); }
-  50%      { transform: translateX(-50%) rotateY(-20deg) rotateX(-4deg) rotateZ(2.5deg); }
+  0%, 100% { transform: rotateZ(0deg); }
+  50%      { transform: rotateZ(2.5deg); }
 }
 .char3d-rig--balance-hold { animation: char3d-balance-sway 2.8s ease-in-out infinite; }
 .char3d-rig--balance-hold .char3d-hip-r { transform: rotateX(50deg); }
@@ -660,7 +701,7 @@ button:not(:disabled):active,
 .char3d-rig--balance-hold .char3d-shoulder-r { transform: rotateZ(-22deg); }
 
 @media (prefers-reduced-motion: reduce) {
-  .char3d-rig, .char3d-rig * {
+  .char3d-camera, .char3d-rig, .char3d-rig * {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
   }
