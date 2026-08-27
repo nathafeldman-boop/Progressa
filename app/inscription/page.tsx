@@ -1,11 +1,17 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentInternalUser } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { EmailAuthForm } from "@/components/auth/EmailAuthForm";
 
 export default async function InscriptionPage() {
-  const supabase = await createClient();
-  const authUser = supabase ? (await supabase.auth.getUser()).data.user : null;
-  if (authUser) redirect("/dashboard");
+  const user = await getCurrentInternalUser();
+  if (user) {
+    // Un compte déjà créé mais dont l'onboarding n'a jamais été fini
+    // (ex: session coupée en cours de route) doit reprendre l'assistant,
+    // pas rebondir sur un dashboard vide qui le renverrait de toute façon.
+    const profile = await prisma.playerProfile.findUnique({ where: { userId: user.id } });
+    redirect(profile ? "/dashboard" : "/onboarding");
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-[var(--color-surface-alt)] p-4">
