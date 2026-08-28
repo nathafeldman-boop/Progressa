@@ -58,7 +58,16 @@ export function TestPlayer({
   const eligible = tests.filter((t) => !t.locked);
   const locked = tests.filter((t) => t.locked);
 
-  const [screen, setScreen] = useState<"intro" | "test" | "rest" | "done">(eligible.length > 0 ? "intro" : "done");
+  const [screen, setScreen] = useState<"intro" | "estimateAlert" | "estimateForm" | "test" | "rest" | "done">(
+    eligible.length > 0 ? "intro" : "done"
+  );
+  // Saisie manuelle ("estimer mon niveau"): un champ par épreuve éligible,
+  // clé = testType. Volontairement optionnel champ par champ — comme
+  // "Passer" dans le parcours chronométré, une épreuve non remplie n'est
+  // simplement pas enregistrée plutôt que de bloquer tout l'écran.
+  const [estimateValues, setEstimateValues] = useState<Record<string, string>>({});
+  const [estimateSubmitting, setEstimateSubmitting] = useState(false);
+  const [estimateError, setEstimateError] = useState<string | null>(null);
   const [testIndex, setTestIndex] = useState(0);
   const [timerPhase, setTimerPhase] = useState<"idle" | "running" | "stopped">("idle");
   const [startedAt, setStartedAt] = useState<number | null>(null);
@@ -158,6 +167,37 @@ export function TestPlayer({
     router.push("/dashboard");
   }
 
+  // Envoie chaque épreuve saisie sur le même endpoint que le parcours
+  // chronométré (/api/tests/submit) — aucune distinction en base ni à
+  // l'affichage entre une valeur mesurée au chrono et une valeur tapée à la
+  // main, exactement traité comme un test réel une fois enregistré.
+  async function submitEstimates() {
+    setEstimateSubmitting(true);
+    setEstimateError(null);
+    try {
+      for (const t of eligible) {
+        const raw = estimateValues[t.type]?.trim();
+        if (!raw) continue;
+        const numeric = Number(raw.replace(",", "."));
+        if (!numeric || numeric <= 0) continue;
+        const res = await fetch("/api/tests/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ testType: t.type, value: numeric }),
+        });
+        if (!res.ok) {
+          setEstimateError(`Impossible d'enregistrer "${t.name}" — réessaie.`);
+          return;
+        }
+      }
+      trackClick(getOrCreateAnonId(), "test_completed", "/tests#estimate");
+      setScreen("done");
+      router.refresh();
+    } finally {
+      setEstimateSubmitting(false);
+    }
+  }
+
   if (screen === "intro") {
     return (
       <div className="fixed inset-0 z-40 overflow-y-auto bg-[var(--color-bg)] [padding-top:env(safe-area-inset-top)] [padding-bottom:env(safe-area-inset-bottom)]">
@@ -219,6 +259,109 @@ export function TestPlayer({
         >
           Lancer le test
         </Button>
+        <button
+          type="button"
+          className="mt-3 text-center text-sm font-semibold text-[var(--color-text-muted)] underline"
+          onClick={() => {
+            trackClick(getOrCreateAnonId(), "test_estimate_started", "/tests");
+            setScreen("estimateAlert");
+          }}
+        >
+          Pas d&apos;espace pour bouger ? Estimer mon niveau à la place
+        </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === "estimateAlert") {
+    return (
+      <div className="fixed inset-0 z-40 overflow-y-auto bg-[var(--color-bg)] [padding-top:env(safe-area-inset-top)] [padding-bottom:env(safe-area-inset-bottom)]">
+        <div className="mx-auto flex max-w-md flex-col p-4">
+          <button
+            type="button"
+            onClick={() => setScreen("intro")}
+            aria-label="Annuler"
+            className="self-start text-xl text-[var(--color-text-muted)]"
+          >
+            ✕
+          </button>
+          <div className="mt-4 flex flex-col items-center gap-4 text-center">
+            <BrianAvatar state="confident" size={64} />
+            <h1 className="font-display text-2xl font-extrabold uppercase tracking-wide text-[var(--color-text)]">
+              Comment ça marche
+            </h1>
+            <Card className="text-left text-sm leading-relaxed">
+              <p>
+                Au lieu de faire chaque épreuve maintenant, tu indiques toi-même tes meilleures performances (record
+                de jonglages, temps de planche, etc.) — pratique si tu n&apos;as pas la place ou le temps de bouger
+                tout de suite.
+              </p>
+              <p className="mt-3">
+                Ta carte est calculée à partir de ces valeurs, exactement comme avec le test chronométré. Tu pourras
+                refaire une vraie épreuve chronométrée plus tard pour l&apos;affiner.
+              </p>
+              <p className="mt-3 font-semibold text-[var(--color-text)]">
+                Tu peux annuler et revenir au test chronométré à tout moment, avant de valider.
+              </p>
+            </Card>
+            <div className="flex w-full gap-2">
+              <Button variant="ghost" className="flex-1" onClick={() => setScreen("intro")}>
+                Annuler
+              </Button>
+              <Button className="flex-1" onClick={() => setScreen("estimateForm")}>
+                Continuer
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === "estimateForm") {
+    return (
+      <div className="fixed inset-0 z-40 overflow-y-auto bg-[var(--color-bg)] [padding-top:env(safe-area-inset-top)] [padding-bottom:env(safe-area-inset-bottom)]">
+        <div className="mx-auto flex max-w-md flex-col p-4">
+          <button
+            type="button"
+            onClick={() => setScreen("estimateAlert")}
+            aria-label="Retour"
+            className="self-start text-xl text-[var(--color-text-muted)]"
+          >
+            ✕
+          </button>
+          <h1 className="mt-2 font-display text-2xl font-extrabold uppercase tracking-wide text-[var(--color-text)]">
+            Tes meilleures performances
+          </h1>
+          <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+            Une épreuve que tu ne connais pas ? Laisse le champ vide, tu pourras la passer plus tard.
+          </p>
+
+          <div className="mt-5 flex flex-col gap-3">
+            {eligible.map((t) => (
+              <div key={t.type} className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface-alt)] p-3.5">
+                <p className="text-sm font-semibold text-[var(--color-text)]">{t.name}</p>
+                <p className="mt-0.5 font-mono text-[0.65rem] text-[var(--color-text-muted)]">
+                  AXE {t.axisLabel ?? "—"} · {t.unit.toUpperCase()}
+                </p>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder={t.unit}
+                  value={estimateValues[t.type] ?? ""}
+                  onChange={(e) => setEstimateValues((prev) => ({ ...prev, [t.type]: e.target.value }))}
+                  className="mt-2 w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-2 text-sm"
+                />
+              </div>
+            ))}
+          </div>
+
+          {estimateError && <p className="mt-3 text-sm text-[var(--color-danger)]">{estimateError}</p>}
+
+          <Button className="mt-5 w-full" onClick={submitEstimates} disabled={estimateSubmitting}>
+            {estimateSubmitting ? "..." : "Valider mes stats"}
+          </Button>
         </div>
       </div>
     );
