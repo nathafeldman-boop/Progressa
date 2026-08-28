@@ -47,3 +47,8 @@ export const SQUAT_JUMP: Movement = {
     { t: 1, pose: JUMP_TOP },
   ],
 };
+
+/** Réexportées pour composer un circuit combiné (voir explosive-extra.ts)
+ * sans dupliquer les coordonnées. */
+export const SQUAT_UP = UP;
+export const SQUAT_DOWN = DOWN;

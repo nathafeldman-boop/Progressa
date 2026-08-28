@@ -1,5 +1,8 @@
 import type { Movement, Pose } from "../types";
 import type { Point } from "../ik";
+import { JUMPING_JACKS } from "./mobility";
+import { SQUAT_UP, SQUAT_DOWN } from "./squat";
+import { HIGH_KNEES } from "./run";
 
 /**
  * Cinquième vague — deux derniers cas "approx" où le mouvement réutilisé
@@ -84,5 +87,112 @@ export const FORWARD_BOUND: Movement = {
     { t: 0.55, pose: BOUND_LANDING },
     { t: 0.85, pose: BOUND_LANDING },
     { t: 1, pose: BOUND_READY },
+  ],
+};
+
+/**
+ * Sixième vague — les 3 derniers cas "approx" qui pouvaient vraiment être
+ * améliorés sans casser un mouvement existant déjà validé (le sprint
+ * 5-10-5 est un tout nouveau mouvement, pas une modification de SPRINT).
+ */
+
+/** Sprint 5-10-5: course, plantage large pour freiner et changer de
+ * direction, puis relance de l'autre côté — le "changement de direction"
+ * est justement ce que SPRINT seul (ligne droite) ne montre pas. */
+const COD_RUN_A: Pose = {
+  hip: { x: 115, y: 190 },
+  shoulder: { x: 125, y: 112 },
+  handA: { x: 145, y: 140 },
+  handB: { x: 85, y: 155 },
+  footA: { x: 95, y: 285 },
+  footB: { x: 150, y: 275 },
+};
+const COD_PLANT: Pose = {
+  hip: { x: 122, y: 205 },
+  shoulder: { x: 140, y: 155 },
+  handA: { x: 165, y: 175 },
+  handB: { x: 90, y: 165 },
+  footA: { x: 70, y: 290 },
+  footB: { x: 175, y: 282 },
+};
+const COD_RUN_B: Pose = {
+  hip: { x: 125, y: 190 },
+  shoulder: { x: 105, y: 112 },
+  handA: { x: 75, y: 140 },
+  handB: { x: 155, y: 150 },
+  footA: { x: 150, y: 275 },
+  footB: { x: 95, y: 285 },
+};
+export const CHANGE_OF_DIRECTION_SPRINT: Movement = {
+  loopSeconds: 1.3,
+  keyframes: [
+    { t: 0, pose: COD_RUN_A },
+    { t: 0.35, pose: COD_PLANT },
+    { t: 0.65, pose: COD_RUN_B },
+    { t: 1, pose: COD_RUN_A },
+  ],
+};
+
+/**
+ * Circuit cardio combiné: jumping jacks -> squat -> genoux hauts, plutôt
+ * qu'un seul mouvement répété — c'est justement le principe d'un circuit
+ * "combiné". Réutilise les poses déjà vérifiées de JUMPING_JACKS, SQUAT
+ * et HIGH_KNEES plutôt que d'en écrire de nouvelles.
+ */
+const CIRCUIT_STAND = JUMPING_JACKS.keyframes[0].pose;
+const CIRCUIT_JACK_OPEN = JUMPING_JACKS.keyframes[1].pose;
+const CIRCUIT_HIGH_KNEE = HIGH_KNEES.keyframes[0].pose;
+export const CARDIO_CIRCUIT_COMBO: Movement = {
+  loopSeconds: 3.6,
+  keyframes: [
+    { t: 0, pose: CIRCUIT_STAND },
+    { t: 0.12, pose: CIRCUIT_JACK_OPEN },
+    { t: 0.24, pose: CIRCUIT_STAND },
+    { t: 0.4, pose: SQUAT_DOWN },
+    { t: 0.55, pose: SQUAT_UP },
+    { t: 0.7, pose: CIRCUIT_HIGH_KNEE },
+    { t: 0.85, pose: CIRCUIT_STAND },
+    { t: 1, pose: CIRCUIT_STAND },
+  ],
+};
+
+/**
+ * Jonglage en déplacement: même bond de jonglage que JUGGLING, mais tout
+ * le corps (et le ballon avec lui) se décale d'un côté puis de l'autre —
+ * translation rigide, donc les distances internes restent identiques à
+ * JUGGLING, déjà validé.
+ */
+const JUGGLE_MOVE_REST: Pose = {
+  hip: { x: 120, y: 186 },
+  shoulder: { x: 120, y: 106 },
+  handA: { x: 100, y: 172 },
+  handB: { x: 140, y: 172 },
+  footA: { x: 112, y: 290 },
+  footB: { x: 134, y: 288 },
+};
+const JUGGLE_MOVE_CONTACT: Pose = { ...JUGGLE_MOVE_REST, footB: { x: 138, y: 260 } };
+function juggleTravelPose(dx: number, contact: boolean): { pose: Pose; ball: Point } {
+  const base = contact ? JUGGLE_MOVE_CONTACT : JUGGLE_MOVE_REST;
+  const ballY = contact ? 232 : 96;
+  return {
+    pose: {
+      hip: { x: base.hip.x + dx, y: base.hip.y },
+      shoulder: { x: base.shoulder.x + dx, y: base.shoulder.y },
+      handA: { x: base.handA.x + dx, y: base.handA.y },
+      handB: { x: base.handB.x + dx, y: base.handB.y },
+      footA: { x: base.footA.x + dx, y: base.footA.y },
+      footB: { x: base.footB.x + dx, y: base.footB.y },
+    },
+    ball: { x: 132 + dx, y: ballY },
+  };
+}
+export const JUGGLE_ON_THE_MOVE: Movement = {
+  loopSeconds: 1.8,
+  keyframes: [
+    { t: 0, ...juggleTravelPose(-15, false) },
+    { t: 0.25, ...juggleTravelPose(0, true) },
+    { t: 0.5, ...juggleTravelPose(15, false) },
+    { t: 0.75, ...juggleTravelPose(0, true) },
+    { t: 1, ...juggleTravelPose(-15, false) },
   ],
 };
