@@ -79,6 +79,13 @@ export function TestPlayer({
   // Résultats saisis pendant cette session — sert uniquement à afficher le
   // récap des épreuves déjà faites (checklist), jamais relu ailleurs.
   const [sessionScores, setSessionScores] = useState<Record<number, string>>({});
+  // Distinct de `eligible.length > 0`: une fois les tests envoyés, le
+  // router.refresh() qui suit renvoie des props où ces mêmes tests sont
+  // maintenant tous verrouillés (cooldown démarré), donc `eligible` retombe
+  // à 0 — sans ce flag, l'écran "done" bascule sur le message "rien à
+  // passer" et renvoie vers /progression au lieu de révéler la carte, y
+  // compris juste après le tout premier test d'un nouveau joueur.
+  const [justFinishedSession, setJustFinishedSession] = useState(false);
 
   useTicker(timerPhase === "running");
   const [, forceRestTick] = useState(0);
@@ -121,6 +128,7 @@ export function TestPlayer({
 
   function goToNextTest() {
     if (testIndex + 1 >= eligible.length) {
+      setJustFinishedSession(true);
       setScreen("done");
       trackClick(getOrCreateAnonId(), "test_completed", "/tests");
       router.refresh();
@@ -196,6 +204,7 @@ export function TestPlayer({
         }
       }
       trackClick(getOrCreateAnonId(), "test_completed", "/tests#estimate");
+      setJustFinishedSession(true);
       setScreen("done");
       router.refresh();
     } finally {
@@ -400,10 +409,10 @@ export function TestPlayer({
       <div className="mx-auto w-full max-w-md space-y-4 p-4 text-center">
         <BrianAvatar state="celebrating" size={88} className="mx-auto" />
         <h1 className="font-display text-2xl font-extrabold uppercase tracking-wide">
-          {eligible.length > 0 ? "Tests terminés !" : "Rien à passer pour l'instant"}
+          {justFinishedSession ? "Tests terminés !" : "Rien à passer pour l'instant"}
         </h1>
         <p className="text-[var(--color-text)]">
-          {eligible.length > 0
+          {justFinishedSession
             ? "Tes stats sont mises à jour sur ta carte."
             : "Tu as déjà passé tes tests récemment — reviens quand ils se débloquent."}
         </p>
@@ -421,9 +430,9 @@ export function TestPlayer({
         )}
         <Button
           className="w-full"
-          onClick={() => router.push(isFirstTime && eligible.length > 0 ? "/onboarding/carte" : "/progression")}
+          onClick={() => router.push(isFirstTime && justFinishedSession ? "/onboarding/carte" : "/progression")}
         >
-          {isFirstTime && eligible.length > 0 ? "Découvrir ma carte" : "Voir ma carte"}
+          {isFirstTime && justFinishedSession ? "Découvrir ma carte" : "Voir ma carte"}
         </Button>
       </div>
       </div>
