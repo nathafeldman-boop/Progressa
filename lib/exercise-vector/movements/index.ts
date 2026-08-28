@@ -12,3 +12,4 @@ export * from "./mobility";
 export * from "./strength-technique";
 export * from "./ball-skills";
 export * from "./goalkeeper-extra";
+export * from "./explosive-extra";
