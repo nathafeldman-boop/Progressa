@@ -19,34 +19,42 @@ export interface ExerciseVisual {
   movement: Movement | null;
   kit: VectorKit;
   showBall: boolean;
+  showCones: boolean;
   quality: MatchQuality;
 }
 
-function entry(slug: string, name: string, movement: Movement | null, quality: MatchQuality, opts: { gk?: boolean; ball?: boolean } = {}): ExerciseVisual {
+function entry(
+  slug: string,
+  name: string,
+  movement: Movement | null,
+  quality: MatchQuality,
+  opts: { gk?: boolean; ball?: boolean; cones?: boolean } = {}
+): ExerciseVisual {
   return {
     slug,
     name,
     movement,
     kit: opts.gk ? GOALKEEPER_KIT : OUTFIELD_KIT,
     showBall: !!opts.ball,
+    showCones: !!opts.cones,
     quality: movement ? quality : "missing",
   };
 }
 
 export const EXERCISE_VISUALS: ExerciseVisual[] = [
   // TECHNIQUE
-  entry("slalom-plots-serre", "Slalom plots serré", M.BALL_DRIBBLE, "exact", { ball: true }),
+  entry("slalom-plots-serre", "Slalom plots serré", M.BALL_DRIBBLE, "exact", { ball: true, cones: true }),
   entry("conduite-balle-int-ext", "Conduite de balle intérieur/extérieur", M.BALL_DRIBBLE, "exact", { ball: true }),
   entry("jonglages-progressifs", "Jonglages progressifs", M.JUGGLING, "exact", { ball: true }),
   entry("passes-mur-controle", "Passes au mur + contrôle orienté", M.PASS_STRIKE, "exact", { ball: true }),
-  entry("feintes-corps-piquet", "Feintes de corps face à un piquet", M.BALL_DRIBBLE, "approx", { ball: true }),
+  entry("feintes-corps-piquet", "Feintes de corps face à un piquet", M.BALL_DRIBBLE, "approx", { ball: true, cones: true }),
   entry("frappe-enroulee-cible", "Frappe enroulée sur cible fixe", M.SHOT_STRIKE, "exact", { ball: true }),
   entry("frappe-puissance-surface", "Frappe en puissance depuis la surface", M.SHOT_STRIKE, "exact", { ball: true }),
   entry("frappe-volee-ballon-lance", "Frappe de volée sur ballon lancé", M.SHOT_STRIKE, "approx", { ball: true }),
   entry("controle-oriente-frappe-rapide", "Contrôle orienté + frappe rapide", M.SHOT_STRIKE, "approx", { ball: true }),
-  entry("centre-frappe-couloir", "Centre du couloir + reprise", M.PASS_STRIKE, "approx", { ball: true }),
-  entry("dribble-1v1-plot-mobile", "Dribble 1v1 contre plot mobile", M.BALL_DRIBBLE, "exact", { ball: true }),
-  entry("passes-courtes-triangle", "Passes courtes en triangle", M.PASS_STRIKE, "exact", { ball: true }),
+  entry("centre-frappe-couloir", "Centre du couloir + reprise", M.PASS_STRIKE, "approx", { ball: true, cones: true }),
+  entry("dribble-1v1-plot-mobile", "Dribble 1v1 contre plot mobile", M.BALL_DRIBBLE, "exact", { ball: true, cones: true }),
+  entry("passes-courtes-triangle", "Passes courtes en triangle", M.PASS_STRIKE, "exact", { ball: true, cones: true }),
   entry("frappe-premiere-intention", "Frappe de première intention", M.SHOT_STRIKE, "exact", { ball: true }),
   entry("frappe-pied-faible-cible", "Frappe cadrée du pied faible", M.SHOT_STRIKE, "exact", { ball: true }),
   entry("frappe-basse-enroulee-poteau", "Frappe basse enroulée au ras du poteau", M.SHOT_STRIKE, "exact", { ball: true }),
@@ -55,19 +63,19 @@ export const EXERCISE_VISUALS: ExerciseVisual[] = [
   entry("finition-1v1-gardien", "Finition en 1 contre 1 face au gardien", M.SHOT_STRIKE, "approx", { ball: true }),
   entry("frappe-longue-distance", "Frappe longue distance (25m+)", M.SHOT_STRIKE, "exact", { ball: true }),
   entry("routine-penalty", "Routine de penalty", M.SHOT_STRIKE, "exact", { ball: true }),
-  entry("passe-longue-diagonale", "Passe longue diagonale", M.PASS_STRIKE, "exact", { ball: true }),
-  entry("passe-cassee-entre-lignes", "Passe cassée entre les lignes", M.PASS_STRIKE, "exact", { ball: true }),
-  entry("remise-une-touche", "Remise en une touche", M.PASS_STRIKE, "approx", { ball: true }),
+  entry("passe-longue-diagonale", "Passe longue diagonale", M.PASS_STRIKE, "exact", { ball: true, cones: true }),
+  entry("passe-cassee-entre-lignes", "Passe cassée entre les lignes", M.PASS_STRIKE, "exact", { ball: true, cones: true }),
+  entry("remise-une-touche", "Remise en une touche", M.PASS_STRIKE, "approx", { ball: true, cones: true }),
   entry("controle-orientation-corps", "Contrôle avec orientation du corps", M.BALL_DRIBBLE, "approx", { ball: true }),
-  entry("passe-exterieur-tranchante", "Passe extérieure tranchante", M.PASS_STRIKE, "exact", { ball: true }),
+  entry("passe-exterieur-tranchante", "Passe extérieure tranchante", M.PASS_STRIKE, "exact", { ball: true, cones: true }),
   entry("tacle-glisse-controle", "Tacle glissé contrôlé", null, "missing"),
   entry("jockey-defensif-pas-chasses", "Position de jockey défensif", M.LATERAL_SHUFFLE, "exact"),
   entry("duel-aerien-defensif", "Duel aérien défensif", null, "missing"),
-  entry("defense-1v1-face-dribbleur", "Défense en 1 contre 1 face à un dribbleur", M.LATERAL_SHUFFLE, "approx"),
+  entry("defense-1v1-face-dribbleur", "Défense en 1 contre 1 face à un dribbleur", M.LATERAL_SHUFFLE, "approx", { cones: true }),
   entry("interception-lecture-trajectoire", "Interception et lecture de trajectoire", M.LATERAL_SHUFFLE, "generic"),
   entry("repli-defensif-sprint", "Repli défensif sprinté", M.SPRINT, "exact"),
-  entry("debordement-exterieur-centre", "Débordement extérieur + centre", M.BALL_DRIBBLE, "approx", { ball: true }),
-  entry("crochet-interieur-frappe", "Crochet vers l'intérieur + frappe", M.BALL_DRIBBLE, "approx", { ball: true }),
+  entry("debordement-exterieur-centre", "Débordement extérieur + centre", M.BALL_DRIBBLE, "approx", { ball: true, cones: true }),
+  entry("crochet-interieur-frappe", "Crochet vers l'intérieur + frappe", M.BALL_DRIBBLE, "approx", { ball: true, cones: true }),
   entry("protection-ballon-dos-adversaire", "Protection de balle dos à l'adversaire", M.BALL_DRIBBLE, "approx", { ball: true }),
 
   // STRENGTH
@@ -92,7 +100,7 @@ export const EXERCISE_VISUALS: ExerciseVisual[] = [
   entry("talons-fesses", "Talons-fesses", M.HEEL_KICKS, "exact"),
   entry("squat-jumps", "Sauts en squat (squat jumps)", M.SQUAT_JUMP, "exact"),
   entry("bondissements-lateraux", "Bondissements latéraux (skater jumps)", M.LATERAL_BOUND, "exact"),
-  entry("sprint-changement-direction-5-10-5", "Sprint + changement de direction", M.SPRINT, "approx"),
+  entry("sprint-changement-direction-5-10-5", "Sprint + changement de direction", M.SPRINT, "approx", { cones: true }),
   entry("sauts-a-la-corde", "Sauts à la corde", M.ROPE_JUMP, "exact"),
   entry("departs-reactifs-signal", "Départs réactifs sur signal", M.SPRINT, "approx"),
   entry("montees-marche-explosives", "Montées de marche explosives", M.HIGH_KNEES, "approx"),

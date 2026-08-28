@@ -11,7 +11,7 @@ export function VectorExerciseStage({ visual }: { visual: ExerciseVisual }) {
   if (!visual.movement) return null;
   return (
     <div className="exercise-stage-pitch relative flex h-full w-full items-center justify-center">
-      <VectorPlayer movement={visual.movement} kit={visual.kit} showBall={visual.showBall} className="h-full w-full" />
+      <VectorPlayer movement={visual.movement} kit={visual.kit} showBall={visual.showBall} showCones={visual.showCones} className="h-full w-full" />
       <div className="absolute left-3 top-3 flex items-center gap-2 rounded-full bg-black/40 py-1 pl-1 pr-3 backdrop-blur-sm">
         <BrianAvatar state="encouraging" size={32} className="ring-2 ring-white/70" />
         <span className="text-xs font-bold uppercase tracking-wide text-white">En boucle</span>

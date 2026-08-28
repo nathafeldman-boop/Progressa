@@ -86,16 +86,41 @@ function Ball({ point }: { point: Point }) {
   );
 }
 
+/** Plot d'entraînement — plusieurs exercices du catalogue (slalom, piquet,
+ * 1v1 contre plot mobile...) utilisent explicitement des plots, jamais
+ * représentés jusqu'ici: la scène semblait "nue" par rapport à la consigne
+ * de l'exercice. */
+function Cone({ x, groundY }: { x: number; groundY: number }) {
+  const h = 22;
+  const wBase = 16;
+  const wTop = 5;
+  const top = groundY - h;
+  return (
+    <g>
+      <path
+        d={`M ${x - wBase / 2} ${groundY} L ${x - wTop / 2} ${top} L ${x + wTop / 2} ${top} L ${x + wBase / 2} ${groundY} Z`}
+        fill="#e8622c"
+        stroke="#11151d"
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+      <path d={`M ${x - wBase * 0.36} ${groundY - h * 0.42} L ${x + wBase * 0.36} ${groundY - h * 0.42}`} stroke="#11151d" strokeWidth={1.5} />
+    </g>
+  );
+}
+
 export function VectorPlayer({
   movement,
   kit = OUTFIELD_KIT,
   showBall = false,
+  showCones = false,
   className,
   playing = true,
 }: {
   movement: Movement;
   kit?: VectorKit;
   showBall?: boolean;
+  showCones?: boolean;
   className?: string;
   playing?: boolean;
 }) {
@@ -179,6 +204,13 @@ export function VectorPlayer({
           <stop offset="100%" stopColor={kit.skinShade} />
         </radialGradient>
       </defs>
+
+      {showCones && (
+        <>
+          <Cone x={vbW * 0.1} groundY={vbH * 0.94} />
+          <Cone x={vbW * 0.9} groundY={vbH * 0.94} />
+        </>
+      )}
 
       <ellipse cx={shadowCx} cy={shadowCy} rx={44} ry={9} fill="rgba(16,23,36,.16)" />
 

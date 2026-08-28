@@ -60,7 +60,7 @@ export function ExerciseVectorGallery() {
           <div key={e.slug} className="overflow-hidden rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)]">
             <div className="aspect-[3/4] bg-[var(--color-surface-alt)]">
               {e.movement ? (
-                <VectorPlayer movement={e.movement} kit={e.kit} showBall={e.showBall} className="h-full w-full" />
+                <VectorPlayer movement={e.movement} kit={e.kit} showBall={e.showBall} showCones={e.showCones} className="h-full w-full" />
               ) : (
                 <div className="flex h-full items-center justify-center p-3 text-center text-xs text-[var(--color-text-muted)]">
                   Pas de visuel — mouvement pas encore construit
