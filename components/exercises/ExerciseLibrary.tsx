@@ -6,7 +6,6 @@ import Image from "next/image";
 import type { ExerciseCategory } from "@prisma/client";
 import { Card, CardTitle, CardSubtitle } from "@/components/ui/Card";
 import { EXERCISE_FRAMES } from "@/lib/exercises/exercise-frames";
-import { EXERCISE_VIDEO } from "@/lib/exercises/exercise-media";
 
 export interface LibraryEntry {
   slug: string;
@@ -36,16 +35,13 @@ const CATEGORY_LABELS: Record<ExerciseCategory, string> = {
 };
 
 function ExerciseThumb({ slug, emoji }: { slug: string; emoji: string }) {
-  // Pose Coach Brian générée par IA en priorité, sinon repli sur l'image
-  // issue de la vidéo Pexels, sinon l'emoji.
+  // Pose Coach Brian générée par IA en priorité, sinon l'emoji — plus aucune
+  // vidéo/photo Pexels (retirées du projet).
   const firstPose = EXERCISE_FRAMES[slug]?.poses[0];
-  const video = EXERCISE_VIDEO[slug];
-  const poster = video ? video.replace(/\.mp4$/, "-poster.jpg") : undefined;
-  const thumbSrc = firstPose?.image ?? poster;
-  if (thumbSrc) {
+  if (firstPose?.image) {
     return (
       <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)]">
-        <Image src={thumbSrc} alt="" fill sizes="44px" className="object-cover" unoptimized />
+        <Image src={firstPose.image} alt="" fill sizes="44px" className="object-cover" unoptimized />
       </span>
     );
   }

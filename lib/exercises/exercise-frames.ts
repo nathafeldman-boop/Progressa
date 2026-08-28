@@ -11,7 +11,8 @@ export interface ExerciseFrameSequence {
  * Séquences de poses Coach Brian (fournies par l'utilisateur) pour la
  * démonstration frame-par-frame avant/pendant un exercice. Clé = slug du
  * catalogue (lib/exercises/catalog-data.ts). Un exercice non couvert ici
- * retombe sur la vidéo (EXERCISE_VIDEO) ou l'emoji — jamais d'écran cassé.
+ * retombe sur la silhouette vectorielle (exercise-vector) ou l'emoji —
+ * jamais d'écran cassé.
  *
  * Légendes: chaque pose porte une consigne complète (le geste + le repère
  * technique ou l'erreur à éviter), pas juste un mot-clé — l'objectif est de
@@ -356,7 +357,7 @@ export const EXERCISE_FRAMES: Partial<Record<string, ExerciseFrameSequence>> = {
     ],
   },
 
-  // --- Gardien (remplacent le générique vidéo Pexels, peu lisible sur ces gestes précis) ---
+  // --- Gardien (gestes précis, mieux servis par des poses dédiées que par un mouvement générique) ---
   "prise-balle-haute": {
     poses: [
       { image: "/exercises/frames/prise-balle-haute/pose-1.png", caption: "Position basse, jambes fléchies, prêt à sauter dans la zone de saut." },

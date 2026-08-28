@@ -14,7 +14,6 @@ import { BrianTip } from "@/components/brian/BrianTip";
 import { PlayerCardView } from "@/components/card/PlayerCardView";
 import type { PlayerCardStats } from "@/lib/player-card";
 import { elapsedSeconds, nowMs } from "@/lib/time";
-import { EXERCISE_VIDEO } from "@/lib/exercises/exercise-media";
 import { EXERCISE_FRAMES } from "@/lib/exercises/exercise-frames";
 import { ExerciseFrameViewer } from "@/components/exercises/ExerciseFrameViewer";
 import { ExerciseFrameLoop } from "@/components/exercises/ExerciseFrameLoop";
@@ -712,11 +711,10 @@ function ActiveExerciseScreen({
     return () => window.clearTimeout(id);
   }, [resting, restStartedAt, block.restSeconds]);
   // Les poses Coach Brian générées par IA priment toujours quand elles
-  // existent pour cet exercice — la vidéo Pexels ne sert que de repli pour
-  // les exercices sans pose IA (voir scripts/videos/).
+  // existent pour cet exercice.
   const frames = EXERCISE_FRAMES[block.exercise.slug];
-  // Silhouette vectorielle (IK, mouvement continu) prioritaire sur la
-  // vidéo/le défilement de photos quand un mouvement dédié existe pour cet
+  // Silhouette vectorielle (IK, mouvement continu) prioritaire sur le
+  // défilement de photos quand un mouvement dédié existe pour cet
   // exercice — voir lib/exercise-vector/catalog-map.ts. Ne joue QUE pendant
   // la boucle d'exécution (ExerciseFrameViewer, l'explication pose-par-pose
   // avant de démarrer, n'est jamais concerné).
@@ -806,31 +804,8 @@ function ActiveExerciseScreen({
               <VectorExerciseStage visual={exerciseVisual} />
             ) : frames ? (
               <ExerciseFrameLoop sequence={frames} />
-            ) : EXERCISE_VIDEO[block.exercise.slug] ? (
-              <video
-                key={block.exercise.slug}
-                poster={EXERCISE_VIDEO[block.exercise.slug]!.replace(/\.mp4$/, "-poster.jpg")}
-                className="h-full w-full object-cover"
-                autoPlay
-                muted
-                loop
-                playsInline
-              >
-                <source src={EXERCISE_VIDEO[block.exercise.slug]!.replace(/\.mp4$/, ".webm")} type="video/webm" />
-                <source src={EXERCISE_VIDEO[block.exercise.slug]} type="video/mp4" />
-              </video>
             ) : (
               <div className="flex h-full items-center justify-center text-8xl">{block.exercise.emoji}</div>
-            )}
-            {!frames && EXERCISE_VIDEO[block.exercise.slug] && (
-              <a
-                href="https://www.pexels.com"
-                target="_blank"
-                rel="noreferrer"
-                className="absolute bottom-2 left-2 rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-medium text-white/80"
-              >
-                Vidéo : Pexels
-              </a>
             )}
             <div className="absolute bottom-2 right-2">
               <BrianAvatar state={BRIAN_STATE_FOR_PHASE[state.phase]} size={56} className="ring-2 ring-[var(--color-surface)]" />
