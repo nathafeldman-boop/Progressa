@@ -154,10 +154,18 @@ export function TestPlayer({
     }
   }
 
+  function quit() {
+    router.push("/dashboard");
+  }
+
   if (screen === "intro") {
     return (
-      <div className="mx-auto flex max-w-md flex-col p-4">
-        <p className="font-mono text-[0.625rem] font-semibold uppercase tracking-[0.18em] text-[var(--color-primary-strong)]">
+      <div className="fixed inset-0 z-40 overflow-y-auto bg-[var(--color-bg)] [padding-top:env(safe-area-inset-top)] [padding-bottom:env(safe-area-inset-bottom)]">
+        <div className="mx-auto flex max-w-md flex-col p-4">
+          <button type="button" onClick={quit} aria-label="Quitter les tests" className="self-start text-xl text-[var(--color-text-muted)]">
+            ✕
+          </button>
+        <p className="mt-2 font-mono text-[0.625rem] font-semibold uppercase tracking-[0.18em] text-[var(--color-primary-strong)]">
           Tests d&apos;évaluation
         </p>
         <h1 className="mt-2 font-display text-4xl font-extrabold uppercase leading-[0.96] text-[var(--color-text)]">
@@ -211,6 +219,7 @@ export function TestPlayer({
         >
           Lancer le test
         </Button>
+        </div>
       </div>
     );
   }
@@ -219,7 +228,10 @@ export function TestPlayer({
     const restElapsed = elapsedSeconds(restStartedAt) ?? 0;
     const remaining = Math.max(0, REST_SECONDS - restElapsed);
     return (
-      <div className="flex min-h-[calc(100vh-9rem)] flex-col bg-[#072a16] p-4 text-white">
+      <div className="fixed inset-0 z-40 flex flex-col bg-[#072a16] p-4 text-white [padding-top:calc(env(safe-area-inset-top)+1rem)] [padding-bottom:env(safe-area-inset-bottom)]">
+        <button type="button" onClick={quit} aria-label="Quitter les tests" className="self-start text-xl text-white/60">
+          ✕
+        </button>
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-3 text-center">
           <BrianAvatar state="encouraging" size={72} />
           <p className="font-mono text-[0.625rem] font-semibold uppercase tracking-[0.2em] text-[#3ddc7f]">
@@ -236,7 +248,8 @@ export function TestPlayer({
 
   if (screen === "done" || !current) {
     return (
-      <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center space-y-4 p-4 text-center">
+      <div className="fixed inset-0 z-40 flex flex-col justify-center bg-[var(--color-bg)] [padding-top:env(safe-area-inset-top)] [padding-bottom:env(safe-area-inset-bottom)]">
+      <div className="mx-auto w-full max-w-md space-y-4 p-4 text-center">
         <BrianAvatar state="celebrating" size={88} className="mx-auto" />
         <h1 className="font-display text-2xl font-extrabold uppercase tracking-wide">
           {eligible.length > 0 ? "Tests terminés !" : "Rien à passer pour l'instant"}
@@ -265,6 +278,7 @@ export function TestPlayer({
           {isFirstTime && eligible.length > 0 ? "Découvrir ma carte" : "Voir ma carte"}
         </Button>
       </div>
+      </div>
     );
   }
 
@@ -281,9 +295,12 @@ export function TestPlayer({
   const progressPct = Math.round(((testIndex + (timerPhase === "stopped" ? 1 : 0)) / eligible.length) * 100);
 
   return (
-    <div className="min-h-[calc(100vh-9rem)] bg-[#072a16] p-4 text-white">
+    <div className="fixed inset-0 z-40 overflow-y-auto bg-[#072a16] p-4 text-white [padding-top:calc(env(safe-area-inset-top)+1rem)] [padding-bottom:env(safe-area-inset-bottom)]">
       <div className="mx-auto max-w-md">
-        <div className="flex items-baseline justify-between">
+        <button type="button" onClick={quit} aria-label="Quitter les tests" className="block text-xl text-white/60">
+          ✕
+        </button>
+        <div className="mt-2 flex items-baseline justify-between">
           <p className="font-mono text-[0.625rem] font-semibold uppercase tracking-[0.18em] text-[#3ddc7f]">
             Épreuve {testIndex + 1}/{eligible.length}
           </p>
