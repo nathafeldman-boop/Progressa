@@ -6,7 +6,7 @@ import { GoogleButton } from "@/components/auth/GoogleButton";
 import { Button } from "@/components/ui/Button";
 
 /**
- * Connexion unifiée: email + code à 6 chiffres, ou Google. Pas de mot de
+ * Connexion unifiée: email + code reçu par email, ou Google. Pas de mot de
  * passe, pas d'écran "créer un compte" séparé — avec l'OTP, se connecter
  * pour la première fois EST la création de compte.
  */
@@ -88,23 +88,23 @@ export function EmailAuthForm({ redirectTo }: { redirectTo: string }) {
     return (
       <div className="w-full max-w-sm space-y-4">
         <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 text-sm">
-          On vient de t&apos;envoyer un code à 6 chiffres à <strong>{email}</strong>.
+          On vient de t&apos;envoyer un code à <strong>{email}</strong>.
         </div>
         <form onSubmit={handleVerify} className="space-y-3">
           <input
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
-            maxLength={6}
+            maxLength={10}
             required
             autoFocus
-            placeholder="000000"
+            placeholder="Code reçu par email"
             value={code}
-            onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))}
-            className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-4 py-3 text-center text-2xl font-bold tracking-[0.5em]"
+            onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, "").slice(0, 10))}
+            className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-4 py-3 text-center text-2xl font-bold tracking-[0.3em]"
           />
           {error && <p className="text-sm text-[var(--color-danger)]">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading || code.length !== 6}>
+          <Button type="submit" className="w-full" disabled={loading || code.length < 6}>
             {loading ? "Vérification..." : "Valider le code"}
           </Button>
         </form>

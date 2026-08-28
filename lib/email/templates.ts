@@ -15,14 +15,15 @@ function wrapper(bodyHtml: string): string {
 /**
  * Code de connexion — envoyé nous-mêmes via Resend (au lieu du mailer
  * intégré de Supabase) pour garder un email français et cohérent avec ce
- * que dit l'app ("un code à 6 chiffres"), sans dépendre du template par
- * défaut de Supabase (anglais, "Your sign-in link"). Le code lui-même
- * (`{{ .Token }}` côté Supabase) est généré par supabase.auth.admin.generateLink()
- * — voir app/api/auth/send-code/route.ts.
+ * que dit l'app, sans dépendre du template par défaut de Supabase (anglais,
+ * "Your sign-in link"). Le code lui-même (`{{ .Token }}` côté Supabase) est
+ * généré par supabase.auth.admin.generateLink() — voir
+ * app/api/auth/send-code/route.ts. Sa longueur dépend du réglage OTP du
+ * projet Supabase (pas forcément 6), d'où l'absence de nombre en dur ici.
  */
 export function otpCodeEmail(code: string, actionLink?: string) {
   return {
-    subject: "Ton code à 6 chiffres",
+    subject: "Ton code de connexion",
     html: wrapper(`
       <p>Entre ce code dans l'application pour te connecter :</p>
       <p style="font-size: 32px; font-weight: bold; letter-spacing: 6px; margin: 24px 0; text-align: center;">${code}</p>
