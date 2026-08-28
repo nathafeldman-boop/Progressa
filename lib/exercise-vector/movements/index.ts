@@ -8,3 +8,4 @@ export * from "./dribble";
 export * from "./kick";
 export * from "./goalkeeper";
 export * from "./hold";
+export * from "./mobility";
