@@ -121,13 +121,16 @@ export function VectorPlayer({
   };
 
   const shadowCx = (pose.footA.x + pose.footB.x) / 2;
+  const shadowCy = Math.max(pose.footA.y, pose.footB.y) + 14;
 
   const legA = solveLimb(pose.hip, pose.footA, THIGH, SHIN, KNEE_BEND);
   const legB = solveLimb(pose.hip, pose.footB, THIGH, SHIN, KNEE_BEND);
 
+  const [vbW, vbH] = movement.viewBox ?? [VIEWBOX_W, VIEWBOX_H];
+
   return (
-    <svg viewBox={`0 0 ${VIEWBOX_W} ${VIEWBOX_H}`} className={className} xmlns="http://www.w3.org/2000/svg">
-      <ellipse cx={shadowCx} cy={318} rx={44} ry={9} fill="rgba(16,23,36,.16)" />
+    <svg viewBox={`0 0 ${vbW} ${vbH}`} className={className} xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx={shadowCx} cy={shadowCy} rx={44} ry={9} fill="rgba(16,23,36,.16)" />
 
       {/* jambe arrière */}
       <Limb root={pose.hip} target={pose.footA} l1={THIGH} l2={SHIN} bend={KNEE_BEND} width={LIMB_W_LEG} color={kit.skinShade} outline={kit.outline} />
@@ -137,9 +140,22 @@ export function VectorPlayer({
       <Limb root={pose.shoulder} target={pose.handA} l1={UPPER_ARM} l2={FOREARM} bend={ELBOW_BEND} width={LIMB_W_ARM} color={kit.jersey} outline={kit.outline} />
       <circle cx={pose.handA.x} cy={pose.handA.y} r={7} fill={kit.skin} stroke={kit.outline} strokeWidth={2} />
 
-      {/* torse + short */}
+      {/* torse + short — l'ellipse du short pivote toujours pour rester
+          "en travers" du buste (court dans l'axe du corps, large en
+          travers), qu'on soit debout ou allongé. Sans ça elle s'étire dans
+          le sens du buste en position couchée et devient un blob confus au
+          milieu du torse plutôt qu'un short reconnaissable. */}
       <CapsuleLine from={pose.hip} to={pose.shoulder} width={44} color={kit.jersey} outline={kit.outline} />
-      <ellipse cx={pose.hip.x} cy={pose.hip.y} rx={26} ry={16} fill={kit.shorts} stroke={kit.outline} strokeWidth={2} />
+      <ellipse
+        cx={pose.hip.x}
+        cy={pose.hip.y}
+        rx={16}
+        ry={26}
+        fill={kit.shorts}
+        stroke={kit.outline}
+        strokeWidth={2}
+        transform={`rotate(${(Math.atan2(pose.shoulder.y - pose.hip.y, pose.shoulder.x - pose.hip.x) * 180) / Math.PI} ${pose.hip.x} ${pose.hip.y})`}
+      />
 
       {/* tête */}
       <g stroke={kit.outline} strokeWidth={2} strokeLinejoin="round">

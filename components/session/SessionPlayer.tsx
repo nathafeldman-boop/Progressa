@@ -18,8 +18,8 @@ import { EXERCISE_VIDEO } from "@/lib/exercises/exercise-media";
 import { EXERCISE_FRAMES } from "@/lib/exercises/exercise-frames";
 import { ExerciseFrameViewer } from "@/components/exercises/ExerciseFrameViewer";
 import { ExerciseFrameLoop } from "@/components/exercises/ExerciseFrameLoop";
-import { Exercise3DStage } from "@/components/exercises/Exercise3DStage";
-import { getExercise3DPreset } from "@/lib/exercises/exercise-3d";
+import { VectorExerciseStage } from "@/components/exercises/VectorExerciseStage";
+import { getExerciseVisual } from "@/lib/exercise-vector/catalog-map";
 import { EQUIPMENT_LABELS } from "@/lib/labels";
 
 /** Re-render chaque seconde tant que `active` — sert au minuteur en direct. */
@@ -715,12 +715,12 @@ function ActiveExerciseScreen({
   // existent pour cet exercice — la vidéo Pexels ne sert que de repli pour
   // les exercices sans pose IA (voir scripts/videos/).
   const frames = EXERCISE_FRAMES[block.exercise.slug];
-  // Animation 3D (silhouette CSS, mouvement continu) prioritaire sur la
-  // vidéo/le défilement de photos quand le mouvement de l'exercice a été
-  // validé pour un preset — voir lib/exercises/exercise-3d.ts. Ne joue
-  // QUE pendant la boucle d'exécution (ExerciseFrameViewer, l'explication
-  // pose-par-pose avant de démarrer, n'est jamais concerné).
-  const preset3D = getExercise3DPreset(block.exercise.slug);
+  // Silhouette vectorielle (IK, mouvement continu) prioritaire sur la
+  // vidéo/le défilement de photos quand un mouvement dédié existe pour cet
+  // exercice — voir lib/exercise-vector/catalog-map.ts. Ne joue QUE pendant
+  // la boucle d'exécution (ExerciseFrameViewer, l'explication pose-par-pose
+  // avant de démarrer, n'est jamais concerné).
+  const exerciseVisual = getExerciseVisual(block.exercise.slug);
   // Les plots ne sont jamais un vrai blocage: si le joueur a dit ne pas en
   // avoir aujourd'hui (check-in avant séance) et que cet exercice en
   // utilise, on propose une substitution plutôt que de le laisser deviner.
@@ -802,8 +802,8 @@ function ActiveExerciseScreen({
           </div>
         ) : (
           <div className="relative mx-auto mt-3 h-[62vh] min-h-[420px] w-full overflow-hidden rounded-[var(--radius-card)] bg-[var(--color-surface-alt)]">
-            {preset3D ? (
-              <Exercise3DStage preset={preset3D} />
+            {exerciseVisual?.movement ? (
+              <VectorExerciseStage visual={exerciseVisual} />
             ) : frames ? (
               <ExerciseFrameLoop sequence={frames} />
             ) : EXERCISE_VIDEO[block.exercise.slug] ? (

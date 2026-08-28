@@ -34,4 +34,14 @@ export interface Movement {
   /** true pour une tenue statique (gainage, étirement) — la boucle existe
    * seulement pour une respiration très légère, jamais un vrai mouvement. */
   isHold?: boolean;
+  /**
+   * [largeur, hauteur] du viewBox — par défaut le cadre portrait standard
+   * (voir constants.ts). Une pose allongée (planche, pompes, hip thrust)
+   * a besoin d'un corps étiré sur ~190-210px de large; le cadre portrait
+   * de 240px ne laisse quasiment aucune marge pour la tête et force soit
+   * un rognage soit une jambe trop pliée pour tenir dans le cadre. Un
+   * cadre plus large dédié à ces mouvements règle ça à la racine plutôt
+   * que de rogner sur la pose elle-même.
+   */
+  viewBox?: [number, number];
 }

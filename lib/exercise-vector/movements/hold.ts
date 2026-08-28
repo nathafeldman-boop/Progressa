@@ -46,7 +46,7 @@ const FLOOR_SEATED: Pose = {
   shoulder: { x: 140, y: 188 },
   handA: { x: 112, y: 244 },
   handB: { x: 168, y: 244 },
-  footA: { x: 240, y: 280 },
+  footA: { x: 216, y: 280 },
   footB: { x: 96, y: 268 },
 };
 export const FLOOR_SEATED_STRETCH: Movement = holdMovement(FLOOR_SEATED);
