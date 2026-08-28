@@ -39,14 +39,20 @@ export function holdMovement(pose: Pose, breatheSeconds = 3): Movement {
   };
 }
 
-/** Léger mouvement de respiration pour une tenue statique — jamais un vrai déplacement de membre. */
+/**
+ * Mouvement de respiration pour une tenue statique — jamais un vrai
+ * déplacement de membre, mais visible: sous ~4-5px la variation se perd
+ * dans l'échelle d'affichage réelle et la pose a l'air complètement figée
+ * (confondue avec un bug), même si la tenue elle-même est volontairement
+ * immobile (étirement, équilibre, gainage).
+ */
 function breathe(pose: Pose): Pose {
-  const dy = 2;
+  const dy = 7;
   return {
     hip: pose.hip,
     shoulder: { x: pose.shoulder.x, y: pose.shoulder.y - dy },
-    handA: pose.handA,
-    handB: pose.handB,
+    handA: { x: pose.handA.x, y: pose.handA.y - dy * 0.5 },
+    handB: { x: pose.handB.x, y: pose.handB.y - dy * 0.5 },
     footA: pose.footA,
     footB: pose.footB,
   };
