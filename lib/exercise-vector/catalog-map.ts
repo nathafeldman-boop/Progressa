@@ -47,7 +47,7 @@ export const EXERCISE_VISUALS: ExerciseVisual[] = [
   entry("conduite-balle-int-ext", "Conduite de balle intérieur/extérieur", M.BALL_DRIBBLE, "exact", { ball: true }),
   entry("jonglages-progressifs", "Jonglages progressifs", M.JUGGLING, "exact", { ball: true }),
   entry("passes-mur-controle", "Passes au mur + contrôle orienté", M.PASS_STRIKE, "exact", { ball: true }),
-  entry("feintes-corps-piquet", "Feintes de corps face à un piquet", M.BALL_DRIBBLE, "approx", { ball: true, cones: true }),
+  entry("feintes-corps-piquet", "Feintes de corps face à un piquet", M.BODY_FEINT, "exact", { ball: true, cones: true }),
   entry("frappe-enroulee-cible", "Frappe enroulée sur cible fixe", M.SHOT_STRIKE, "exact", { ball: true }),
   entry("frappe-puissance-surface", "Frappe en puissance depuis la surface", M.SHOT_STRIKE, "exact", { ball: true }),
   entry("frappe-volee-ballon-lance", "Frappe de volée sur ballon lancé", M.SHOT_STRIKE, "approx", { ball: true }),
@@ -66,7 +66,7 @@ export const EXERCISE_VISUALS: ExerciseVisual[] = [
   entry("passe-longue-diagonale", "Passe longue diagonale", M.PASS_STRIKE, "exact", { ball: true, cones: true }),
   entry("passe-cassee-entre-lignes", "Passe cassée entre les lignes", M.PASS_STRIKE, "exact", { ball: true, cones: true }),
   entry("remise-une-touche", "Remise en une touche", M.PASS_STRIKE, "approx", { ball: true, cones: true }),
-  entry("controle-orientation-corps", "Contrôle avec orientation du corps", M.BALL_DRIBBLE, "approx", { ball: true }),
+  entry("controle-orientation-corps", "Contrôle avec orientation du corps", M.ORIENTED_CONTROL, "exact", { ball: true }),
   entry("passe-exterieur-tranchante", "Passe extérieure tranchante", M.PASS_STRIKE, "exact", { ball: true, cones: true }),
   entry("tacle-glisse-controle", "Tacle glissé contrôlé", null, "missing"),
   entry("jockey-defensif-pas-chasses", "Position de jockey défensif", M.LATERAL_SHUFFLE, "exact"),
@@ -74,8 +74,8 @@ export const EXERCISE_VISUALS: ExerciseVisual[] = [
   entry("defense-1v1-face-dribbleur", "Défense en 1 contre 1 face à un dribbleur", M.LATERAL_SHUFFLE, "approx", { cones: true }),
   entry("interception-lecture-trajectoire", "Interception et lecture de trajectoire", M.LATERAL_SHUFFLE, "approx"),
   entry("repli-defensif-sprint", "Repli défensif sprinté", M.SPRINT, "exact"),
-  entry("debordement-exterieur-centre", "Débordement extérieur + centre", M.BALL_DRIBBLE, "approx", { ball: true, cones: true }),
-  entry("crochet-interieur-frappe", "Crochet vers l'intérieur + frappe", M.BALL_DRIBBLE, "approx", { ball: true, cones: true }),
+  entry("debordement-exterieur-centre", "Débordement extérieur + centre", M.BALL_CUT_OUTSIDE, "exact", { ball: true, cones: true }),
+  entry("crochet-interieur-frappe", "Crochet vers l'intérieur + frappe", M.BALL_CUT_INSIDE, "exact", { ball: true, cones: true }),
   entry("protection-ballon-dos-adversaire", "Protection de balle dos à l'adversaire", M.BALL_SHIELD, "exact", { ball: true }),
 
   // STRENGTH

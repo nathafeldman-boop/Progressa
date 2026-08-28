@@ -7,9 +7,9 @@ import type { Point } from "../ik";
  * Le ballon reste fixe (repère visuel de la zone de contact, pas une
  * simulation de trajectoire) — cohérent avec une boucle continue.
  */
-const PLANT: Point = { x: 100, y: 290 };
+export const PLANT: Point = { x: 100, y: 290 };
 
-const WINDUP: Pose = {
+export const WINDUP: Pose = {
   hip: { x: 115, y: 182 },
   shoulder: { x: 112, y: 102 },
   handA: { x: 150, y: 112 },
@@ -18,7 +18,7 @@ const WINDUP: Pose = {
   footB: { x: 72, y: 252 },
 };
 
-const CONTACT: Pose = {
+export const CONTACT: Pose = {
   hip: { x: 120, y: 180 },
   shoulder: { x: 122, y: 100 },
   handA: { x: 92, y: 150 },
@@ -27,7 +27,7 @@ const CONTACT: Pose = {
   footB: { x: 172, y: 268 },
 };
 
-const FOLLOW_THROUGH: Pose = {
+export const FOLLOW_THROUGH: Pose = {
   hip: { x: 122, y: 176 },
   shoulder: { x: 128, y: 96 },
   handA: { x: 80, y: 158 },
@@ -36,7 +36,7 @@ const FOLLOW_THROUGH: Pose = {
   footB: { x: 196, y: 226 },
 };
 
-const BALL: Point = { x: 152, y: 298 };
+export const BALL: Point = { x: 152, y: 298 };
 
 export const SHOT_STRIKE: Movement = {
   loopSeconds: 1.3,
@@ -49,9 +49,9 @@ export const SHOT_STRIKE: Movement = {
 };
 
 /** Passe: même schéma, geste plus court (moins d'amplitude, moins de recul). */
-const PASS_WINDUP: Pose = { ...WINDUP, footB: { x: 86, y: 268 }, handB: { x: 90, y: 158 } };
-const PASS_CONTACT: Pose = { ...CONTACT, footB: { x: 160, y: 276 } };
-const PASS_FOLLOW: Pose = { ...FOLLOW_THROUGH, footB: { x: 180, y: 250 }, handA: { x: 94, y: 164 } };
+export const PASS_WINDUP: Pose = { ...WINDUP, footB: { x: 86, y: 268 }, handB: { x: 90, y: 158 } };
+export const PASS_CONTACT: Pose = { ...CONTACT, footB: { x: 160, y: 276 } };
+export const PASS_FOLLOW: Pose = { ...FOLLOW_THROUGH, footB: { x: 180, y: 250 }, handA: { x: 94, y: 164 } };
 export const PASS_STRIKE: Movement = {
   loopSeconds: 1.1,
   keyframes: [

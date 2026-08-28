@@ -10,3 +10,4 @@ export * from "./goalkeeper";
 export * from "./hold";
 export * from "./mobility";
 export * from "./strength-technique";
+export * from "./ball-skills";
