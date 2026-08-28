@@ -15,6 +15,8 @@ const GENERATION_STEPS = [
   "Organisation de ta semaine...",
 ];
 
+const GENERATION_STEP_MS = 1400;
+
 /**
  * Étape charnière: le compte Clerk existe déjà (redirection après
  * inscription). On envoie le profil collecté en localStorage pour finaliser
@@ -25,13 +27,22 @@ const GENERATION_STEPS = [
 export default function OnboardingFinishPage() {
   const router = useRouter();
   const [stepIndex, setStepIndex] = useState(0);
+  // Incrémenté à chaque fois que le cycle des étapes repart de zéro — sert
+  // de clé React pour forcer le remontage (et donc le redémarrage) de
+  // l'animation CSS de la jauge active, plutôt que de rester bloquée à 100%
+  // une fois jouée une première fois.
+  const [cycle, setCycle] = useState(0);
   const [done, setDone] = useState(false);
 
   useEffect(() => {
     if (done) return;
     const timer = window.setInterval(() => {
-      setStepIndex((i) => (i + 1) % GENERATION_STEPS.length);
-    }, 1400);
+      setStepIndex((i) => {
+        const next = (i + 1) % GENERATION_STEPS.length;
+        if (next === 0) setCycle((c) => c + 1);
+        return next;
+      });
+    }, GENERATION_STEP_MS);
     return () => window.clearInterval(timer);
   }, [done]);
 
@@ -78,25 +89,37 @@ export default function OnboardingFinishPage() {
     <div className="relative min-h-screen">
       <OnboardingBackground />
       <div className="relative z-10 flex min-h-screen items-center justify-center p-4">
-        <Card className="flex flex-col items-center gap-4 p-8 text-center">
+        <Card className="flex w-full max-w-xs flex-col items-center gap-4 p-8 text-center">
           {done ? <BrianAvatar state="celebrating" size={88} /> : <BrianJuggling width={140} />}
           <div>
             <CardTitle>{done ? "C'est parti !" : "Coach Brian prépare ton programme"}</CardTitle>
-            <CardSubtitle className="mt-2 transition-opacity duration-300">
-              {done ? "Ton premier programme est prêt." : GENERATION_STEPS[stepIndex]}
-            </CardSubtitle>
+            {done && <CardSubtitle className="mt-2">Ton premier programme est prêt.</CardSubtitle>}
           </div>
           {!done && (
-            <div className="flex gap-1.5" aria-hidden="true">
-              {GENERATION_STEPS.map((_, i) => (
-                <span
-                  key={i}
-                  className="h-1.5 w-1.5 rounded-full transition-colors duration-300"
-                  style={{
-                    background: i === stepIndex ? "var(--color-primary)" : "var(--color-border)",
-                  }}
-                />
-              ))}
+            <div className="w-full space-y-3" aria-hidden="true">
+              {GENERATION_STEPS.map((label, i) => {
+                const state = i < stepIndex ? "done" : i === stepIndex ? "active" : "pending";
+                return (
+                  <div key={i} className="text-left">
+                    <p
+                      className="text-xs font-semibold transition-colors duration-300"
+                      style={{ color: state === "pending" ? "var(--color-text-muted)" : "var(--color-text)" }}
+                    >
+                      {label}
+                    </p>
+                    <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-border)]">
+                      <div
+                        key={state === "active" ? `active-${cycle}` : state}
+                        className={`h-full rounded-full bg-[var(--color-primary)] ${state === "active" ? "onboarding-gauge-fill" : ""}`}
+                        style={{
+                          width: state === "done" ? "100%" : state === "pending" ? "0%" : undefined,
+                          animationDuration: state === "active" ? `${GENERATION_STEP_MS}ms` : undefined,
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </Card>

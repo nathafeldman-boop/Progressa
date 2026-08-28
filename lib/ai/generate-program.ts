@@ -40,20 +40,30 @@ export interface GenerateProgramResult {
 
 type ModelCaller = (system: string, user: string) => Promise<{ text: string; refused: boolean }>;
 
+// Sans timeout explicite, un appel réseau qui stalle (Mistral lent/indispo,
+// connexion qui ne répond jamais) bloque toute la requête /api/onboarding/complete
+// indéfiniment côté serveur — le joueur reste sur l'écran "Coach Brian prépare
+// ton programme" plusieurs minutes au lieu de basculer sur le repli déterministe
+// en quelques secondes (voir generateWeeklyProgram: 2 tentatives + fallback).
+const MISTRAL_TIMEOUT_MS = 20_000;
+
 async function callMistral(system: string, user: string): Promise<{ text: string; refused: boolean }> {
   const client = getMistralClient();
   if (!client) return { text: "", refused: false };
 
-  const response = await client.chat.complete({
-    model: "mistral-large-latest",
-    maxTokens: 8000,
-    temperature: 0.7,
-    responseFormat: { type: "json_object" },
-    messages: [
-      { role: "system", content: system },
-      { role: "user", content: user },
-    ],
-  });
+  const response = await client.chat.complete(
+    {
+      model: "mistral-large-latest",
+      maxTokens: 8000,
+      temperature: 0.7,
+      responseFormat: { type: "json_object" },
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+    },
+    { timeoutMs: MISTRAL_TIMEOUT_MS }
+  );
 
   const text = response.choices?.[0]?.message?.content;
   return { text: typeof text === "string" ? text : "", refused: false };

@@ -136,6 +136,18 @@ button:not(:disabled):active,
 .page-spinner {
   animation: spin 0.7s linear infinite;
 }
+
+/* Jauge de progression (écran "Coach Brian prépare ton programme") — la
+   barre de l'étape active se remplit de 0 à 100%, une étape à la fois. */
+@keyframes onboarding-gauge-fill {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+.onboarding-gauge-fill {
+  animation-name: onboarding-gauge-fill;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
 @media (prefers-reduced-motion: reduce) {
   .page-spinner {
     animation-duration: 1.6s;
