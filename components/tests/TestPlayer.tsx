@@ -219,8 +219,8 @@ export function TestPlayer({
           ton vrai niveau
         </h1>
         <p className="mt-3 max-w-[19rem] text-sm leading-relaxed text-[var(--color-text-muted)]">
-          {eligible.length} épreuve{eligible.length > 1 ? "s" : ""} chronométrée{eligible.length > 1 ? "s" : ""}, une
-          par axe de ta carte. Progressa en déduit ta note générale et ton rang.
+          {eligible.length} axe{eligible.length > 1 ? "s" : ""}, un par épreuve — au chrono ou de mémoire.
+          Progressa en déduit ta note générale et ton rang.
         </p>
 
         <div className="mt-5 flex flex-col gap-2">
@@ -257,22 +257,22 @@ export function TestPlayer({
         <Button
           className="mt-4 w-full"
           onClick={() => {
-            trackClick(getOrCreateAnonId(), "test_started", "/tests");
-            setScreen("test");
-            resetTestState();
+            trackClick(getOrCreateAnonId(), "test_estimate_started", "/tests");
+            setScreen("estimateAlert");
           }}
         >
-          Lancer le test
+          Estimer mon niveau
         </Button>
         <Button
           variant="secondary"
           className="mt-2 w-full"
           onClick={() => {
-            trackClick(getOrCreateAnonId(), "test_estimate_started", "/tests");
-            setScreen("estimateAlert");
+            trackClick(getOrCreateAnonId(), "test_started", "/tests");
+            setScreen("test");
+            resetTestState();
           }}
         >
-          Pas d&apos;espace pour bouger ? Estimer mon niveau
+          Plutôt faire le test chronométré
         </Button>
         </div>
       </div>

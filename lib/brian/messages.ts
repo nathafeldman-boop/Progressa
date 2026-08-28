@@ -69,7 +69,7 @@ export function composeTestPrompt(): string {
 
 /** Écran d'intro du flow de tests plein écran — explique ce qu'on mesure et pourquoi, avant le premier exercice. */
 export function composeTestFlowIntro(firstName: string): string {
-  return `${firstName ? `${firstName}, on` : "On"} va mesurer tes vraies stats avec quelques tests simples, un par un. Fais chaque exercice à fond, je calcule ta carte à partir de tes résultats réels — pas d'approximation.`;
+  return `${firstName ? `${firstName}, on` : "On"} va mesurer tes vraies stats, un axe à la fois. Donne tes meilleures performances de mémoire si tu es pressé, ou passe le test chronométré si tu as la place — je calcule ta carte pareil dans les deux cas.`;
 }
 
 /** Explique pourquoi la carte affiche 0 partout avant le premier test — jamais laisser un 0 sans explication. */
