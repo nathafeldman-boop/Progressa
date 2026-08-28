@@ -1,4 +1,4 @@
-import type { Movement } from "../types";
+import type { Movement, Pose } from "../types";
 
 /**
  * Mobilité articulaire en cercles (cheville, hanche, épaule) — un vrai
@@ -107,6 +107,43 @@ export const BAND_ROW: Movement = {
  * part loin en avant et revient, jambes fixes — même charge/contrôle des
  * ischios que le vrai mouvement, juste debout plutôt qu'à genoux.
  */
+/** Jumping jacks: bras et jambes s'ouvrent ensemble puis se referment —
+ * repère cardio le plus reconnaissable pour un circuit combiné ou un HIIT
+ * léger, bien plus lisible qu'un jogging sur place. */
+export const JUMPING_JACKS: Movement = {
+  loopSeconds: 0.9,
+  keyframes: [
+    { t: 0, pose: { hip: { x: 120, y: 175 }, shoulder: { x: 120, y: 96 }, handA: { x: 110, y: 173 }, handB: { x: 130, y: 173 }, footA: { x: 110, y: 293 }, footB: { x: 130, y: 293 } } },
+    { t: 0.5, pose: { hip: { x: 120, y: 175 }, shoulder: { x: 120, y: 96 }, handA: { x: 85, y: 40 }, handB: { x: 155, y: 40 }, footA: { x: 90, y: 290 }, footB: { x: 150, y: 290 } } },
+    { t: 1, pose: { hip: { x: 120, y: 175 }, shoulder: { x: 120, y: 96 }, handA: { x: 110, y: 173 }, handB: { x: 130, y: 173 }, footA: { x: 110, y: 293 }, footB: { x: 130, y: 293 } } },
+  ],
+};
+
+const GROUND_VIEWBOX: [number, number] = [340, 260];
+
+/** Auto-massage quadriceps au rouleau: allongé face contre terre, appui
+ * avant-bras, le corps avance et recule sur le rouleau (offset constant
+ * mains<->épaule, donc portée de bras toujours identique). */
+function quadFoamRollPose(dx: number): Pose {
+  return {
+    shoulder: { x: 110 + dx, y: 140 },
+    hip: { x: 200 + dx, y: 150 },
+    handA: { x: 95 + dx, y: 190 },
+    handB: { x: 102 + dx, y: 192 },
+    footA: { x: 300, y: 158 },
+    footB: { x: 300, y: 172 },
+  };
+}
+export const QUAD_FOAM_ROLL: Movement = {
+  loopSeconds: 2,
+  viewBox: GROUND_VIEWBOX,
+  keyframes: [
+    { t: 0, pose: quadFoamRollPose(12) },
+    { t: 0.5, pose: quadFoamRollPose(-12) },
+    { t: 1, pose: quadFoamRollPose(12) },
+  ],
+};
+
 export const NORDIC_CURL_APPROX: Movement = {
   loopSeconds: 2.4,
   keyframes: [

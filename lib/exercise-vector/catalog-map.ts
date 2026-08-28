@@ -72,7 +72,7 @@ export const EXERCISE_VISUALS: ExerciseVisual[] = [
   entry("jockey-defensif-pas-chasses", "Position de jockey défensif", M.LATERAL_SHUFFLE, "exact"),
   entry("duel-aerien-defensif", "Duel aérien défensif", null, "missing"),
   entry("defense-1v1-face-dribbleur", "Défense en 1 contre 1 face à un dribbleur", M.LATERAL_SHUFFLE, "approx", { cones: true }),
-  entry("interception-lecture-trajectoire", "Interception et lecture de trajectoire", M.LATERAL_SHUFFLE, "generic"),
+  entry("interception-lecture-trajectoire", "Interception et lecture de trajectoire", M.LATERAL_SHUFFLE, "approx"),
   entry("repli-defensif-sprint", "Repli défensif sprinté", M.SPRINT, "exact"),
   entry("debordement-exterieur-centre", "Débordement extérieur + centre", M.BALL_DRIBBLE, "approx", { ball: true, cones: true }),
   entry("crochet-interieur-frappe", "Crochet vers l'intérieur + frappe", M.BALL_DRIBBLE, "approx", { ball: true, cones: true }),
@@ -113,15 +113,15 @@ export const EXERCISE_VISUALS: ExerciseVisual[] = [
   // CARDIO
   entry("fractionne-30-30", "Course fractionnée 30/30", M.SPRINT, "approx"),
   entry("footing-continu", "Footing continu", M.JOG, "exact"),
-  entry("circuit-cardio-combine", "Circuit cardio combiné", M.JOG, "generic"),
+  entry("circuit-cardio-combine", "Circuit cardio combiné", M.JUMPING_JACKS, "approx"),
   entry("navette-progressive", "Course navette progressive", M.SPRINT, "approx"),
   entry("gammes-cardio-ballon", "Gammes cardio ballon", M.BALL_DRIBBLE, "approx", { ball: true }),
-  entry("hiit-leger-20-10", "HIIT léger 20/10", M.JOG, "generic"),
-  entry("marche-active-accelerations", "Marche active + accélérations courtes", M.JOG, "generic"),
+  entry("hiit-leger-20-10", "HIIT léger 20/10", M.JUMPING_JACKS, "approx"),
+  entry("marche-active-accelerations", "Marche active + accélérations courtes", M.JOG, "approx"),
   entry("jonglage-cardio-deplacement", "Jonglage cardio en déplacement", M.JUGGLING, "approx", { ball: true }),
   entry("shuttle-run-match-simule", "Navettes simulant un rythme de match", M.SPRINT, "exact"),
   entry("footing-tempo-progressif", "Footing à tempo progressif", M.JOG, "exact"),
-  entry("circuit-ballon-cardio-technique", "Circuit combiné ballon + cardio", M.BALL_DRIBBLE, "generic", { ball: true }),
+  entry("circuit-ballon-cardio-technique", "Circuit combiné ballon + cardio", M.BALL_DRIBBLE, "approx", { ball: true }),
 
   // PREVENTION
   entry("mobilite-chevilles", "Mobilité chevilles", M.ANKLE_CIRCLES, "approx"),
@@ -136,7 +136,7 @@ export const EXERCISE_VISUALS: ExerciseVisual[] = [
   entry("automassage-mollets", "Auto-massage mollets", M.FLOOR_SEATED_STRETCH, "approx"),
   entry("mobilite-epaules-cercles", "Mobilité des épaules", M.SHOULDER_CIRCLES, "approx"),
   entry("etirement-fessiers-pigeon", "Étirement des fessiers (pigeon)", M.FLOOR_SEATED_STRETCH, "exact"),
-  entry("auto-massage-quadriceps", "Auto-massage quadriceps", M.FLOOR_SEATED_STRETCH, "generic"),
+  entry("auto-massage-quadriceps", "Auto-massage quadriceps", M.QUAD_FOAM_ROLL, "approx"),
   entry("gainage-oiseau-chien-stabilite", "Gainage oiseau-chien", M.BIRD_DOG, "exact"),
 
   // GOALKEEPER
