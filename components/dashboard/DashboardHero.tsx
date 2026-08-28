@@ -24,6 +24,7 @@ interface HeroCardStats {
  */
 export function DashboardHero({
   todaySession,
+  tomorrowSession,
   cardStats,
   streakCount,
   hasProgram,
@@ -31,6 +32,7 @@ export function DashboardHero({
   isMatchDayToday,
 }: {
   todaySession: HeroSession | null;
+  tomorrowSession: HeroSession | null;
   cardStats: HeroCardStats | null;
   streakCount: number;
   hasProgram: boolean;
@@ -39,6 +41,10 @@ export function DashboardHero({
 }) {
   const progress = cardStats ? nextRankProgress(cardStats.overall) : null;
   const alreadyDone = todaySession?.status === "COMPLETED";
+  // Séance du jour déjà faite: on met en avant un aperçu de celle de
+  // demain plutôt que de laisser "revoir ma séance" comme seule
+  // prochaine étape — c'est celle-ci qui doit donner envie de revenir.
+  const showTomorrowPreview = alreadyDone && !!tomorrowSession;
 
   return (
     <div
@@ -88,16 +94,42 @@ export function DashboardHero({
               {todaySession.isMatchAdjacent && <Chip className="border-white/20 bg-white/10 text-white">🩹 Séance légère</Chip>}
               {alreadyDone && <Chip className="border-white/20 bg-white/10 text-white">✅ Terminée</Chip>}
             </div>
+
+            {showTomorrowPreview && (
+              <div className="mt-3 rounded-xl border border-white/15 bg-white/10 p-3">
+                <p className="text-[0.65rem] font-extrabold uppercase tracking-[0.2em] text-white/60">Demain</p>
+                <p className="mt-0.5 font-display text-base font-extrabold uppercase leading-tight">
+                  {tomorrowSession!.title}
+                </p>
+              </div>
+            )}
           </>
         )}
 
-        {todaySession && (
-          <Link
-            href={`/seance/${todaySession.id}`}
-            className="cta-primary mt-4 flex items-center justify-center rounded-[var(--radius-control)] px-5 py-3.5 font-display text-base font-extrabold uppercase tracking-wide"
-          >
-            {alreadyDone ? "Revoir ma séance" : "Commencer ma séance"}
-          </Link>
+        {todaySession && showTomorrowPreview ? (
+          <>
+            <Link
+              href={`/seance/${tomorrowSession!.id}`}
+              className="cta-primary mt-4 flex items-center justify-center rounded-[var(--radius-control)] px-5 py-3.5 font-display text-base font-extrabold uppercase tracking-wide"
+            >
+              Découvrir la séance de demain
+            </Link>
+            <Link
+              href={`/seance/${todaySession.id}`}
+              className="mt-2 block text-center text-xs font-semibold text-white/70 underline"
+            >
+              Revoir ma séance d&apos;aujourd&apos;hui
+            </Link>
+          </>
+        ) : (
+          todaySession && (
+            <Link
+              href={`/seance/${todaySession.id}`}
+              className="cta-primary mt-4 flex items-center justify-center rounded-[var(--radius-control)] px-5 py-3.5 font-display text-base font-extrabold uppercase tracking-wide"
+            >
+              {alreadyDone ? "Revoir ma séance" : "Commencer ma séance"}
+            </Link>
+          )
         )}
 
         {cardStats && (

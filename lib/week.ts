@@ -13,3 +13,8 @@ const WEEKDAY_ORDER = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "
 export function todayAsWeekday(referenceDate: Date = new Date()): (typeof WEEKDAY_ORDER)[number] {
   return WEEKDAY_ORDER[(referenceDate.getDay() + 6) % 7];
 }
+
+/** Jour de la semaine du lendemain de referenceDate. */
+export function tomorrowAsWeekday(referenceDate: Date = new Date()): (typeof WEEKDAY_ORDER)[number] {
+  return todayAsWeekday(new Date(referenceDate.getTime() + 24 * 60 * 60 * 1000));
+}

@@ -16,7 +16,7 @@ import { POSITION_LABELS } from "@/lib/labels";
 import { getAgeCategory } from "@/lib/age-category";
 import { ensureTodayObjectives } from "@/lib/brian/daily-objectives";
 import { RankCardBadge } from "@/components/card/RankCardBadge";
-import { todayAsWeekday } from "@/lib/week";
+import { todayAsWeekday, tomorrowAsWeekday } from "@/lib/week";
 
 function sevenDaysAgo(): Date {
   return new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -70,6 +70,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const cardStats = playerCard?.stats as { overall: number; rankTier?: string; rankKey?: string } | undefined;
   const todaySession = program?.sessions.find((s) => s.dayOfWeek === todayAsWeekday()) ?? null;
   const isMatchDayToday = !!profile.matchDay && profile.matchDay === todayAsWeekday();
+  // Séance du jour déjà faite: on ramène vers un aperçu de celle de demain
+  // plutôt que de laisser le joueur sans prochaine étape claire. Peut être
+  // absente (repos demain, ou demain tombe sur la semaine suivante pas
+  // encore générée) — dans ce cas on retombe sur le comportement normal.
+  const tomorrowSession = program?.sessions.find((s) => s.dayOfWeek === tomorrowAsWeekday()) ?? null;
 
   return (
     <div className="mx-auto max-w-md space-y-4 p-4">
@@ -85,6 +90,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
       <DashboardHero
         todaySession={todaySession}
+        tomorrowSession={tomorrowSession}
         cardStats={cardStats ? { overall: cardStats.overall, rankTier: cardStats.rankTier } : null}
         streakCount={streak?.currentStreak ?? 0}
         hasProgram={!!program}
