@@ -7,16 +7,20 @@ import { InstallAppBanner } from "@/components/pwa/InstallAppBanner";
 import { APP_NAME } from "@/lib/app-config";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { resolveNavSessionId } from "@/lib/programs/nav-session";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentInternalUser();
-  const latestBrianMessage = user
-    ? await prisma.brianMessage.findFirst({
-        where: { userId: user.id, fromPlayer: false },
-        orderBy: { createdAt: "desc" },
-        select: { createdAt: true },
-      })
-    : null;
+  const [latestBrianMessage, navSessionId] = await Promise.all([
+    user
+      ? prisma.brianMessage.findFirst({
+          where: { userId: user.id, fromPlayer: false },
+          orderBy: { createdAt: "desc" },
+          select: { createdAt: true },
+        })
+      : null,
+    user ? resolveNavSessionId(user.id) : null,
+  ]);
 
   return (
     <div className="app-pitch-bg flex min-h-screen flex-col">
@@ -32,7 +36,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
       <BrianFab latestBrianMessageAt={latestBrianMessage?.createdAt.toISOString() ?? null} />
       <InstallAppBanner />
-      <BottomNav />
+      <BottomNav sessionHref={navSessionId ? `/seance/${navSessionId}` : "/dashboard"} />
     </div>
   );
 }

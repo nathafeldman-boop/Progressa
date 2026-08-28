@@ -97,7 +97,7 @@ function TabLink({ href, label, icon, active }: TabDef & { active: boolean }) {
  * n'est plus un onglet — il vit sur le BrianFab (badge nouveau message
  * porté par ce composant maintenant) et la carte message du dashboard.
  */
-export function BottomNav() {
+export function BottomNav({ sessionHref }: { sessionHref: string }) {
   const pathname = usePathname();
   const sessionActive = isActive(pathname, "/seance");
 
@@ -107,10 +107,11 @@ export function BottomNav() {
         <TabLink key={tab.href} {...tab} active={isActive(pathname, tab.href)} />
       ))}
 
-      {/* Pas de route /seance index (seulement /seance/[sessionId]) — la
-          résolution "quelle séance aujourd'hui" reste centralisée dans
-          app/(app)/dashboard/page.tsx, jamais dupliquée ici. */}
-      <Link href="/dashboard" className="flex flex-1 flex-col items-center gap-[5px]" aria-label="Séance du jour">
+      {/* Un seul tap direct vers la bonne séance (résolue côté serveur par
+          resolveNavSessionId dans le layout, jamais dupliqué ici): celle du
+          jour si pas encore faite, sinon un aperçu de celle de demain,
+          repli sur /dashboard si aucun programme n'existe encore. */}
+      <Link href={sessionHref} className="flex flex-1 flex-col items-center gap-[5px]" aria-label="Séance du jour">
         <span
           className="-mt-7 flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-[var(--color-primary)]"
           style={{ boxShadow: "0 10px 24px -8px rgba(26,163,80,.6)" }}
