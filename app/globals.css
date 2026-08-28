@@ -210,27 +210,16 @@ button:not(:disabled):active,
   background-attachment: fixed, fixed, fixed;
 }
 
-/* Bouton CTA "Mission du jour": volumétrie + lueur verte pulsée, pensé
-   pour se démarquer nettement des boutons secondaires de l'app. */
-@keyframes cta-glow-pulse {
-  0%, 100% {
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 -3px 0 rgba(0, 0, 0, 0.14) inset,
-      0 10px 26px -8px rgba(6, 30, 16, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
-  }
-  50% {
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 -3px 0 rgba(0, 0, 0, 0.14) inset,
-      0 12px 34px -6px rgba(6, 30, 16, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.14);
-  }
-}
+/* Bouton CTA "Mission du jour": blanc sur le dégradé vert du bloc pour un
+   contraste net (design_handoff_progressa_ui, écran Accueil). */
 .cta-primary {
-  background: linear-gradient(180deg, #1fbf63, #159650 55%, #0e7a3c);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25) inset, 0 -3px 0 rgba(0, 0, 0, 0.16) inset, 0 12px 22px -8px rgba(6, 30, 16, 0.7);
-  animation: cta-glow-pulse 2.6s ease-in-out infinite;
+  background: #fff;
+  color: #0e7a3c;
+  box-shadow: 0 12px 26px -10px rgba(0, 0, 0, 0.5);
+  transition: transform 0.15s;
 }
-@media (prefers-reduced-motion: reduce) {
-  .cta-primary {
-    animation: none;
-  }
+.cta-primary:active {
+  transform: scale(0.96);
 }
 
 /* Particules discrètes flottant dans le bloc "Mission du jour". */

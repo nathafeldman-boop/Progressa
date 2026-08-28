@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { getCurrentWeeklyProgram } from "@/lib/programs/get-current-program";
 import { isPremiumActive } from "@/lib/subscription";
+import { BrianAvatar } from "@/components/brian/BrianAvatar";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
 import { Button } from "@/components/ui/Button";
@@ -16,6 +17,10 @@ import { getAgeCategory } from "@/lib/age-category";
 import { ensureTodayObjectives } from "@/lib/brian/daily-objectives";
 import { RankCardBadge } from "@/components/card/RankCardBadge";
 import { todayAsWeekday } from "@/lib/week";
+
+function sevenDaysAgo(): Date {
+  return new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+}
 
 export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ erreur?: string }> }) {
   const { erreur } = await searchParams;
@@ -42,12 +47,20 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   // qui l'amenait jusqu'au paywall sans jamais avoir vu la valeur du produit.
   if (!profile) redirect("/onboarding");
 
-  const [subscription, streak, program, playerCard, objectives] = await Promise.all([
+  const [subscription, streak, program, playerCard, objectives, latestBrianMessage, completedThisWeek] = await Promise.all([
     prisma.subscription.findUnique({ where: { userId: user.id } }),
     prisma.streakState.findUnique({ where: { userId: user.id } }),
     getCurrentWeeklyProgram(user.id),
     prisma.playerCard.findUnique({ where: { userId: user.id } }),
     ensureTodayObjectives(user.id),
+    prisma.brianMessage.findFirst({
+      where: { userId: user.id, fromPlayer: false },
+      orderBy: { createdAt: "desc" },
+      select: { text: true },
+    }),
+    prisma.programSession.count({
+      where: { status: "COMPLETED", completedAt: { gte: sevenDaysAgo() }, weeklyProgram: { userId: user.id } },
+    }),
   ]);
 
   const premium = isPremiumActive(subscription);
@@ -78,6 +91,35 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         firstName={user.firstName}
         isMatchDayToday={isMatchDayToday}
       />
+
+      {latestBrianMessage && (
+        <Link
+          href="/coach"
+          className="flex items-center gap-2.5 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface-alt)] p-3.5"
+        >
+          <BrianAvatar state="happy" size={42} className="shrink-0" />
+          <p className="flex-1 text-sm leading-snug text-[var(--color-text)]">
+            <span className="font-bold">Coach Brian</span> — {latestBrianMessage.text}
+          </p>
+        </Link>
+      )}
+
+      <div className="grid grid-cols-3 gap-2">
+        <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 shadow-[var(--shadow-card)]">
+          <p className="font-display text-2xl font-extrabold leading-none text-[var(--color-text)]">{completedThisWeek}</p>
+          <p className="mt-1.5 text-[0.65rem] text-[var(--color-text-muted)]">Séances cette semaine</p>
+        </div>
+        <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 shadow-[var(--shadow-card)]">
+          <p className="font-display text-2xl font-extrabold leading-none text-[var(--color-text)]">{streak?.longestStreak ?? 0}</p>
+          <p className="mt-1.5 text-[0.65rem] text-[var(--color-text-muted)]">Meilleure série</p>
+        </div>
+        <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 shadow-[var(--shadow-card)]">
+          <p className="font-display text-2xl font-extrabold leading-none text-[var(--color-text)]">
+            {objectives.filter((o) => o.done).length}/{objectives.length}
+          </p>
+          <p className="mt-1.5 text-[0.65rem] text-[var(--color-text-muted)]">Objectifs du jour</p>
+        </div>
+      </div>
 
       <div className="flex items-center justify-between px-1">
         <div className="flex gap-4">

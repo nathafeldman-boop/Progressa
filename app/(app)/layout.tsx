@@ -2,21 +2,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { BrianFab } from "@/components/brian/BrianFab";
-import { BrianAvatar, type BrianState } from "@/components/brian/BrianAvatar";
-import { CoachNavLink } from "@/components/coach/CoachNavLink";
+import { BottomNav } from "@/components/nav/BottomNav";
 import { InstallAppBanner } from "@/components/pwa/InstallAppBanner";
 import { APP_NAME } from "@/lib/app-config";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
-/**
- * Une pose Coach Brian fixe par onglet (jamais d'emoji, jamais aléatoire —
- * toujours la même pose pour un même onglet).
- */
-const NAV_ITEMS: { href: string; label: string; brianState: BrianState }[] = [
-  { href: "/progression", label: "Progression", brianState: "confident" },
-  { href: "/parametres", label: "Réglages", brianState: "thinking" },
-];
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentInternalUser();
@@ -40,29 +30,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
       <main className="flex-1 pb-20">{children}</main>
 
-      <BrianFab />
+      <BrianFab latestBrianMessageAt={latestBrianMessage?.createdAt.toISOString() ?? null} />
       <InstallAppBanner />
-
-      <nav className="fixed inset-x-0 bottom-0 z-10 flex justify-around border-t border-[var(--color-border)] bg-[var(--color-surface)] py-2 [padding-bottom:env(safe-area-inset-bottom)]">
-        <Link
-          href="/dashboard"
-          className="flex flex-col items-center gap-0.5 px-2 py-1 text-xs font-semibold text-[var(--color-text-muted)]"
-        >
-          <BrianAvatar state="motivated" size={22} />
-          Séances
-        </Link>
-        <CoachNavLink latestBrianMessageAt={latestBrianMessage?.createdAt.toISOString() ?? null} />
-        {NAV_ITEMS.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="flex flex-col items-center gap-0.5 px-2 py-1 text-xs font-semibold text-[var(--color-text-muted)]"
-          >
-            <BrianAvatar state={item.brianState} size={22} />
-            {item.label}
-          </Link>
-        ))}
-      </nav>
+      <BottomNav />
     </div>
   );
 }

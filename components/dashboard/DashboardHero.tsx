@@ -94,9 +94,8 @@ export function DashboardHero({
         {todaySession && (
           <Link
             href={`/seance/${todaySession.id}`}
-            className="cta-primary mt-4 flex items-center justify-center gap-2 rounded-[var(--radius-control)] px-5 py-3.5 font-display text-base font-extrabold uppercase tracking-wide text-white"
+            className="cta-primary mt-4 flex items-center justify-center rounded-[var(--radius-control)] px-5 py-3.5 font-display text-base font-extrabold uppercase tracking-wide"
           >
-            <span aria-hidden>⚡</span>
             {alreadyDone ? "Revoir ma séance" : "Commencer ma séance"}
           </Link>
         )}
