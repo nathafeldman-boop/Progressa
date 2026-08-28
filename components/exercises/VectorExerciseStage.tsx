@@ -10,7 +10,7 @@ import type { ExerciseVisual } from "@/lib/exercise-vector/catalog-map";
 export function VectorExerciseStage({ visual }: { visual: ExerciseVisual }) {
   if (!visual.movement) return null;
   return (
-    <div className="relative flex h-full w-full items-center justify-center bg-[#0e1a12]">
+    <div className="exercise-stage-pitch relative flex h-full w-full items-center justify-center">
       <VectorPlayer movement={visual.movement} kit={visual.kit} showBall={visual.showBall} className="h-full w-full" />
       <div className="absolute left-3 top-3 flex items-center gap-2 rounded-full bg-black/40 py-1 pl-1 pr-3 backdrop-blur-sm">
         <BrianAvatar state="encouraging" size={32} className="ring-2 ring-white/70" />

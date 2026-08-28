@@ -137,6 +137,19 @@ button:not(:disabled):active,
   animation: spin 0.7s linear infinite;
 }
 
+/* Fond "mini pelouse" pour la scène d'exercice (silhouette vectorielle en
+   boucle) — un aplat uni se lisait comme un fond vide/pas soigné. Halo
+   central façon projecteur de stade (le personnage se détache mieux) +
+   bandes de tonte très discrètes, jamais assez marquées pour distraire du
+   personnage (contrairement au fond des anciennes vidéos Pexels, jugé
+   "trop bruyant"). */
+.exercise-stage-pitch {
+  background-color: #0e1a12;
+  background-image:
+    radial-gradient(60% 55% at 50% 38%, rgba(61, 220, 127, 0.16), transparent 72%),
+    repeating-linear-gradient(100deg, rgba(255, 255, 255, 0.028) 0px, rgba(255, 255, 255, 0.028) 34px, transparent 34px, transparent 68px);
+}
+
 /* Jauge de progression (écran "Coach Brian prépare ton programme") — la
    barre de l'étape active se remplit de 0 à 100%, une étape à la fois. */
 @keyframes onboarding-gauge-fill {
