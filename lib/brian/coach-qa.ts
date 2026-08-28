@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { STAT_AXES, STAT_LABELS } from "./types";
-import { computeOverall, rankTierForOverall, RANK_TIERS } from "./stats-engine";
+import { rankTierForOverall, RANK_TIERS } from "./stats-engine";
+import { getPlayerCardStats } from "@/lib/player-card";
 
 /**
  * Questions rapides du Coach: pas de conversation libre (aucun LLM branché
@@ -26,21 +27,17 @@ function axisFieldValue(stats: Record<string, number>, axis: (typeof STAT_AXES)[
 }
 
 export async function answerQuickQuestion(userId: string, questionKey: string): Promise<string> {
-  const statState = await prisma.playerStatState.findUnique({ where: { userId } });
+  // Lue depuis PlayerCard (même valeur que celle affichée sur la carte),
+  // jamais recalculée à partir des stats brutes seules — voir coach-chat.ts.
+  const cardStats = await getPlayerCardStats(userId);
 
-  if (!statState) {
+  if (!cardStats) {
     return "Tu n'as pas encore de stats enregistrées — termine ta première séance et reviens me poser la question, j'aurai de quoi te répondre.";
   }
 
-  const values: Record<string, number> = {
-    VITESSE: statState.vitesse,
-    TIR: statState.tir,
-    PASSE: statState.passe,
-    CONDUITE: statState.conduite,
-    DEFENSE: statState.defense,
-    PHYSIQUE: statState.physique,
-  };
-  const overall = computeOverall(values as never);
+  const values: Record<string, number> = {};
+  for (const axis of STAT_AXES) values[axis] = cardStats.skills[STAT_LABELS[axis]] ?? 0;
+  const overall = cardStats.overall;
 
   switch (questionKey) {
     case "progression": {

@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { getMistralClient } from "@/lib/ai/mistral-client";
 import { STAT_AXES, STAT_LABELS } from "./types";
-import { computeOverall, rankTierForOverall } from "./stats-engine";
+import { rankTierForOverall } from "./stats-engine";
 import { POSITION_LABELS } from "@/lib/labels";
+import { getPlayerCardStats } from "@/lib/player-card";
 
 const FALLBACK_NO_KEY =
   "La discussion libre avec Coach Brian n'est pas encore activée sur ce serveur. En attendant, utilise les questions rapides ci-dessous — j'ai de vraies réponses calculées sur tes données.";
@@ -21,9 +22,9 @@ export interface CoachChatTurn {
  * en connaissant vraiment l'historique et les stats de l'utilisateur.
  */
 async function buildPlayerContext(userId: string): Promise<string> {
-  const [profile, statState, streak, completedTotal, completedThisWeek] = await Promise.all([
+  const [profile, cardStats, streak, completedTotal, completedThisWeek] = await Promise.all([
     prisma.playerProfile.findUnique({ where: { userId } }),
-    prisma.playerStatState.findUnique({ where: { userId } }),
+    getPlayerCardStats(userId),
     prisma.streakState.findUnique({ where: { userId } }),
     prisma.programSession.count({ where: { status: "COMPLETED", weeklyProgram: { userId } } }),
     prisma.programSession.count({
@@ -40,20 +41,16 @@ async function buildPlayerContext(userId: string): Promise<string> {
     lines.push(`Poste: ${POSITION_LABELS[profile.position]}. Niveau: ${profile.levelLabel}. Pays: ${profile.country}.`);
   }
 
-  if (statState) {
-    const values: Record<string, number> = {
-      VITESSE: statState.vitesse,
-      TIR: statState.tir,
-      PASSE: statState.passe,
-      CONDUITE: statState.conduite,
-      DEFENSE: statState.defense,
-      PHYSIQUE: statState.physique,
-    };
-    const overall = computeOverall(values as never);
-    const tier = rankTierForOverall(overall);
+  // Lue depuis PlayerCard (même valeur que celle affichée sur la carte du
+  // joueur), jamais recalculée à partir des stats brutes seules — sinon
+  // Brian annonce une note différente de celle que le joueur voit à l'écran.
+  if (cardStats) {
+    const values: Record<string, number> = {};
+    for (const axis of STAT_AXES) values[axis] = cardStats.skills[STAT_LABELS[axis]] ?? 0;
+    const tier = rankTierForOverall(cardStats.overall);
     const statsLine = STAT_AXES.map((axis) => `${STAT_LABELS[axis]}: ${values[axis]}`).join(", ");
     const sorted = [...STAT_AXES].sort((a, b) => values[b] - values[a]);
-    lines.push(`Note générale: ${overall}/100, rang ${tier.label}.`);
+    lines.push(`Note générale: ${cardStats.overall}/100, rang ${tier.label}.`);
     lines.push(`Stats détaillées — ${statsLine}.`);
     lines.push(`Point fort: ${STAT_LABELS[sorted[0]]}. Point faible: ${STAT_LABELS[sorted[sorted.length - 1]]}.`);
   } else {

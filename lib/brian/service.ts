@@ -1,8 +1,8 @@
 import type { BlockStatus, FeltDifficulty, StatAxis } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { syncPlayerCard } from "@/lib/player-card";
+import { buildUnifiedPlayerCardStats, syncPlayerCard } from "@/lib/player-card";
 import { STAT_AXES, STAT_LABELS, type StatAxisValues } from "./types";
-import { applyDeltas, computeBlockStatDeltas, computeOverall, expectedDurationSeconds, rankTierForOverall } from "./stats-engine";
+import { applyDeltas, computeBlockStatDeltas, expectedDurationSeconds, rankTierForOverall } from "./stats-engine";
 import { composeExerciseMessage, composeSessionSummaryMessage, pickExerciseCategory } from "./messages";
 import { markObjectiveDone } from "./daily-objectives";
 
@@ -195,10 +195,19 @@ export async function recordBlockTelemetry(input: {
   }
   if (isPersonalRecord) await markObjectiveDone(input.userId, "BEAT_RECORD");
 
-  await syncPlayerCard(input.userId);
+  // Réutilise la note déjà mélangée (stats + tests) que syncPlayerCard vient
+  // de calculer et persister — un recalcul séparé à partir de `updated`
+  // (stats brutes seules) donnerait un chiffre différent de celui affiché
+  // sur la carte, exactement le bug qu'on a eu côté Coach Brian (chat).
+  const cardStats = await syncPlayerCard(input.userId);
 
-  const overall = computeOverall(updated);
-  return { deltas, isPersonalRecord, brianMessage: { category, text }, overall, rankTier: rankTierForOverall(overall).label };
+  return {
+    deltas,
+    isPersonalRecord,
+    brianMessage: { category, text },
+    overall: cardStats.overall,
+    rankTier: cardStats.rankTier ?? rankTierForOverall(cardStats.overall).label,
+  };
 }
 
 function toFieldObject(values: StatAxisValues) {
@@ -235,10 +244,11 @@ export interface SessionSummaryResult {
  * séparé à maintenir.
  */
 export async function recordSessionSummary(input: { userId: string; sessionId: string }): Promise<SessionSummaryResult> {
-  const [blocks, deltaRows, currentState] = await Promise.all([
+  const [blocks, deltaRows, currentState, evaluationResults] = await Promise.all([
     prisma.sessionBlock.findMany({ where: { programSessionId: input.sessionId } }),
     prisma.statDelta.findMany({ where: { userId: input.userId, sessionId: input.sessionId } }),
     prisma.playerStatState.findUnique({ where: { userId: input.userId } }),
+    prisma.evaluationResult.findMany({ where: { userId: input.userId } }),
   ]);
 
   const totalDeltas: Partial<Record<StatAxis, number>> = {};
@@ -276,8 +286,12 @@ export async function recordSessionSummary(input: { userId: string; sessionId: s
     const delta = totalDeltas[axis];
     if (delta) beforeValues[axis] = Math.max(0, beforeValues[axis] - delta);
   }
-  const overallBefore = computeOverall(beforeValues);
-  const overallAfter = computeOverall(afterValues);
+  // Mélangées avec les mêmes résultats de tests des deux côtés (une séance
+  // ne modifie jamais evaluationResults) pour rester comparables au chiffre
+  // déjà persisté sur PlayerCard par syncPlayerCard — sans ça "après" ici
+  // afficherait un nombre différent de celui de la carte juste en dessous.
+  const overallBefore = buildUnifiedPlayerCardStats(beforeValues, evaluationResults).overall;
+  const overallAfter = buildUnifiedPlayerCardStats(afterValues, evaluationResults).overall;
   const tierBefore = rankTierForOverall(overallBefore);
   const tierAfter = rankTierForOverall(overallAfter);
 

@@ -106,13 +106,13 @@ function statStateToAxisValues(statState: PlayerStatState | null): StatAxisValue
  * (un sprint chronométré en dit plus sur l'axe Vitesse qu'une estimation
  * dérivée des séances seules). C'est cette fonction, et elle seule, qui
  * doit alimenter PlayerCard — jamais une valeur inventée.
+ *
+ * Prend directement des StatAxisValues (pas un PlayerStatState) pour rester
+ * utilisable aussi sur des valeurs hypothétiques (ex: l'état "avant" d'une
+ * séance, reconstruit en soustrayant les deltas du jour) — voir
+ * recordSessionSummary dans brian/service.ts.
  */
-export function buildUnifiedPlayerCardStats(
-  statState: PlayerStatState | null,
-  evaluationResults: EvaluationResult[]
-): PlayerCardStats {
-  const base = statStateToAxisValues(statState);
-
+export function buildUnifiedPlayerCardStats(base: StatAxisValues, evaluationResults: EvaluationResult[]): PlayerCardStats {
   const bestByType = new Map<EvaluationTestType, EvaluationResult>();
   for (const result of evaluationResults) {
     const current = bestByType.get(result.testType);
@@ -154,7 +154,7 @@ export async function syncPlayerCard(userId: string): Promise<PlayerCardStats> {
     prisma.playerCard.findUnique({ where: { userId } }),
   ]);
 
-  const stats = buildUnifiedPlayerCardStats(statState, evaluationResults);
+  const stats = buildUnifiedPlayerCardStats(statStateToAxisValues(statState), evaluationResults);
   const statsJson = JSON.parse(JSON.stringify(stats));
 
   await prisma.playerCard.upsert({
@@ -164,4 +164,18 @@ export async function syncPlayerCard(userId: string): Promise<PlayerCardStats> {
   });
 
   return stats;
+}
+
+/**
+ * Lecture seule de la carte déjà persistée — jamais de recalcul ici. C'est
+ * la seule façon correcte, pour tout code hors du rendu de la carte
+ * elle-même (ex: le contexte envoyé à Coach Brian), d'obtenir la note
+ * générale d'un joueur: sans ça, un appel séparé à computeOverall() sur des
+ * données brutes non mélangées aux tests d'évaluation finit par afficher un
+ * chiffre différent de celui de la carte réelle. Retourne null si le joueur
+ * n'a encore jamais eu de carte synchronisée (aucun test ni séance).
+ */
+export async function getPlayerCardStats(userId: string): Promise<PlayerCardStats | null> {
+  const card = await prisma.playerCard.findUnique({ where: { userId } });
+  return card ? (card.stats as unknown as PlayerCardStats) : null;
 }
