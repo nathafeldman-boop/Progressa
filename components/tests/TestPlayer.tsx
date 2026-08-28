@@ -163,8 +163,13 @@ export function TestPlayer({
     }
   }
 
+  // Abandonner en cours de route ne doit pas priver le joueur du moment
+  // "révélation de carte" s'il a déjà validé au moins une épreuve réelle
+  // cette session — sinon il atterrit directement sur le paywall sans avoir
+  // jamais vu sa carte, ce qui casse le déclic émotionnel du funnel.
   function quit() {
-    router.push("/dashboard");
+    const hasAnyResult = Object.keys(sessionScores).length > 0;
+    router.push(isFirstTime && hasAnyResult ? "/onboarding/carte" : "/dashboard");
   }
 
   // Envoie chaque épreuve saisie sur le même endpoint que le parcours
@@ -259,16 +264,16 @@ export function TestPlayer({
         >
           Lancer le test
         </Button>
-        <button
-          type="button"
-          className="mt-3 text-center text-sm font-semibold text-[var(--color-text-muted)] underline"
+        <Button
+          variant="secondary"
+          className="mt-2 w-full"
           onClick={() => {
             trackClick(getOrCreateAnonId(), "test_estimate_started", "/tests");
             setScreen("estimateAlert");
           }}
         >
-          Pas d&apos;espace pour bouger ? Estimer mon niveau à la place
-        </button>
+          Pas d&apos;espace pour bouger ? Estimer mon niveau
+        </Button>
         </div>
       </div>
     );
