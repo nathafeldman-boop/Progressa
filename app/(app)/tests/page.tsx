@@ -4,6 +4,8 @@ import { TEST_PROTOCOLS, nextEligibleDate } from "@/lib/evaluation-tests";
 import { isInFuture } from "@/lib/time";
 import { TestPlayer, type TestFlowEntry } from "@/components/tests/TestPlayer";
 import { EvaluationTestType } from "@prisma/client";
+import { TEST_AXIS } from "@/lib/player-card";
+import { STAT_SHORT_LABELS } from "@/lib/brian/types";
 
 export default async function TestsPage() {
   const user = await getCurrentInternalUser();
@@ -23,6 +25,7 @@ export default async function TestsPage() {
     const last = lastByType.get(protocol.type);
     const eligibleAt = last ? nextEligibleDate(last.recordedAt) : null;
     const locked = isInFuture(eligibleAt);
+    const axis = TEST_AXIS[protocol.type];
     return {
       type: protocol.type,
       name: protocol.name,
@@ -32,6 +35,7 @@ export default async function TestsPage() {
       lastValue: last?.value ?? null,
       locked,
       eligibleAtLabel: locked ? eligibleAt!.toLocaleDateString("fr-FR") : null,
+      axisLabel: axis ? STAT_SHORT_LABELS[axis] : null,
     };
   });
 

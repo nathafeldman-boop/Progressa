@@ -76,7 +76,7 @@ const DEFAULT_STAT_VALUES: StatAxisValues = {
  * désormais les 6 axes de la carte, un par un. Ajouter un test pour un axe
  * non couvert est le seul endroit à toucher ici.
  */
-const TEST_AXIS: Partial<Record<EvaluationTestType, StatAxis>> = {
+export const TEST_AXIS: Partial<Record<EvaluationTestType, StatAxis>> = {
   SPRINT_20M: "VITESSE",
   JUGGLING: "CONDUITE",
   SHUTTLE_5X10: "DEFENSE",
