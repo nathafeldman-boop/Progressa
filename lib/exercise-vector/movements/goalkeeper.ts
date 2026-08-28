@@ -41,12 +41,18 @@ const GK_CATCH: Pose = {
   footA: { x: 110, y: 248 },
   footB: { x: 130, y: 248 },
 };
+// Le ballon "arrive" décalé sur le côté plutôt que pile sur l'axe de la
+// tête: comme pour les mains (voir commentaire GK_CATCH), le placer sur
+// cet axe le fait coïncider avec le cercle de la tête (même à distance
+// raisonnable, HEAD_R=25 + rayon ballon 11 laissent peu de marge) — un
+// ballon superposé au visage se lit comme un oeil géant, pas un ballon
+// attrapé au-dessus de la tête.
 export const GK_HIGH_CATCH: Movement = {
   loopSeconds: 1.3,
   keyframes: [
-    { t: 0, pose: GK_READY, ball: { x: 120, y: 100 } },
-    { t: 0.5, pose: GK_CATCH, ball: { x: 120, y: 38 } },
-    { t: 1, pose: GK_READY, ball: { x: 120, y: 100 } },
+    { t: 0, pose: GK_READY, ball: { x: 165, y: 75 } },
+    { t: 0.5, pose: GK_CATCH, ball: { x: 155, y: 75 } },
+    { t: 1, pose: GK_READY, ball: { x: 165, y: 75 } },
   ],
 };
 
