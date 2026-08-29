@@ -49,6 +49,15 @@ function CrownIcon({ color, size = 18 }: { color: string; size?: number }) {
   );
 }
 
+function CameraIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#0e1a12" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
+      <circle cx="12" cy="13.5" r="3.3" />
+    </svg>
+  );
+}
+
 function StarRow({ count, color }: { count: number; color: string }) {
   return (
     <div className="flex items-center justify-center gap-1" aria-label={`${count} sur 5 étoiles`}>
@@ -166,7 +175,7 @@ export function PlayerCardView({
               className="absolute inset-0 flex items-center justify-center rounded-full bg-black/0 transition-colors hover:bg-black/35 active:bg-black/45"
             >
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs shadow-md">
-                {photoBusy ? "…" : "📷"}
+                {photoBusy ? "…" : <CameraIcon />}
               </span>
             </button>
           )}
