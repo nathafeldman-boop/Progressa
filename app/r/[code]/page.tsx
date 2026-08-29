@@ -1,9 +1,19 @@
 import { redirect } from "next/navigation";
+import { getCurrentInternalUser } from "@/lib/auth";
+import { connectFriendsByCode } from "@/lib/friends";
 
-// Lien de parrainage joueur-à-joueur: /r/<code> redirige simplement vers
-// l'onboarding avec le code en query param. La validation du code se fait
-// côté serveur à la complétion de l'onboarding (jamais bloquant ici).
+// Lien personnel /r/<code>: deux effets selon le visiteur. Un nouveau
+// visiteur part dans l'onboarding classique (parrainage, bonus Premium à
+// la conversion). Un joueur déjà connecté est directement ajouté en ami
+// (classement entre amis) — pas de bonus Premium ici, juste la connexion.
 export default async function ReferralRedirectPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
+
+  const user = await getCurrentInternalUser();
+  if (user) {
+    const result = await connectFriendsByCode(user.id, code);
+    redirect(`/classement?ami=${result.status}`);
+  }
+
   redirect(`/onboarding?ref=${encodeURIComponent(code)}`);
 }
