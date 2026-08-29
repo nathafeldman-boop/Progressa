@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { rankTierForOverall } from "@/lib/brian/stats-engine";
 
 export type ConnectFriendsResult =
   | { status: "connected"; friendName: string }
@@ -42,6 +43,9 @@ export interface FriendEntry {
   label: string;
   overall: number;
   isCurrentUser: boolean;
+  /** Rang du joueur (Débutant, ..., Élite Suprême) — affiché en badge, pas de filtrage par ligue ici: le cercle d'amis reste toujours au complet, contrairement au classement Global. */
+  rankKey: string;
+  rankLabel: string;
 }
 
 export async function getFriendsLeaderboard(userId: string): Promise<FriendEntry[]> {
@@ -54,11 +58,17 @@ export async function getFriendsLeaderboard(userId: string): Promise<FriendEntry
   });
 
   return cards
-    .map((c) => ({
-      userId: c.userId,
-      label: c.user.firstName,
-      overall: typeof (c.stats as { overall?: number })?.overall === "number" ? (c.stats as { overall: number }).overall : 0,
-      isCurrentUser: c.userId === userId,
-    }))
+    .map((c) => {
+      const overall = typeof (c.stats as { overall?: number })?.overall === "number" ? (c.stats as { overall: number }).overall : 0;
+      const tier = rankTierForOverall(overall);
+      return {
+        userId: c.userId,
+        label: c.user.firstName,
+        overall,
+        isCurrentUser: c.userId === userId,
+        rankKey: tier.key,
+        rankLabel: tier.label,
+      };
+    })
     .sort((a, b) => b.overall - a.overall);
 }

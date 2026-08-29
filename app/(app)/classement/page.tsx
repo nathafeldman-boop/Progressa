@@ -9,6 +9,8 @@ import { ensureReferralCode } from "@/lib/referral";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { ReferralShareLink } from "@/components/referral/ReferralShareLink";
 import { FriendConnectForm } from "@/components/friends/FriendConnectForm";
+import { RankCardBadge } from "@/components/card/RankCardBadge";
+import { rankStyleFor } from "@/lib/card/rank-styles";
 import { cn } from "@/lib/cn";
 
 const AMI_MESSAGES: Record<string, string> = {
@@ -72,15 +74,40 @@ export default async function ClassementPage({
 }
 
 async function GlobalView({ userId }: { userId: string }) {
-  const { entries, currentUserRank, isDemo } = await getLeaderboard(userId);
+  const { entries, currentUserRank, isDemo, league, promotion } = await getLeaderboard(userId);
+  const style = rankStyleFor(league.key);
 
   return (
     <>
+      <Card
+        className="text-center"
+        style={{ background: `linear-gradient(165deg, ${style.gradient[0]}, ${style.gradient[1]})`, borderColor: style.border }}
+      >
+        <div className="flex items-center justify-center gap-2">
+          <RankCardBadge rankKey={league.key} size={22} />
+          <p className="font-display text-sm font-bold uppercase tracking-widest" style={{ color: style.accent }}>
+            Ligue {league.label}
+          </p>
+        </div>
+        {promotion ? (
+          <div className="mt-3">
+            <div className="h-2 overflow-hidden rounded-full bg-black/25">
+              <div className="h-full rounded-full" style={{ width: `${promotion.percent}%`, background: style.accent }} />
+            </div>
+            <p className="mt-1.5 text-xs text-white/70">
+              {promotion.pointsToGo} pt{promotion.pointsToGo > 1 ? "s" : ""} avant la promotion en ligue {promotion.nextLabel}
+            </p>
+          </div>
+        ) : (
+          <p className="mt-2 text-xs text-white/70">Ligue la plus haute — reste au sommet !</p>
+        )}
+      </Card>
+
       {isDemo && (
         <Card className="border-[var(--color-info)] bg-[var(--color-surface-alt)] text-sm">
           <p className="font-semibold">Classement de démonstration</p>
           <p className="mt-1 text-[var(--color-text-muted)]">
-            Pas encore assez de joueurs actifs pour un vrai classement — reviens quand la communauté aura grandi.
+            Pas encore assez de joueurs dans cette ligue pour un vrai classement — reviens quand la communauté aura grandi.
           </p>
         </Card>
       )}
@@ -105,7 +132,7 @@ async function GlobalView({ userId }: { userId: string }) {
       </Card>
 
       {!isDemo && currentUserRank && currentUserRank > entries.length && (
-        <p className="text-center text-sm text-[var(--color-text-muted)]">Tu es actuellement #{currentUserRank}.</p>
+        <p className="text-center text-sm text-[var(--color-text-muted)]">Tu es actuellement #{currentUserRank} de ta ligue.</p>
       )}
     </>
   );
@@ -134,9 +161,13 @@ async function FriendsView({ userId }: { userId: string }) {
                   entry.isCurrentUser ? "bg-[var(--color-primary-soft)] font-bold text-[var(--color-primary-strong)]" : ""
                 }`}
               >
-                <span>
-                  {i + 1}. {entry.label}
-                  {entry.isCurrentUser ? " (toi)" : ""}
+                <span className="flex items-center gap-2">
+                  <span className="text-[var(--color-text-muted)]">{i + 1}.</span>
+                  <RankCardBadge rankKey={entry.rankKey} size={16} />
+                  <span>
+                    {entry.label}
+                    {entry.isCurrentUser ? " (toi)" : ""}
+                  </span>
                 </span>
                 <span className="font-display font-extrabold">{entry.overall}</span>
               </li>
