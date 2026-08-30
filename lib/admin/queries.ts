@@ -41,6 +41,12 @@ export async function getGlobalStats() {
   return {
     totalUsers,
     premiumCount,
+    // Abonnement Stripe ACTIVE uniquement — exclut tout premium obtenu via
+    // bonusPremiumUntil (code d'accès, code d'affilié utilisé comme code
+    // d'accès, bonus de parrainage). `premiumCount` reste utile pour "qui a
+    // accès à premium en ce moment", mais ce n'est jamais une conversion
+    // payante réelle — les deux métriques répondent à des questions différentes.
+    realPremiumCount: activeSubs,
     freeCount: Math.max(totalUsers - premiumCount, 0),
     totalSessions,
     completedSessions,
@@ -48,9 +54,30 @@ export async function getGlobalStats() {
   };
 }
 
+/**
+ * anonId ayant un jour été rattachés à un compte connecté (PageView avec
+ * userId non nul pour ce même anonId, stocké côté client en localStorage —
+ * stable d'une page à l'autre, y compris avant/après connexion). Un
+ * crawler (Googlebot et consorts exécutent le JS d'/onboarding, route
+ * publique) génère un anonId neuf à chaque passage qui ne se connecte
+ * jamais à rien — sans ce filtre, le funnel confond le vrai abandon humain
+ * avec du bruit de robots.
+ */
+async function getRegisteredAnonIds(): Promise<string[]> {
+  const rows = await prisma.pageView.findMany({
+    where: { userId: { not: null } },
+    select: { anonId: true },
+    distinct: ["anonId"],
+  });
+  return rows.map((r) => r.anonId);
+}
+
 export async function getOnboardingFunnel() {
+  const registeredAnonIds = await getRegisteredAnonIds();
+
   const events = await prisma.onboardingFunnelEvent.groupBy({
     by: ["screen", "screenKey", "action"],
+    where: { anonId: { in: registeredAnonIds } },
     _count: { _all: true },
   });
 

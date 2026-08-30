@@ -103,12 +103,19 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         </Card>
       </section>
 
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         <StatCard label="Joueurs" value={stats.totalUsers} />
-        <StatCard label="Premium" value={stats.premiumCount} />
+        <StatCard label="Premium (avec bonus)" value={stats.premiumCount} />
+        <StatCard
+          label="Dont payant réel"
+          value={`${stats.realPremiumCount} (${stats.totalUsers > 0 ? Math.round((stats.realPremiumCount / stats.totalUsers) * 100) : 0}%)`}
+        />
         <StatCard label="Gratuit" value={stats.freeCount} />
         <StatCard label="Taux de complétion séances" value={`${stats.completionRate}%`} />
       </section>
+      <p className="-mt-2 text-xs text-[var(--color-text-muted)]">
+        « Payant réel » = abonnement Stripe actif uniquement — exclut les codes d&apos;accès et bonus de parrainage.
+      </p>
 
       {/* Toute la section ci-dessous se filtre sur la période choisie — même
           principe qu'un sélecteur de dates Google Ads: une seule rangée de
@@ -177,6 +184,10 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         <h2 className="mb-2 font-display text-sm font-bold uppercase tracking-wide text-[var(--color-text-muted)]">
           Funnel onboarding
         </h2>
+        <p className="mb-2 text-xs text-[var(--color-text-muted)]">
+          Ne compte que les visiteurs qui se sont un jour connectés — filtre les robots (Google et autres) qui
+          chargent /onboarding sans jamais créer de compte.
+        </p>
         <Card>
           <table className="w-full text-sm">
             <thead>
