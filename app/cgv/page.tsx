@@ -1,5 +1,12 @@
 import { APP_NAME } from "@/lib/app-config";
 import { Card, CardTitle } from "@/components/ui/Card";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata(
+  "Conditions générales de vente",
+  `Conditions générales de vente de l'abonnement Premium ${APP_NAME}.`,
+  "/cgv"
+);
 
 const SECTIONS = [
   {

@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import "./landing.css";
 import { prisma } from "@/lib/prisma";
 import { getCurrentInternalUser } from "@/lib/auth";
+import { APP_NAME, APP_TAGLINE } from "@/lib/app-config";
+import { absoluteUrl } from "@/lib/seo";
 import { Hero } from "@/components/landing/Hero";
 import { PlayerCardShowcase } from "@/components/landing/PlayerCardShowcase";
 import { CoachBrian } from "@/components/landing/CoachBrian";
@@ -20,6 +23,28 @@ import { LandingFooter } from "@/components/landing/LandingFooter";
 // Rendu dynamique: la LP affiche les derniers avis approuvés, qui changent
 // dès qu'un avis est modéré — pas figée sur un instantané pris au build.
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: `${APP_NAME} — ${APP_TAGLINE}`,
+  description:
+    "Programmes d'entraînement personnalisés, suivi de progression et carte joueur qui évolue avec toi — le complément parfait aux entraînements de ton club.",
+  alternates: { canonical: "/" },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: APP_NAME,
+  description: APP_TAGLINE,
+  url: absoluteUrl("/"),
+  applicationCategory: "SportsApplication",
+  operatingSystem: "Web",
+  offers: {
+    "@type": "Offer",
+    price: "6.99",
+    priceCurrency: "EUR",
+  },
+};
 
 /**
  * "/" est le start_url du manifest PWA (section installation): un joueur
@@ -43,6 +68,7 @@ export default async function Home() {
 
   return (
     <main className="lp flex flex-1 flex-col">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Hero />
       <PlayerCardShowcase />
       <CoachBrian />

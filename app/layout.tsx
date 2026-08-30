@@ -4,6 +4,7 @@ import { PageViewTracker } from "@/components/analytics/PageViewTracker";
 import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
 import { AffiliateClickTracker } from "@/components/affiliate/AffiliateClickTracker";
 import { APP_NAME, APP_TAGLINE } from "@/lib/app-config";
+import { SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
 const display = Barlow_Condensed({
@@ -19,7 +20,11 @@ const body = Inter({
 });
 
 export const metadata: Metadata = {
-  title: `${APP_NAME} — ${APP_TAGLINE}`,
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${APP_NAME} — ${APP_TAGLINE}`,
+    template: `%s | ${APP_NAME}`,
+  },
   description: APP_TAGLINE,
   applicationName: APP_NAME,
   manifest: "/manifest.webmanifest",
@@ -34,6 +39,19 @@ export const metadata: Metadata = {
       { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: APP_NAME,
+    title: `${APP_NAME} — ${APP_TAGLINE}`,
+    description: APP_TAGLINE,
+    url: "/",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${APP_NAME} — ${APP_TAGLINE}`,
+    description: APP_TAGLINE,
   },
 };
 

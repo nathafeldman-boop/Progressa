@@ -5,6 +5,13 @@ import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { TestimonialForm } from "@/components/testimonials/TestimonialForm";
 import { APP_NAME } from "@/lib/app-config";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata(
+  "Avis des joueurs",
+  `Découvre ce que les jeunes footballeurs pensent de ${APP_NAME} : programmes personnalisés, suivi de progression, carte joueur qui évolue. Partage aussi ton propre avis.`,
+  "/avis"
+);
 
 export default async function AvisPage() {
   const [user, approved] = await Promise.all([

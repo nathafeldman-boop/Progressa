@@ -2,6 +2,13 @@ import Link from "next/link";
 import { APP_NAME } from "@/lib/app-config";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata(
+  "Tarifs",
+  "Un seul abonnement Premium à 6,99€/mois, sans essai déguisé : Coach Brian personnel, entraînements adaptés à ton profil, carte joueur évolutive et catalogue complet d'exercices.",
+  "/tarifs"
+);
 
 const BENEFITS = [
   "Coach Brian personnel, qui suit tes vraies performances",

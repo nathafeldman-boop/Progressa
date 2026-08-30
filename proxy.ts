@@ -135,5 +135,11 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next|.*\\..*).*)", "/api/(.*)"],
+  // opengraph-image exclu au même titre que _next: c'est un asset généré
+  // (voir app/opengraph-image.tsx), jamais une page — sans cette exclusion,
+  // le crawler d'un réseau social qui va chercher l'image de prévisualisation
+  // se fait rediriger vers /connexion (pas de session) et n'affiche jamais
+  // rien au partage. Contrairement à /robots.txt ou /sitemap.xml, son URL
+  // ne contient pas de point et n'est donc pas exclue par `.*\..*`.
+  matcher: ["/((?!_next|opengraph-image|.*\\..*).*)", "/api/(.*)"],
 };

@@ -1,5 +1,12 @@
 import { APP_NAME } from "@/lib/app-config";
 import { Card, CardTitle } from "@/components/ui/Card";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata(
+  "Conditions générales d'utilisation",
+  `Conditions générales d'utilisation de l'application ${APP_NAME}.`,
+  "/cgu"
+);
 
 const SECTIONS = [
   {

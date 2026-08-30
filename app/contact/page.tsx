@@ -1,4 +1,11 @@
 import { APP_NAME } from "@/lib/app-config";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata(
+  "Contact",
+  `Une question sur ${APP_NAME}, un problème avec ton compte, une suggestion ? Contacte l'équipe, on répond personnellement à chaque message.`,
+  "/contact"
+);
 
 export default function ContactPage() {
   return (

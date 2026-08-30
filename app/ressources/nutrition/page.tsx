@@ -1,4 +1,11 @@
 import { ArticlePage } from "@/components/editorial/ArticlePage";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata(
+  "Nutrition du footballeur",
+  "Quoi manger avant, pendant et après un match ou un entraînement : des repères simples et concrets, calés sur ton calendrier de matchs.",
+  "/ressources/nutrition"
+);
 
 export default function NutritionPage() {
   return (

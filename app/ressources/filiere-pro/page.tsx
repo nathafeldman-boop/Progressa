@@ -1,4 +1,11 @@
 import { ArticlePage } from "@/components/editorial/ArticlePage";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata(
+  "La vraie filière pro",
+  "Le parcours réaliste vers le football professionnel, sans rêve marketing : les chiffres, les étapes qui comptent vraiment, et comment construire un vrai plan B.",
+  "/ressources/filiere-pro"
+);
 
 export default function FilliereProPage() {
   return (

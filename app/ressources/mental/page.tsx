@@ -1,4 +1,11 @@
 import { ArticlePage } from "@/components/editorial/ArticlePage";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata(
+  "Préparation mentale du footballeur",
+  "Gérer la pression, l'erreur, la confiance en soi : la préparation mentale du jeune footballeur expliquée simplement, avec des repères concrets à appliquer en match.",
+  "/ressources/mental"
+);
 
 export default function MentalPage() {
   return (

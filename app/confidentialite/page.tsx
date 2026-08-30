@@ -1,5 +1,12 @@
 import { APP_NAME } from "@/lib/app-config";
 import { Card, CardTitle } from "@/components/ui/Card";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata(
+  "Politique de confidentialité",
+  `Quelles données ${APP_NAME} collecte, pourquoi, et qui les traite pour nous.`,
+  "/confidentialite"
+);
 
 const SECTIONS = [
   {
