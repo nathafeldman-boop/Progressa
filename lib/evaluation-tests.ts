@@ -121,7 +121,11 @@ export const VALUE_BOUNDS: Record<EvaluationTestType, ValueBounds> = {
   JUGGLING: { min: 0, max: 5000 },
   SHUTTLE_5X10: { min: MIN_PLAUSIBLE_SECONDS.SHUTTLE_5X10!, max: 120 },
   PLANK: { min: 0, max: 1800 },
-  SPRINT_20M: { min: MIN_PLAUSIBLE_SECONDS.SPRINT_20M!, max: 15 },
+  // 15s rejetait des temps de débutant réels saisis à la main (ex: 20s pour
+  // un jeune sur 20m) — cette borne ne doit exclure que l'impossible, pas le
+  // simplement lent, surtout que la saisie manuelle ("estimer mon niveau")
+  // passe par le même endpoint que le chrono.
+  SPRINT_20M: { min: MIN_PLAUSIBLE_SECONDS.SPRINT_20M!, max: 30 },
   TIR_PRECISION: { min: 0, max: 10 },
   PASSE_PRECISION: { min: 0, max: 10 },
 };

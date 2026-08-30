@@ -68,6 +68,11 @@ export function TestPlayer({
   const [estimateValues, setEstimateValues] = useState<Record<string, string>>({});
   const [estimateSubmitting, setEstimateSubmitting] = useState(false);
   const [estimateError, setEstimateError] = useState<string | null>(null);
+  // Épreuves dont la saisie n'a pas pu être enregistrée (valeur hors bornes,
+  // cooldown, etc.) — affiché après coup sur l'écran "done", jamais utilisé
+  // pour bloquer la progression: une épreuve invalide ne doit pas faire
+  // perdre les autres valeurs déjà valides du même formulaire.
+  const [estimateSkipped, setEstimateSkipped] = useState<string[]>([]);
   const [testIndex, setTestIndex] = useState(0);
   const [timerPhase, setTimerPhase] = useState<"idle" | "running" | "stopped">("idle");
   const [startedAt, setStartedAt] = useState<number | null>(null);
@@ -188,20 +193,33 @@ export function TestPlayer({
     setEstimateSubmitting(true);
     setEstimateError(null);
     try {
+      const skipped: string[] = [];
+      let anySubmitted = false;
       for (const t of eligible) {
         const raw = estimateValues[t.type]?.trim();
         if (!raw) continue;
         const numeric = Number(raw.replace(",", "."));
         if (!numeric || numeric <= 0) continue;
-        const res = await fetch("/api/tests/submit", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ testType: t.type, value: numeric }),
-        });
-        if (!res.ok) {
-          setEstimateError(`Impossible d'enregistrer "${t.name}" — réessaie.`);
-          return;
+        try {
+          const res = await fetch("/api/tests/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ testType: t.type, value: numeric }),
+          });
+          if (res.ok) anySubmitted = true;
+          else skipped.push(t.name);
+        } catch {
+          skipped.push(t.name);
         }
+      }
+      // Une épreuve qui échoue (valeur hors bornes, cooldown déclenché entre
+      // le chargement de la page et la soumission...) ne doit jamais faire
+      // perdre les autres épreuves déjà enregistrées avec succès dans cette
+      // même validation — on continue toujours jusqu'au bout de la liste.
+      setEstimateSkipped(skipped);
+      if (!anySubmitted && skipped.length === eligible.length) {
+        setEstimateError("Aucune valeur n'a pu être enregistrée — vérifie tes saisies et réessaie.");
+        return;
       }
       trackClick(getOrCreateAnonId(), "test_completed", "/tests#estimate");
       setJustFinishedSession(true);
@@ -428,6 +446,14 @@ export function TestPlayer({
                 </li>
               ))}
             </ul>
+          </Card>
+        )}
+        {estimateSkipped.length > 0 && (
+          <Card className="text-left text-sm">
+            <CardTitle className="text-sm">Non enregistré</CardTitle>
+            <p className="mt-1 text-[var(--color-text-muted)]">
+              {estimateSkipped.join(", ")} — vérifie la valeur saisie et réessaie plus tard depuis cette page.
+            </p>
           </Card>
         )}
         <Button
