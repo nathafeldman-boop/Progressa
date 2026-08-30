@@ -204,8 +204,13 @@ export async function buildTargetedSession(userId: string, need: TrainingNeed, v
       exerciseId: idBySlug.get(exercise.slug)!,
       order: order++,
       phase: "WARMUP",
-      sets: null,
-      reps: null,
+      // CARDIO/EXPLOSIVENESS/GOALKEEPER (les catégories piochées en
+      // échauffement) sont des mouvements à répétitions comptables — jamais
+      // "restSeconds" sans "sets", sinon le joueur voit "30s repos" sans
+      // jamais savoir combien de répétitions faire avant. Volume plus léger
+      // qu'en bloc principal (2 séries au lieu de 3).
+      sets: 2,
+      reps: defaultRepsForCategory(exercise.category),
       restSeconds: 30,
       customInstruction: instructionForNeed(exercise, need),
     });

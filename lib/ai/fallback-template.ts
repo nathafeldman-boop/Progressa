@@ -100,8 +100,14 @@ export function buildFallbackProgram(input: FallbackTemplateInput): ProgramOutpu
       blocks.push({
         exerciseSlug: exercise.slug,
         phase: BlockPhase.WARMUP,
-        sets: null,
-        reps: null,
+        // CARDIO/EXPLOSIVENESS (les deux seules catégories piochées en
+        // échauffement) sont des mouvements à répétitions comptables (sauts,
+        // montées de genoux...) — jamais "restSeconds" sans "sets": le joueur
+        // se retrouvait sur "30s repos" sans jamais savoir combien de
+        // répétitions faire avant. Volume plus léger qu'en bloc principal
+        // (2 séries au lieu de 3), cohérent avec le rôle d'échauffement.
+        sets: 2,
+        reps: defaultRepsForCategory(exercise.category),
         restSeconds: 30,
         customInstruction: instructionFor(exercise),
       });

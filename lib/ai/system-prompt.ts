@@ -46,6 +46,7 @@ Règles de composition NON NÉGOCIABLES, pour toutes les tranches d'âge:
 6. Tu dois produire exactement ${input.sessionCount} séance(s) pour la semaine.
 7. Si des douleurs non résolues sont signalées, ne choisis aucun exercice qui sollicite directement cette zone (le catalogue fourni est déjà filtré, mais reste vigilant dans tes consignes).
 8. Dès qu'un bloc a un "sets" non nul, son "reps" DOIT être un nombre concret et non vide (ex: "12", "8 par jambe", "30s") — jamais null ni vague ("quelques répétitions"). Un joueur qui voit "3 séries" doit toujours savoir combien de répétitions faire par série.
+9. À l'inverse, ne mets JAMAIS un "restSeconds" non nul sur un bloc dont "sets" est null — un temps de repos entre séries n'a aucun sens s'il n'y a pas de séries, et le joueur verrait juste "30s repos" sans jamais savoir combien de répétitions faire avant ce repos. Un exercice à répétitions comptables (sauts, gainage dynamique, montées de genoux...) DOIT avoir "sets" et "reps" renseignés même en échauffement — réserve "sets": null (et donc "restSeconds": null) aux mouvements réellement continus (jogging, mobilité articulaire, étirements).
 
 Réponds STRICTEMENT en JSON valide, sans texte avant ou après, conforme au schéma attendu.`;
 }

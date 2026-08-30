@@ -33,6 +33,15 @@ export function buildProgramSchema(allowedSlugs: string[]) {
     .refine((block) => block.sets === null || block.reps !== null, {
       message: "reps ne peut pas être null quand sets est renseigné",
       path: ["reps"],
+    })
+    // Symétrique: un repos entre séries n'a de sens que s'il y a des
+    // séries. Sans cette règle, un bloc "sets: null, restSeconds: 30"
+    // passe la validation mais affiche "30s repos" côté joueur sans jamais
+    // dire combien de répétitions faire — exactement l'écran vide
+    // rapporté par un joueur (sauts en squat en échauffement).
+    .refine((block) => !block.restSeconds || block.sets !== null, {
+      message: "restSeconds ne peut pas être renseigné quand sets est null",
+      path: ["restSeconds"],
     });
 
   const sessionSchema = z.object({
