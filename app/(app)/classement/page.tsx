@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isPremiumActive } from "@/lib/subscription";
-import { getLeaderboard } from "@/lib/brian/leaderboard";
+import { getLeaderboard, getRegionLeaderboard } from "@/lib/brian/leaderboard";
 import { getFriendsLeaderboard } from "@/lib/friends";
 import { ensureReferralCode } from "@/lib/referral";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
@@ -34,7 +34,7 @@ export default async function ClassementPage({
 
   if (!premium) redirect("/paywall");
 
-  const view = vue === "amis" ? "amis" : "global";
+  const view = vue === "amis" ? "amis" : vue === "region" ? "region" : "global";
   const amiMessage = ami ? AMI_MESSAGES[ami] : null;
 
   return (
@@ -58,6 +58,15 @@ export default async function ClassementPage({
           Global
         </Link>
         <Link
+          href="/classement?vue=region"
+          className={cn(
+            "flex-1 rounded-[calc(var(--radius-control)-4px)] py-2 text-center",
+            view === "region" ? "bg-[var(--color-primary)] text-[var(--color-on-primary)]" : "text-[var(--color-text-muted)]"
+          )}
+        >
+          Région
+        </Link>
+        <Link
           href="/classement?vue=amis"
           className={cn(
             "flex-1 rounded-[calc(var(--radius-control)-4px)] py-2 text-center",
@@ -68,7 +77,7 @@ export default async function ClassementPage({
         </Link>
       </div>
 
-      {view === "global" ? <GlobalView userId={user.id} /> : <FriendsView userId={user.id} />}
+      {view === "global" ? <GlobalView userId={user.id} /> : view === "region" ? <RegionView userId={user.id} /> : <FriendsView userId={user.id} />}
     </div>
   );
 }
@@ -134,6 +143,93 @@ async function GlobalView({ userId }: { userId: string }) {
       {!isDemo && currentUserRank && currentUserRank > entries.length && (
         <p className="text-center text-sm text-[var(--color-text-muted)]">Tu es actuellement #{currentUserRank} de ta ligue.</p>
       )}
+    </>
+  );
+}
+
+async function RegionView({ userId }: { userId: string }) {
+  const { ligueLabel, regionEntries, regionRank, regionIsDemo, franceEntries, franceRank, franceIsDemo, isPromoted } =
+    await getRegionLeaderboard(userId);
+
+  if (!ligueLabel) {
+    return (
+      <Card className="text-center text-sm text-[var(--color-text-muted)]">
+        Le classement par région n&apos;est disponible que pour les joueurs en France pour l&apos;instant.
+      </Card>
+    );
+  }
+
+  const isDemo = regionIsDemo || franceIsDemo;
+
+  return (
+    <>
+      {isPromoted && (
+        <Card className="border-[var(--color-info)] bg-[var(--color-surface-alt)] text-center text-sm font-semibold">
+          🇫🇷 Tu fais partie du Top France de ta région !
+        </Card>
+      )}
+
+      {isDemo && (
+        <Card className="border-[var(--color-info)] bg-[var(--color-surface-alt)] text-sm">
+          <p className="font-semibold">Classement de démonstration</p>
+          <p className="mt-1 text-[var(--color-text-muted)]">
+            Pas encore assez de joueurs dans ta région pour un vrai classement — reviens quand la communauté aura grandi.
+          </p>
+        </Card>
+      )}
+
+      <section>
+        <CardTitle className="mb-2 text-base">Classement France</CardTitle>
+        <CardSubtitle className="mb-2 -mt-1">Le top 3 de chaque région, réuni.</CardSubtitle>
+        <Card>
+          <ul className="space-y-2">
+            {franceEntries.map((entry, i) => (
+              <li
+                key={entry.userId}
+                className={`flex items-center justify-between rounded-[var(--radius-control)] px-3 py-2 text-sm ${
+                  entry.isCurrentUser ? "bg-[var(--color-primary-soft)] font-bold text-[var(--color-primary-strong)]" : ""
+                }`}
+              >
+                <span>
+                  {i + 1}. {entry.label}
+                  {entry.isCurrentUser ? " (toi)" : ""}
+                  <span className="ml-1.5 text-xs font-normal text-[var(--color-text-muted)]">{entry.ligueLabel}</span>
+                </span>
+                <span className="font-display font-extrabold">{entry.overall}</span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+        {!isDemo && franceRank && franceRank > franceEntries.length && (
+          <p className="mt-2 text-center text-sm text-[var(--color-text-muted)]">Tu es actuellement #{franceRank} en France.</p>
+        )}
+      </section>
+
+      <section>
+        <CardTitle className="mb-2 text-base">Ta région : {ligueLabel}</CardTitle>
+        <Card>
+          <ul className="space-y-2">
+            {regionEntries.map((entry, i) => (
+              <li
+                key={entry.userId}
+                className={`flex items-center justify-between rounded-[var(--radius-control)] px-3 py-2 text-sm ${
+                  entry.isCurrentUser ? "bg-[var(--color-primary-soft)] font-bold text-[var(--color-primary-strong)]" : ""
+                }`}
+              >
+                <span>
+                  {i + 1}. {entry.label}
+                  {entry.isCurrentUser ? " (toi)" : ""}
+                  {entry.isPromoted && <span className="ml-1.5 text-xs font-normal text-[var(--color-text-muted)]">🇫🇷 France</span>}
+                </span>
+                <span className="font-display font-extrabold">{entry.overall}</span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+        {!isDemo && regionRank && regionRank > regionEntries.length && (
+          <p className="mt-2 text-center text-sm text-[var(--color-text-muted)]">Tu es actuellement #{regionRank} de ta région.</p>
+        )}
+      </section>
     </>
   );
 }
