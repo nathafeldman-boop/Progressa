@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { isAdminAuthenticated } from "@/lib/admin/auth";
 import {
   getFeatureUsage,
@@ -8,6 +9,9 @@ import {
   getAffiliateDirectory,
   getAccessCodes,
   getPayableConversions,
+  getSignupsTimeseries,
+  getReviewsSummary,
+  getPreviousPeriodSignupCount,
 } from "@/lib/admin/queries";
 import { AdminLoginForm } from "@/components/admin/AdminLoginForm";
 import { TestimonialModeration } from "@/components/admin/TestimonialModeration";
@@ -16,14 +20,31 @@ import { UserDirectoryTable } from "@/components/admin/UserDirectoryTable";
 import { AffiliateAdminPanel } from "@/components/admin/AffiliateAdminPanel";
 import { AccessCodeAdminPanel } from "@/components/admin/AccessCodeAdminPanel";
 import { PayableConversionsPanel } from "@/components/admin/PayableConversionsPanel";
+import { SignupsChart } from "@/components/admin/SignupsChart";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { prisma } from "@/lib/prisma";
+import { cn } from "@/lib/cn";
 
-export default async function AdminPage() {
+const RANGE_OPTIONS = [
+  { key: "7", label: "7 jours", days: 7 },
+  { key: "30", label: "30 jours", days: 30 },
+  { key: "90", label: "90 jours", days: 90 },
+  { key: "all", label: "Tout", days: null as number | null },
+];
+
+function formatEuros(cents: number): string {
+  return (cents / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+}
+
+export default async function AdminPage({ searchParams }: { searchParams: Promise<{ range?: string }> }) {
   const authenticated = await isAdminAuthenticated();
   if (!authenticated) return <AdminLoginForm />;
 
-  const [online, stats, funnel, usage, pendingTestimonials, users, affiliates, accessCodes, payableConversions] =
+  const { range } = await searchParams;
+  const selectedRange = RANGE_OPTIONS.find((r) => r.key === range) ?? RANGE_OPTIONS[1];
+  const rangeDays = selectedRange.days;
+
+  const [online, stats, funnel, usage, pendingTestimonials, users, affiliates, accessCodes, payableConversions, signups, reviews] =
     await Promise.all([
       getOnlineNow(),
       getGlobalStats(),
@@ -34,13 +55,26 @@ export default async function AdminPage() {
       getAffiliateDirectory(),
       getAccessCodes(),
       getPayableConversions(),
+      getSignupsTimeseries(rangeDays),
+      getReviewsSummary(rangeDays),
     ]);
 
+  const periodSignups = signups.reduce((sum, d) => sum + d.free + d.premium, 0);
+  const prevPeriodSignups = rangeDays ? await getPreviousPeriodSignupCount(rangeDays) : null;
+  const signupsDeltaPct =
+    prevPeriodSignups != null && prevPeriodSignups > 0 ? Math.round(((periodSignups - prevPeriodSignups) / prevPeriodSignups) * 100) : null;
+
   const firstScreenViews = funnel[0]?.viewed ?? 0;
+  const totalConversions = affiliates.reduce((sum, a) => sum + a.conversionCount, 0);
+  const totalPayable = affiliates.reduce((sum, a) => sum + a.payableCents, 0);
+  const totalPaid = affiliates.reduce((sum, a) => sum + a.paidCents, 0);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-4">
-      <h1 className="font-display text-2xl font-extrabold uppercase tracking-wide">Dashboard admin</h1>
+      <div>
+        <h1 className="font-display text-2xl font-extrabold uppercase tracking-wide">Dashboard admin</h1>
+        <p className="mt-0.5 text-sm text-[var(--color-text-muted)]">Vue d&apos;ensemble</p>
+      </div>
 
       <section>
         <h2 className="mb-2 font-display text-sm font-bold uppercase tracking-wide text-[var(--color-text-muted)]">
@@ -74,6 +108,69 @@ export default async function AdminPage() {
         <StatCard label="Premium" value={stats.premiumCount} />
         <StatCard label="Gratuit" value={stats.freeCount} />
         <StatCard label="Taux de complétion séances" value={`${stats.completionRate}%`} />
+      </section>
+
+      {/* Toute la section ci-dessous se filtre sur la période choisie — même
+          principe qu'un sélecteur de dates Google Ads: une seule rangée de
+          préréglages, tout ce qui suit se recalcule dessus. */}
+      <div className="flex gap-1 rounded-[var(--radius-control)] bg-[var(--color-surface-alt)] p-1 text-sm font-bold">
+        {RANGE_OPTIONS.map((opt) => (
+          <Link
+            key={opt.key}
+            href={`/admin?range=${opt.key}`}
+            className={cn(
+              "flex-1 rounded-[calc(var(--radius-control)-4px)] py-1.5 text-center transition-colors",
+              opt.key === selectedRange.key
+                ? "bg-[var(--color-primary)] text-[var(--color-on-primary)]"
+                : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+            )}
+          >
+            {opt.label}
+          </Link>
+        ))}
+      </div>
+
+      <section>
+        <Card>
+          <div className="flex items-baseline justify-between">
+            <CardTitle className="text-base">Inscriptions</CardTitle>
+            <div className="text-right">
+              <p className="font-display text-2xl font-extrabold">{periodSignups}</p>
+              {signupsDeltaPct != null && (
+                <p
+                  className={cn(
+                    "text-xs font-bold",
+                    signupsDeltaPct >= 0 ? "text-[var(--color-success)]" : "text-[var(--color-danger)]"
+                  )}
+                >
+                  {signupsDeltaPct >= 0 ? "▲" : "▼"} {Math.abs(signupsDeltaPct)}% vs période précédente
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="mt-3">
+            <SignupsChart data={signups} />
+          </div>
+        </Card>
+      </section>
+
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <Card>
+          <CardTitle className="text-base">Affiliation</CardTitle>
+          <div className="mt-3 grid grid-cols-2 gap-3 text-center">
+            <MiniStat label="Affiliés" value={affiliates.length} />
+            <MiniStat label="Conversions" value={totalConversions} />
+            <MiniStat label="À verser" value={formatEuros(totalPayable)} />
+            <MiniStat label="Déjà versé" value={formatEuros(totalPaid)} />
+          </div>
+        </Card>
+        <Card>
+          <CardTitle className="text-base">Avis ({reviews.totalCount})</CardTitle>
+          <div className="mt-3 grid grid-cols-2 gap-3 text-center">
+            <MiniStat label="Note moyenne" value={reviews.totalCount > 0 ? reviews.avgRating.toFixed(1) : "—"} />
+            <MiniStat label="Bons avis (≥4/5)" value={reviews.goodCount} />
+          </div>
+        </Card>
       </section>
 
       <section>
@@ -176,5 +273,14 @@ function StatCard({ label, value }: { label: string; value: number | string }) {
       <p className="font-display text-2xl font-extrabold text-[var(--color-primary-strong)]">{value}</p>
       <CardTitle className="text-xs">{label}</CardTitle>
     </Card>
+  );
+}
+
+function MiniStat({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div>
+      <p className="font-display text-xl font-extrabold text-[var(--color-primary-strong)]">{value}</p>
+      <p className="text-[0.65rem] font-bold uppercase tracking-wide text-[var(--color-text-muted)]">{label}</p>
+    </div>
   );
 }

@@ -217,6 +217,95 @@ export async function getUserDetail(userId: string) {
   };
 }
 
+export interface SignupDayBucket {
+  date: string;
+  free: number;
+  premium: number;
+}
+
+/**
+ * Inscriptions par jour sur la fenêtre choisie, réparties gratuit/premium
+ * selon le statut ACTUEL de l'abonné (pas son statut au jour J — la
+ * question posée est "sur les gens inscrits ce jour-là, combien sont
+ * premium aujourd'hui", cohérent avec le compte premium/gratuit affiché
+ * ailleurs dans ce dashboard). `rangeDays` null = depuis l'inscription la
+ * plus ancienne (case "Tout").
+ */
+export async function getSignupsTimeseries(rangeDays: number | null): Promise<SignupDayBucket[]> {
+  const now = new Date();
+  let since: Date;
+  if (rangeDays) {
+    since = new Date(now.getTime() - rangeDays * 24 * 60 * 60 * 1000);
+  } else {
+    const earliest = await prisma.user.findFirst({ orderBy: { createdAt: "asc" }, select: { createdAt: true } });
+    since = earliest?.createdAt ?? now;
+  }
+  since.setHours(0, 0, 0, 0);
+
+  const users = await prisma.user.findMany({
+    where: { createdAt: { gte: since } },
+    select: { createdAt: true, subscription: { select: { status: true, bonusPremiumUntil: true } } },
+  });
+
+  const buckets = new Map<string, { free: number; premium: number }>();
+  for (const u of users) {
+    const key = u.createdAt.toISOString().slice(0, 10);
+    const isPremium = u.subscription?.status === "ACTIVE" || (!!u.subscription?.bonusPremiumUntil && u.subscription.bonusPremiumUntil > now);
+    const entry = buckets.get(key) ?? { free: 0, premium: 0 };
+    if (isPremium) entry.premium += 1;
+    else entry.free += 1;
+    buckets.set(key, entry);
+  }
+
+  // Comble les jours sans inscription avec 0 — une vraie courbe continue,
+  // jamais des points reliés en sautant des jours silencieux.
+  const days: SignupDayBucket[] = [];
+  const cursor = new Date(since);
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  while (cursor <= today) {
+    const key = cursor.toISOString().slice(0, 10);
+    const entry = buckets.get(key) ?? { free: 0, premium: 0 };
+    days.push({ date: key, ...entry });
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return days;
+}
+
+export interface ReviewsSummary {
+  avgRating: number;
+  goodCount: number;
+  totalCount: number;
+}
+
+/** "Bon avis" = note >= 4/5. Toutes soumissions confondues (pas seulement approuvées) — le signal compte même avant modération. */
+export async function getReviewsSummary(rangeDays: number | null): Promise<ReviewsSummary> {
+  const since = rangeDays ? new Date(Date.now() - rangeDays * 24 * 60 * 60 * 1000) : undefined;
+  const testimonials = await prisma.testimonial.findMany({
+    where: since ? { createdAt: { gte: since } } : undefined,
+    select: { rating: true },
+  });
+
+  const totalCount = testimonials.length;
+  const goodCount = testimonials.filter((t) => t.rating >= 4).length;
+  const avgRating = totalCount > 0 ? testimonials.reduce((sum, t) => sum + t.rating, 0) / totalCount : 0;
+
+  return { avgRating, goodCount, totalCount };
+}
+
+/** Inscriptions sur la période équivalente immédiatement précédente — pour la variation affichée à côté du total de la période choisie. */
+export async function getPreviousPeriodSignupCount(rangeDays: number): Promise<number> {
+  const now = Date.now();
+  return prisma.user.count({
+    where: {
+      createdAt: {
+        gte: new Date(now - rangeDays * 2 * 24 * 60 * 60 * 1000),
+        lt: new Date(now - rangeDays * 24 * 60 * 60 * 1000),
+      },
+    },
+  });
+}
+
 export async function getFeatureUsage() {
   const [evaluationResults, testimonials, matchLogs, checkins, badges] = await Promise.all([
     prisma.evaluationResult.count(),
