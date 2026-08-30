@@ -27,27 +27,54 @@ const EVOLUTION_TEASER = [
   { label: "Endurance", delta: 1 },
 ];
 
+export interface PaywallTestimonial {
+  id: string;
+  name: string;
+  rating: number;
+  text: string;
+}
+
+/** Trouve l'axe le plus faible de la carte pour cibler le message sur un besoin réel, pas générique. */
+function weakestSkill(cardStats: PlayerCardStats | null): { label: string; score: number } | null {
+  if (!cardStats) return null;
+  const entries = Object.entries(cardStats.skills);
+  if (entries.length === 0) return null;
+  const [label, score] = entries.reduce((worst, current) => (current[1] < worst[1] ? current : worst));
+  return { label, score };
+}
+
 export function HardPaywall({
   firstName,
   cardStats,
   positionLabel,
+  objectiveLabel,
+  weakPointNote,
   ageCategoryLabel,
   country,
   department,
   niveauLabel,
   photoUrl,
+  testimonials,
+  avgRating,
+  reviewCount,
 }: {
   firstName: string;
   cardStats: PlayerCardStats | null;
   positionLabel: string | null;
+  objectiveLabel: string | null;
+  weakPointNote: string | null;
   ageCategoryLabel: string | null;
   country: string | null;
   department: string | null;
   niveauLabel: string | null;
   photoUrl: string | null;
+  testimonials: PaywallTestimonial[];
+  avgRating: number | null;
+  reviewCount: number;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const weakest = weakestSkill(cardStats);
 
   useEffect(() => {
     trackClick(getOrCreateAnonId(), "paywall_viewed", "/paywall");
@@ -86,10 +113,11 @@ export function HardPaywall({
           <BrianAvatar state="confident" size={84} />
           <div>
             <h1 className="font-display text-2xl font-extrabold uppercase leading-tight tracking-wide">
-              Continue ta progression avec Coach Brian
+              {objectiveLabel ? `Prêt à progresser en ${objectiveLabel.toLowerCase()}, ${firstName} ?` : "Continue ta progression avec Coach Brian"}
             </h1>
             <p className="mt-2 text-sm text-white/70">
-              Accède à tes entraînements personnalisés, suis tes statistiques et fais évoluer ta carte à chaque étape.
+              Ta carte est prête. Sans Premium elle reste figée — débloque le programme que Coach Brian a construit à
+              partir de tes résultats pour la faire évoluer.
             </p>
           </div>
         </div>
@@ -119,6 +147,22 @@ export function HardPaywall({
           </div>
         )}
 
+        {weakest && (
+          <Card className="border-[var(--color-primary)]/30 bg-[var(--color-primary)]/10 text-white">
+            <p className="text-[0.65rem] font-bold uppercase tracking-wide text-[var(--color-primary)]">
+              Ton point à travailler en priorité
+            </p>
+            <p className="mt-1.5 font-display text-xl font-extrabold">
+              {weakest.label} · {weakest.score}/100
+            </p>
+            <p className="mt-1.5 text-sm text-white/80">
+              {weakPointNote
+                ? `Tu nous l'as dit toi-même : « ${weakPointNote} ». Coach Brian a construit ton programme autour de ça.`
+                : `C'est l'axe où Coach Brian peut t'apporter le plus, dès ta première séance — sans programme ciblé, il ne bouge pas tout seul.`}
+            </p>
+          </Card>
+        )}
+
         <Card className="border-white/10 bg-white/[0.04] text-white">
           <ul className="space-y-2.5">
             {BENEFITS.map((b) => (
@@ -130,16 +174,35 @@ export function HardPaywall({
           </ul>
         </Card>
 
+        {testimonials.length > 0 && (
+          <div className="w-full">
+            {avgRating != null && (
+              <p className="text-center text-xs font-semibold text-white/70">
+                {"⭐".repeat(Math.round(avgRating))} {avgRating.toFixed(1)}/5 sur {reviewCount} avis de joueurs
+              </p>
+            )}
+            <div className="mt-2 space-y-2">
+              {testimonials.map((t) => (
+                <Card key={t.id} className="border-white/10 bg-white/[0.04] text-white">
+                  <p className="text-xs text-[var(--color-primary)]">{"⭐".repeat(t.rating)}</p>
+                  <p className="mt-1 text-sm leading-snug text-white/85">&laquo; {t.text} &raquo;</p>
+                  <p className="mt-1.5 text-[0.65rem] font-bold uppercase tracking-wide text-white/45">{t.name}</p>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="mt-auto space-y-3">
           <div className="text-center">
             <p className="font-display text-4xl font-extrabold">
               6,99 €<span className="text-lg font-bold text-white/60"> / mois</span>
             </p>
-            <p className="mt-1 text-xs text-white/50">Résilie à tout moment, en un clic, depuis ton compte.</p>
+            <p className="mt-1 text-xs text-white/50">Moins de 25 centimes par jour. Résilie en un clic, quand tu veux.</p>
           </div>
 
           <Button className="w-full" onClick={startCheckout} disabled={loading}>
-            {loading ? "Préparation du paiement..." : "Commencer ma progression"}
+            {loading ? "Préparation du paiement..." : "Débloquer mon programme personnalisé"}
           </Button>
 
           {error && (
