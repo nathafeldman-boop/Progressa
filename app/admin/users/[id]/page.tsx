@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { isAdminAuthenticated } from "@/lib/admin/auth";
 import { getUserDetail } from "@/lib/admin/queries";
 import { AdminLoginForm } from "@/components/admin/AdminLoginForm";
+import { AutoRefresh } from "@/components/admin/AutoRefresh";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { POSITION_LABELS, OBJECTIVE_LABELS, EQUIPMENT_LABELS } from "@/lib/labels";
 
@@ -10,8 +11,18 @@ function formatEuros(cents: number): string {
   return (cents / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
 }
 
+// Sans timeZone explicite, toLocaleString formate dans le fuseau du
+// serveur (UTC sur Vercel) — un événement d'il y a 5 minutes s'affichait
+// avec jusqu'à 2h de retard l'été (France en UTC+2/CEST).
 function formatDateTime(d: Date): string {
-  return new Date(d).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  return new Date(d).toLocaleString("fr-FR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Paris",
+  });
 }
 
 export default async function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -28,6 +39,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-4">
+      <AutoRefresh />
       <Link href="/admin" className="text-sm text-[var(--color-text-muted)] underline">
         ← Retour au dashboard
       </Link>

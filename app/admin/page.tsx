@@ -14,6 +14,7 @@ import {
   getPreviousPeriodSignupCount,
 } from "@/lib/admin/queries";
 import { AdminLoginForm } from "@/components/admin/AdminLoginForm";
+import { AutoRefresh } from "@/components/admin/AutoRefresh";
 import { TestimonialModeration } from "@/components/admin/TestimonialModeration";
 import { SeedCatalogButton } from "@/components/admin/SeedCatalogButton";
 import { UserDirectoryTable } from "@/components/admin/UserDirectoryTable";
@@ -71,6 +72,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-4">
+      <AutoRefresh />
       <div>
         <h1 className="font-display text-2xl font-extrabold uppercase tracking-wide">Dashboard admin</h1>
         <p className="mt-0.5 text-sm text-[var(--color-text-muted)]">Vue d&apos;ensemble</p>

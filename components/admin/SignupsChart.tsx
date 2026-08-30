@@ -36,9 +36,13 @@ function computeTicks(maxValue: number, desiredCount = 4): number[] {
   return ticks;
 }
 
+// `iso` est une simple clé de jour ("YYYY-MM-DD", sans heure) — parsée en
+// Date puis reformatée, un décalage de fuseau pouvait faire glisser
+// l'affichage sur le jour d'à côté selon le fuseau du navigateur. Aucune
+// conversion de fuseau n'a de sens ici, juste extraire les deux nombres.
 function formatDayLabel(iso: string): string {
-  const d = new Date(`${iso}T00:00:00`);
-  return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
+  const [, month, day] = iso.split("-");
+  return `${day}/${month}`;
 }
 
 export function SignupsChart({ data }: { data: SignupDayBucket[] }) {

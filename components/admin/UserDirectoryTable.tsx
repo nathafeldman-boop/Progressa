@@ -6,8 +6,11 @@ function formatEuros(cents: number): string {
   return (cents / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
 }
 
+// Sans timeZone explicite, toLocaleDateString formate dans le fuseau du
+// serveur (UTC) — une inscription juste après minuit heure française
+// pouvait afficher la veille.
 function formatDate(d: Date): string {
-  return new Date(d).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
+  return new Date(d).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Europe/Paris" });
 }
 
 /** Point de vérité "qui, depuis quand, combien il a rapporté, via qui" — le drill-down demandé pour le dashboard admin. */
