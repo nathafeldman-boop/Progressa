@@ -3,13 +3,22 @@ import { z } from "zod";
 import { EvaluationTestType } from "@prisma/client";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { nextEligibleDate, TEST_PROTOCOLS } from "@/lib/evaluation-tests";
+import { nextEligibleDate, TEST_PROTOCOLS, VALUE_BOUNDS } from "@/lib/evaluation-tests";
 import { syncPlayerCard } from "@/lib/player-card";
 
-const bodySchema = z.object({
-  testType: z.enum(EvaluationTestType),
-  value: z.number().positive(),
-});
+const bodySchema = z
+  .object({
+    testType: z.enum(EvaluationTestType),
+    value: z.number().positive(),
+  })
+  // MIN_PLAUSIBLE_SECONDS empêche déjà d'arrêter le chrono trop tôt côté
+  // client, mais rien n'empêchait un appel direct à l'API de soumettre
+  // n'importe quel nombre positif — cette borne referme ce trou côté
+  // serveur, seul endroit qu'on ne peut pas contourner.
+  .refine((data) => {
+    const bounds = VALUE_BOUNDS[data.testType];
+    return data.value >= bounds.min && data.value <= bounds.max;
+  }, "implausible_value");
 
 export async function POST(request: Request) {
   const user = await getCurrentInternalUser();

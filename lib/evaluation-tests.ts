@@ -101,6 +101,31 @@ export const MIN_PLAUSIBLE_SECONDS: Partial<Record<EvaluationTestType, number>> 
   PASSE_PRECISION: 35,
 };
 
+export interface ValueBounds {
+  min: number;
+  max: number;
+}
+
+/**
+ * Bornes de plausibilité sur la VALEUR soumise elle-même (à ne pas
+ * confondre avec MIN_PLAUSIBLE_SECONDS ci-dessus, qui borne le temps passé
+ * sur l'écran du test, pas la valeur — pour TIR_PRECISION/PASSE_PRECISION
+ * la valeur est un compte sur 10, sans rapport avec les secondes). Vérifiées
+ * côté serveur dans /api/tests/submit: sans ça, un appel direct à l'API
+ * (hors chrono de l'app) pouvait soumettre n'importe quel nombre positif et
+ * fausser la carte joueur + les classements. Volontairement généreuses —
+ * jamais bloquer un vrai résultat fort, seulement ce qui ne peut
+ * physiquement ou logiquement pas être réel.
+ */
+export const VALUE_BOUNDS: Record<EvaluationTestType, ValueBounds> = {
+  JUGGLING: { min: 0, max: 5000 },
+  SHUTTLE_5X10: { min: MIN_PLAUSIBLE_SECONDS.SHUTTLE_5X10!, max: 120 },
+  PLANK: { min: 0, max: 1800 },
+  SPRINT_20M: { min: MIN_PLAUSIBLE_SECONDS.SPRINT_20M!, max: 15 },
+  TIR_PRECISION: { min: 0, max: 10 },
+  PASSE_PRECISION: { min: 0, max: 10 },
+};
+
 /** Cooldown anti-triche (section 6.6): ~4 semaines entre deux passages du même test. */
 export const TEST_COOLDOWN_DAYS = 28;
 
