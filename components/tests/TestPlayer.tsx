@@ -6,7 +6,7 @@ import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { BrianAvatar } from "@/components/brian/BrianAvatar";
 import { ConeTimer } from "@/components/tests/ConeTimer";
-import { composeTestFlowIntro } from "@/lib/brian/messages";
+import { composeTestFlowIntro, composeRestTip, composePersonalChatLockedMessage } from "@/lib/brian/messages";
 import { MIN_PLAUSIBLE_SECONDS } from "@/lib/evaluation-tests";
 import { elapsedSeconds, nowMs } from "@/lib/time";
 import { EXERCISE_FRAMES } from "@/lib/exercises/exercise-frames";
@@ -395,6 +395,8 @@ export function TestPlayer({
             Récupération
           </p>
           <p className="font-display text-6xl font-extrabold tabular-nums">{remaining}s</p>
+          <p className="max-w-xs text-sm text-white/85">{composeRestTip(testIndex)}</p>
+          <p className="max-w-xs text-xs font-semibold text-white/60">{composePersonalChatLockedMessage("test")}</p>
           <button type="button" onClick={() => setScreen("test")} className="mt-2 text-sm font-semibold text-white/60">
             Passer la pause
           </button>

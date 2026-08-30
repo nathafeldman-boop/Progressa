@@ -20,6 +20,7 @@ import { ExerciseFrameLoop } from "@/components/exercises/ExerciseFrameLoop";
 import { VectorExerciseStage } from "@/components/exercises/VectorExerciseStage";
 import { getExerciseVisual } from "@/lib/exercise-vector/catalog-map";
 import { EQUIPMENT_LABELS } from "@/lib/labels";
+import { composeRestTip, composePersonalChatLockedMessage } from "@/lib/brian/messages";
 
 /** Re-render chaque seconde tant que `active` — sert au minuteur en direct. */
 function useTicker(active: boolean) {
@@ -739,6 +740,36 @@ function ActiveExerciseScreen({
   }, [state.phase]);
 
   const [confirmSkip, setConfirmSkip] = useState(false);
+
+  // Écran de repos à part entière (comme TestPlayer) plutôt qu'une pastille
+  // discrète superposée à l'exercice — un joueur qui cherchait à joindre
+  // Coach Brian pendant sa pause tombait sur le hard paywall (le FAB
+  // "Parler à Coach Brian" reste techniquement dans le DOM). Cet écran
+  // couvre tout l'espace, rend le FAB inatteignable, et transforme
+  // l'attente en vrai contenu au lieu d'un chrono vide.
+  if (usesSetFlow && resting) {
+    return (
+      <div className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-4 bg-[#072a16] p-6 text-center text-white [padding-top:calc(env(safe-area-inset-top)+1rem)] [padding-bottom:env(safe-area-inset-bottom)]">
+        <BrianAvatar state="encouraging" size={88} />
+        <div>
+          <p className="font-mono text-[0.625rem] font-semibold uppercase tracking-[0.2em] text-[#3ddc7f]">
+            Repos — série {currentSet}/{totalSets}
+          </p>
+          <p className="font-display mt-1 text-6xl font-extrabold tabular-nums">{formatMmSs(restRemaining)}</p>
+        </div>
+        <p className="max-w-xs text-sm text-white/85">{composeRestTip(currentSet + block.exercise.slug.length)}</p>
+        <p className="max-w-xs text-xs font-semibold text-white/60">{composePersonalChatLockedMessage("séance")}</p>
+        <div className="mt-2 flex w-full max-w-xs items-center gap-4">
+          <button type="button" onClick={onAbandon} className="text-sm font-semibold text-white/60">
+            Abandonner
+          </button>
+          <Button className="flex-1" onClick={goToNextSet}>
+            Passer le repos
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-[var(--color-bg)] [padding-top:env(safe-area-inset-top)] [padding-bottom:env(safe-area-inset-bottom)]">

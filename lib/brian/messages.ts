@@ -184,6 +184,27 @@ export function composeWeeklyTrendLine(axisLabel: string, delta: number): string
   return `Tu as gagné ${delta} point${delta > 1 ? "s" : ""} en ${axisLabel.toLowerCase()} cette semaine.`;
 }
 
+// Conseils affichés pendant le repos entre deux séries (voir SessionPlayer)
+// — volontairement une fonction pure et déterministe (pas pick()/Math.random,
+// interdit pendant le rendu d'un composant client) indexée sur un seed fourni
+// par l'appelant, jamais un tirage recalculé à chaque tick du minuteur.
+const REST_TIPS = [
+  "Respire à fond, secoue les jambes. Le repos fait partie du travail, pas une pause dedans.",
+  "Bois une gorgée si tu as de l'eau à portée. Courte récupération, mais une vraie récupération.",
+  "Repense à ta dernière série : qu'est-ce que tu peux améliorer sur la suivante ?",
+  "Reste concentré, ne relâche pas trop. Un bon repos garde le corps prêt à repartir à fond.",
+];
+
+export function composeRestTip(seed: number): string {
+  const index = ((seed % REST_TIPS.length) + REST_TIPS.length) % REST_TIPS.length;
+  return REST_TIPS[index];
+}
+
+/** Rappel affiché pendant les pauses: le chat perso avec Brian s'ouvre après avoir fini, jamais pendant. */
+export function composePersonalChatLockedMessage(context: "séance" | "test"): string {
+  return `Pour qu'on discute en tête-à-tête, termine d'abord ${context === "test" ? "ce test" : "cette séance"} — je t'attends juste après.`;
+}
+
 export function composeRetentionMessage(): string {
   return pick([
     "Ton entraînement est terminé. Reviens demain, je te prépare la suite.",
