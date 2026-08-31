@@ -12,6 +12,7 @@ import {
   getSignupsTimeseries,
   getReviewsSummary,
   getPreviousPeriodSignupCount,
+  getWeekdayActivity,
 } from "@/lib/admin/queries";
 import { AdminLoginForm } from "@/components/admin/AdminLoginForm";
 import { AutoRefresh } from "@/components/admin/AutoRefresh";
@@ -22,6 +23,7 @@ import { AffiliateAdminPanel } from "@/components/admin/AffiliateAdminPanel";
 import { AccessCodeAdminPanel } from "@/components/admin/AccessCodeAdminPanel";
 import { PayableConversionsPanel } from "@/components/admin/PayableConversionsPanel";
 import { SignupsChart } from "@/components/admin/SignupsChart";
+import { WeekdayActivityChart } from "@/components/admin/WeekdayActivityChart";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/cn";
@@ -45,7 +47,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const selectedRange = RANGE_OPTIONS.find((r) => r.key === range) ?? RANGE_OPTIONS[1];
   const rangeDays = selectedRange.days;
 
-  const [online, stats, funnel, usage, pendingTestimonials, users, affiliates, accessCodes, payableConversions, signups, reviews] =
+  const [online, stats, funnel, usage, pendingTestimonials, users, affiliates, accessCodes, payableConversions, signups, reviews, weekdayActivity] =
     await Promise.all([
       getOnlineNow(),
       getGlobalStats(),
@@ -58,6 +60,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       getPayableConversions(),
       getSignupsTimeseries(rangeDays),
       getReviewsSummary(rangeDays),
+      getWeekdayActivity(rangeDays),
     ]);
 
   const periodSignups = signups.reduce((sum, d) => sum + d.free + d.premium, 0);
@@ -159,6 +162,16 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           </div>
           <div className="mt-3">
             <SignupsChart data={signups} />
+          </div>
+        </Card>
+      </section>
+
+      <section>
+        <Card>
+          <CardTitle className="text-base">Jours avec le plus de monde</CardTitle>
+          <CardSubtitle className="mt-0.5">Visiteurs distincts par jour de la semaine, sur la période sélectionnée.</CardSubtitle>
+          <div className="mt-3">
+            <WeekdayActivityChart data={weekdayActivity} />
           </div>
         </Card>
       </section>

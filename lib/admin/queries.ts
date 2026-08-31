@@ -333,6 +333,78 @@ export async function getPreviousPeriodSignupCount(rangeDays: number): Promise<n
   });
 }
 
+const PARIS_TZ = "Europe/Paris";
+const WEEKDAY_LABELS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+const SHORT_WEEKDAY_TO_INDEX: Record<string, number> = { Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4, Sat: 5, Sun: 6 };
+const dayKeyFormatter = new Intl.DateTimeFormat("en-CA", { timeZone: PARIS_TZ, year: "numeric", month: "2-digit", day: "2-digit" });
+const weekdayFormatter = new Intl.DateTimeFormat("en-US", { timeZone: PARIS_TZ, weekday: "short" });
+
+/** Lundi=0 … Dimanche=6, dans le fuseau Europe/Paris (jamais le fuseau serveur — UTC sur Vercel, décalerait le jour affiché). */
+function parisWeekdayIndex(date: Date): number {
+  return SHORT_WEEKDAY_TO_INDEX[weekdayFormatter.format(date)];
+}
+
+/** Clé de jour calendaire Europe/Paris ("YYYY-MM-DD") — pour ne compter qu'une fois un visiteur déjà vu le même jour. */
+function parisDayKey(date: Date): string {
+  return dayKeyFormatter.format(date);
+}
+
+export interface WeekdayActivityBucket {
+  weekday: number;
+  label: string;
+  avgVisitors: number;
+  totalVisitors: number;
+}
+
+/**
+ * Affluence par jour de la semaine (section "Jours"): pour chaque jour
+ * calendaire Europe/Paris de la période, compte les visiteurs distincts
+ * (anonId, ou userId une fois connecté) ayant eu au moins une PageView —
+ * un même visiteur actif plusieurs fois le même jour ne compte qu'une fois.
+ * Le total par jour de semaine est ensuite divisé par le nombre
+ * d'occurrences de ce jour dans la période (ex: 4 lundis sur 30 jours) pour
+ * obtenir une moyenne comparable entre jours — sans ça, un mois avec un
+ * lundi de plus que les dimanches biaiserait la comparaison.
+ */
+export async function getWeekdayActivity(rangeDays: number | null): Promise<WeekdayActivityBucket[]> {
+  const now = new Date();
+  let since: Date;
+  if (rangeDays) {
+    since = new Date(now.getTime() - rangeDays * 24 * 60 * 60 * 1000);
+  } else {
+    const earliest = await prisma.pageView.findFirst({ orderBy: { createdAt: "asc" }, select: { createdAt: true } });
+    since = earliest?.createdAt ?? now;
+  }
+
+  const views = await prisma.pageView.findMany({
+    where: { createdAt: { gte: since } },
+    select: { createdAt: true, anonId: true, userId: true },
+  });
+
+  const seenVisitorDay = new Set<string>();
+  const visitorsByWeekday = new Array(7).fill(0) as number[];
+  for (const v of views) {
+    const dayKey = `${v.userId ?? v.anonId}|${parisDayKey(v.createdAt)}`;
+    if (seenVisitorDay.has(dayKey)) continue;
+    seenVisitorDay.add(dayKey);
+    visitorsByWeekday[parisWeekdayIndex(v.createdAt)] += 1;
+  }
+
+  const occurrencesByWeekday = new Array(7).fill(0) as number[];
+  const totalDays = Math.max(1, Math.ceil((now.getTime() - since.getTime()) / (24 * 60 * 60 * 1000)));
+  for (let offset = 0; offset < totalDays; offset++) {
+    const day = new Date(since.getTime() + offset * 24 * 60 * 60 * 1000);
+    occurrencesByWeekday[parisWeekdayIndex(day)] += 1;
+  }
+
+  return WEEKDAY_LABELS.map((label, weekday) => ({
+    weekday,
+    label,
+    totalVisitors: visitorsByWeekday[weekday],
+    avgVisitors: occurrencesByWeekday[weekday] > 0 ? visitorsByWeekday[weekday] / occurrencesByWeekday[weekday] : 0,
+  }));
+}
+
 export async function getFeatureUsage() {
   const [evaluationResults, testimonials, matchLogs, checkins, badges] = await Promise.all([
     prisma.evaluationResult.count(),
