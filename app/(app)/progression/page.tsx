@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { isPremiumActive } from "@/lib/subscription";
@@ -44,7 +43,6 @@ export default async function ProgressionPage() {
   ]);
 
   const premium = isPremiumActive(subscription);
-  if (profile && !premium) redirect("/paywall");
   const ageCategory = profile ? getAgeCategory(profile.birthYear) : null;
   const stats = card ? (card.stats as unknown as PlayerCardStats) : null;
   const completedCount = await prisma.programSession.count({

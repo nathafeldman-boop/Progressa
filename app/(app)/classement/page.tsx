@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isPremiumActive } from "@/lib/subscription";
@@ -11,6 +10,8 @@ import { ReferralShareLink } from "@/components/referral/ReferralShareLink";
 import { FriendConnectForm } from "@/components/friends/FriendConnectForm";
 import { RankCardBadge } from "@/components/card/RankCardBadge";
 import { rankStyleFor } from "@/lib/card/rank-styles";
+import { PremiumFeatureCard } from "@/components/paywall/PremiumFeatureCard";
+import { FreeTierAdSlot } from "@/components/ads/FreeTierAdSlot";
 import { cn } from "@/lib/cn";
 
 const AMI_MESSAGES: Record<string, string> = {
@@ -32,8 +33,6 @@ export default async function ClassementPage({
   const subscription = await prisma.subscription.findUnique({ where: { userId: user.id } });
   const premium = isPremiumActive(subscription);
 
-  if (!premium) redirect("/paywall");
-
   const view = vue === "amis" ? "amis" : vue === "region" ? "region" : "global";
   const amiMessage = ami ? AMI_MESSAGES[ami] : null;
 
@@ -41,43 +40,55 @@ export default async function ClassementPage({
     <div className="mx-auto max-w-md space-y-4 p-4">
       <h1 className="font-display text-2xl font-extrabold uppercase tracking-wide">Classement</h1>
 
-      {amiMessage && (
-        <Card className="border-[var(--color-info)] bg-[var(--color-surface-alt)] text-sm">
-          <p>{amiMessage}</p>
-        </Card>
+      {!premium ? (
+        <>
+          <PremiumFeatureCard
+            title="Le classement est une fonctionnalité Premium"
+            subtitle="Compare ta note générale aux autres joueurs — amis, région, France — chaque semaine."
+          />
+          <FreeTierAdSlot />
+        </>
+      ) : (
+        <>
+          {amiMessage && (
+            <Card className="border-[var(--color-info)] bg-[var(--color-surface-alt)] text-sm">
+              <p>{amiMessage}</p>
+            </Card>
+          )}
+
+          <div className="flex gap-2 rounded-[var(--radius-control)] bg-[var(--color-surface-alt)] p-1 text-sm font-bold uppercase">
+            <Link
+              href="/classement?vue=global"
+              className={cn(
+                "flex-1 rounded-[calc(var(--radius-control)-4px)] py-2 text-center",
+                view === "global" ? "bg-[var(--color-primary)] text-[var(--color-on-primary)]" : "text-[var(--color-text-muted)]"
+              )}
+            >
+              Global
+            </Link>
+            <Link
+              href="/classement?vue=region"
+              className={cn(
+                "flex-1 rounded-[calc(var(--radius-control)-4px)] py-2 text-center",
+                view === "region" ? "bg-[var(--color-primary)] text-[var(--color-on-primary)]" : "text-[var(--color-text-muted)]"
+              )}
+            >
+              Région
+            </Link>
+            <Link
+              href="/classement?vue=amis"
+              className={cn(
+                "flex-1 rounded-[calc(var(--radius-control)-4px)] py-2 text-center",
+                view === "amis" ? "bg-[var(--color-primary)] text-[var(--color-on-primary)]" : "text-[var(--color-text-muted)]"
+              )}
+            >
+              Amis
+            </Link>
+          </div>
+
+          {view === "global" ? <GlobalView userId={user.id} /> : view === "region" ? <RegionView userId={user.id} /> : <FriendsView userId={user.id} />}
+        </>
       )}
-
-      <div className="flex gap-2 rounded-[var(--radius-control)] bg-[var(--color-surface-alt)] p-1 text-sm font-bold uppercase">
-        <Link
-          href="/classement?vue=global"
-          className={cn(
-            "flex-1 rounded-[calc(var(--radius-control)-4px)] py-2 text-center",
-            view === "global" ? "bg-[var(--color-primary)] text-[var(--color-on-primary)]" : "text-[var(--color-text-muted)]"
-          )}
-        >
-          Global
-        </Link>
-        <Link
-          href="/classement?vue=region"
-          className={cn(
-            "flex-1 rounded-[calc(var(--radius-control)-4px)] py-2 text-center",
-            view === "region" ? "bg-[var(--color-primary)] text-[var(--color-on-primary)]" : "text-[var(--color-text-muted)]"
-          )}
-        >
-          Région
-        </Link>
-        <Link
-          href="/classement?vue=amis"
-          className={cn(
-            "flex-1 rounded-[calc(var(--radius-control)-4px)] py-2 text-center",
-            view === "amis" ? "bg-[var(--color-primary)] text-[var(--color-on-primary)]" : "text-[var(--color-text-muted)]"
-          )}
-        >
-          Amis
-        </Link>
-      </div>
-
-      {view === "global" ? <GlobalView userId={user.id} /> : view === "region" ? <RegionView userId={user.id} /> : <FriendsView userId={user.id} />}
     </div>
   );
 }

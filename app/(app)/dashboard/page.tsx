@@ -12,6 +12,8 @@ import { RegenerateButton } from "@/components/dashboard/RegenerateButton";
 import { DailyObjectives } from "@/components/dashboard/DailyObjectives";
 import { TargetedTrainingPicker } from "@/components/dashboard/TargetedTrainingPicker";
 import { DashboardHero } from "@/components/dashboard/DashboardHero";
+import { PremiumFeatureCard } from "@/components/paywall/PremiumFeatureCard";
+import { FreeTierAdSlot } from "@/components/ads/FreeTierAdSlot";
 import { POSITION_LABELS } from "@/lib/labels";
 import { getAgeCategory } from "@/lib/age-category";
 import { ensureTodayObjectives } from "@/lib/brian/daily-objectives";
@@ -64,8 +66,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   ]);
 
   const premium = isPremiumActive(subscription);
-  // Hard paywall: un profil sans abonnement actif n'accède pas au tableau de bord.
-  if (!premium) redirect("/paywall");
   const ageCategory = getAgeCategory(profile.birthYear);
   const cardStats = playerCard?.stats as { overall: number; rankTier?: string; rankKey?: string } | undefined;
   const todaySession = program?.sessions.find((s) => s.dayOfWeek === todayAsWeekday()) ?? null;
@@ -88,15 +88,22 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         </div>
       </div>
 
-      <DashboardHero
-        todaySession={todaySession}
-        tomorrowSession={tomorrowSession}
-        cardStats={cardStats ? { overall: cardStats.overall, rankTier: cardStats.rankTier } : null}
-        streakCount={streak?.currentStreak ?? 0}
-        hasProgram={!!program}
-        firstName={user.firstName}
-        isMatchDayToday={isMatchDayToday}
-      />
+      {premium ? (
+        <DashboardHero
+          todaySession={todaySession}
+          tomorrowSession={tomorrowSession}
+          cardStats={cardStats ? { overall: cardStats.overall, rankTier: cardStats.rankTier } : null}
+          streakCount={streak?.currentStreak ?? 0}
+          hasProgram={!!program}
+          firstName={user.firstName}
+          isMatchDayToday={isMatchDayToday}
+        />
+      ) : (
+        <PremiumFeatureCard
+          title="Ton programme personnalisé est une fonctionnalité Premium"
+          subtitle="Séances complètes générées chaque semaine selon ton poste et ta forme du moment."
+        />
+      )}
 
       {latestBrianMessage && (
         <Link
@@ -140,7 +147,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             Classement
           </Link>
         </div>
-        <RegenerateButton />
+        {premium && <RegenerateButton />}
       </div>
 
       {erreur === "entrainement-cible-indisponible" && (
@@ -169,6 +176,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           <span className="text-[var(--color-text-muted)]">→</span>
         </Card>
       </Link>
+
+      {!premium && <FreeTierAdSlot />}
     </div>
   );
 }

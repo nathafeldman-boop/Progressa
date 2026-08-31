@@ -1,9 +1,10 @@
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { isPremiumActive } from "@/lib/subscription";
 import { JournalTabs } from "@/components/journal/JournalTabs";
 import { BrianTip } from "@/components/brian/BrianTip";
+import { PremiumFeatureCard } from "@/components/paywall/PremiumFeatureCard";
+import { FreeTierAdSlot } from "@/components/ads/FreeTierAdSlot";
 
 function todayUtc(): Date {
   const now = new Date();
@@ -15,7 +16,18 @@ export default async function JournalPage() {
   if (!user) return null;
 
   const subscription = await prisma.subscription.findUnique({ where: { userId: user.id } });
-  if (!isPremiumActive(subscription)) redirect("/paywall");
+  if (!isPremiumActive(subscription)) {
+    return (
+      <div className="mx-auto max-w-md p-4">
+        <h1 className="mb-4 font-display text-2xl font-extrabold uppercase tracking-wide">Journal</h1>
+        <PremiumFeatureCard
+          title="Le journal est une fonctionnalité Premium"
+          subtitle="Note tes ressentis, douleurs, matchs et objectifs — Coach Brian s'en sert pour adapter tes séances."
+        />
+        <FreeTierAdSlot />
+      </div>
+    );
+  }
 
   const [todayCheckin, painLogs, growthEntries, matchLogs, goals] = await Promise.all([
     prisma.dailyCheckin.findUnique({ where: { userId_date: { userId: user.id, date: todayUtc() } } }),

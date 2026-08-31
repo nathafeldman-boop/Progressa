@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { getProgramSessionForUser } from "@/lib/programs/get-session";
-import { isPremiumActive } from "@/lib/subscription";
+import { isPremiumActive, hasSkippedPaywall } from "@/lib/subscription";
 import { getAgeCategory } from "@/lib/age-category";
 import { POSITION_LABELS, WEEKDAY_LABELS } from "@/lib/labels";
 import { SessionPlayer, type SessionBlockView } from "@/components/session/SessionPlayer";
@@ -28,7 +28,12 @@ export default async function SeancePage({ params }: { params: Promise<{ session
   );
 
   const premium = isPremiumActive(subscription);
-  if (!premium) redirect("/paywall");
+  // Une séance appartenant déjà à ce joueur (getProgramSessionForUser scope
+  // sur user.id) est jouable dès que le compte a dépassé le paywall — y
+  // compris une séance ciblée gratuite (1/48h, voir entrainement-cible):
+  // un joueur "Payer ultérieurement" doit pouvoir jouer la séance qu'il
+  // vient de lancer, pas être renvoyé au paywall juste après.
+  if (!premium && !hasSkippedPaywall(subscription)) redirect("/paywall");
   const ageCategory = profile ? getAgeCategory(profile.birthYear) : null;
 
   const chips = [
