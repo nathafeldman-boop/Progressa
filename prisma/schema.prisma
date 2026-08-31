@@ -70,6 +70,7 @@ model User {
   affiliateConversions AffiliateConversion[]
   usedAccessCodes      AccessCode[]
   emailSendLogs        EmailSendLog[]
+  paywallNudgeEmail    PaywallNudgeEmail?
   pushSubscriptions    PushSubscription[]
   microSurveyResponses MicroSurveyResponse[]
 
@@ -919,6 +920,19 @@ model EmailSendLog {
   sentAt   DateTime @default(now())
 
   @@unique([userId, emailKey])
+}
+
+// Relance paywall répétée (contrairement à EmailSendLog, dont la contrainte
+// unique [userId, emailKey] n'autorise qu'un envoi par clé à vie) — une
+// seule ligne par joueur, mise à jour à chaque envoi. `sentAt` sert de
+// cooldown (un joueur n'est ré-éligible qu'après 4 jours, voir
+// lib/email/paywall-nudge.ts), `sendCount` est indicatif (visibilité admin).
+model PaywallNudgeEmail {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sentAt    DateTime @default(now())
+  sendCount Int      @default(1)
 }
 
 model PushSubscription {

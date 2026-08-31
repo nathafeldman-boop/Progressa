@@ -4,6 +4,7 @@ import { isAuthorizedCronRequest } from "@/lib/cron-auth";
 import { isPremiumActive } from "@/lib/subscription";
 import { sendEmailOnce } from "@/lib/email/send";
 import { j1ReminderEmail, j3PremiumPitchEmail } from "@/lib/email/templates";
+import { runPaywallNudgeSweep } from "@/lib/email/paywall-nudge";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -11,6 +12,10 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  * Relance des comptes gratuits inactifs (section 9): J+1 rappel doux,
  * J+3 argumentaire Premium. Filtre strict sur les comptes déjà premium et
  * dédoublonnage via EmailSendLog — jamais le même email deux fois.
+ *
+ * Fait aussi tourner ici, dans le même run quotidien plutôt qu'un cron
+ * séparé, la relance des joueurs qui sont allés jusqu'au paywall sans
+ * s'abonner — voir lib/email/paywall-nudge.ts.
  */
 export async function GET(request: Request) {
   if (!isAuthorizedCronRequest(request)) {
@@ -53,5 +58,13 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.json({ j1Sent, j3Sent, evaluated: candidates.length });
+  const paywallNudge = await runPaywallNudgeSweep(appUrl);
+
+  return NextResponse.json({
+    j1Sent,
+    j3Sent,
+    evaluated: candidates.length,
+    paywallNudgeSent: paywallNudge.sent,
+    paywallNudgeEligible: paywallNudge.eligible,
+  });
 }

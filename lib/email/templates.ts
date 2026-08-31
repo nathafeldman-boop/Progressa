@@ -73,6 +73,18 @@ export function affiliateWelcomeEmail(name: string, dashboardUrl: string, code: 
   };
 }
 
+export function paywallNudgeEmail(firstName: string, appUrl: string) {
+  return {
+    subject: `${firstName}, ta carte est prête depuis un moment`,
+    html: wrapper(`
+      <p>Salut ${firstName},</p>
+      <p>Ton évaluation est terminée et ta carte t'attend — OVR, rang et programme personnalisé, déjà calculés.
+      Il ne reste qu'à débloquer pour les voir.</p>
+      <p><a href="${appUrl}/paywall" style="display:inline-block;background:#1c8a4b;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold;">Découvrir ma carte</a></p>
+    `),
+  };
+}
+
 export function j3PremiumPitchEmail(firstName: string, appUrl: string) {
   return {
     subject: "Un préparateur physique, mais accessible",
