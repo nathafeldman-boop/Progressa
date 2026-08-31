@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BrianAvatar } from "@/components/brian/BrianAvatar";
 import { Button } from "@/components/ui/Button";
+import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { PlayerCardView } from "@/components/card/PlayerCardView";
 import { OnboardingBackground } from "@/components/onboarding/OnboardingBackground";
 import type { PlayerCardStats } from "@/lib/player-card";
@@ -45,18 +46,54 @@ export function CardRevealSequence({
 }) {
   const router = useRouter();
   const [stepIndex, setStepIndex] = useState(0);
-  const [phase, setPhase] = useState<"analysing" | "revealed">("analysing");
+  const [phase, setPhase] = useState<"analysing" | "feedback" | "revealed">("analysing");
   const [messageCount, setMessageCount] = useState(0);
+  const [rating, setRating] = useState(5);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [submittingFeedback, setSubmittingFeedback] = useState(false);
+  const [feedbackError, setFeedbackError] = useState(false);
 
   useEffect(() => {
     if (phase !== "analysing") return;
     if (stepIndex >= ANALYSIS_STEPS.length) {
-      const timer = window.setTimeout(() => setPhase("revealed"), 500);
+      // On demande l'avis du joueur ici, à froid, juste avant la révélation
+      // — c'est le pic d'anticipation du funnel (section "avis avant la
+      // carte"), le meilleur moment pour capter un avis honnête plutôt que
+      // d'attendre qu'il pense à aller sur /avis de lui-même.
+      const timer = window.setTimeout(() => setPhase("feedback"), 500);
       return () => window.clearTimeout(timer);
     }
     const timer = window.setTimeout(() => setStepIndex((i) => i + 1), 1100);
     return () => window.clearTimeout(timer);
   }, [phase, stepIndex]);
+
+  async function submitFeedback() {
+    if (feedbackText.trim().length < 10) return;
+    setSubmittingFeedback(true);
+    setFeedbackError(false);
+    try {
+      const res = await fetch("/api/testimonials", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating, text: feedbackText }),
+      });
+      if (!res.ok) {
+        setFeedbackError(true);
+        return;
+      }
+      trackClick(getOrCreateAnonId(), "prereveal_feedback_submitted", "/onboarding/carte");
+      setPhase("revealed");
+    } catch {
+      setFeedbackError(true);
+    } finally {
+      setSubmittingFeedback(false);
+    }
+  }
+
+  function skipFeedback() {
+    trackClick(getOrCreateAnonId(), "prereveal_feedback_skipped", "/onboarding/carte");
+    setPhase("revealed");
+  }
 
   useEffect(() => {
     if (phase !== "revealed") return;
@@ -93,6 +130,51 @@ export function CardRevealSequence({
               />
             ))}
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === "feedback") {
+    return (
+      <div className="relative min-h-screen">
+        <OnboardingBackground />
+        <div className="relative z-10 flex min-h-screen items-center justify-center p-4">
+          <Card className="w-full max-w-xs space-y-3.5 p-6 text-center">
+            <BrianAvatar state="talking" size={72} className="mx-auto" />
+            <div>
+              <CardTitle>Avant de découvrir ta carte...</CardTitle>
+              <CardSubtitle className="mt-1.5">
+                {firstName}, donne-moi ton avis sur l&apos;app jusqu&apos;ici — même en une phrase, ça compte.
+              </CardSubtitle>
+            </div>
+
+            <div className="flex justify-center gap-1">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <button key={n} type="button" onClick={() => setRating(n)} className="text-2xl" aria-label={`${n} étoiles`}>
+                  {n <= rating ? "⭐" : "☆"}
+                </button>
+              ))}
+            </div>
+
+            <textarea
+              className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-alt)] px-3 py-2 text-left text-sm text-[var(--color-text)]"
+              placeholder="Ce que tu en penses..."
+              value={feedbackText}
+              onChange={(e) => setFeedbackText(e.target.value)}
+              maxLength={600}
+              rows={3}
+            />
+
+            {feedbackError && <p className="text-xs text-[var(--color-danger)]">Envoi impossible, réessaie.</p>}
+
+            <Button className="w-full" onClick={submitFeedback} disabled={submittingFeedback || feedbackText.trim().length < 10}>
+              {submittingFeedback ? "Envoi..." : "Envoyer et voir ma carte"}
+            </Button>
+            <button type="button" onClick={skipFeedback} className="text-xs text-[var(--color-text-muted)] underline">
+              Plus tard
+            </button>
+          </Card>
         </div>
       </div>
     );
