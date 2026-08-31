@@ -36,6 +36,16 @@ export const metadata: Metadata = {
   description: APP_TAGLINE,
   applicationName: APP_NAME,
   manifest: "/manifest.webmanifest",
+  // Preuve de propriété du site pour Monetag (régie pub) — même principe
+  // que le fichier de vérification Google déjà dans public/, mais via
+  // balise meta plutôt que fichier statique (Monetag propose les deux;
+  // celle-ci évite tout conflit avec le vrai service worker PWA du site,
+  // contrairement à leur fichier sw.js de vérification par défaut).
+  verification: {
+    other: {
+      monetag: "35cf54a59a282436c0bc8d85e1f7db16",
+    },
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
