@@ -12,7 +12,7 @@ import { prisma } from "@/lib/prisma";
 import { isPremiumActive, hasSkippedPaywall } from "@/lib/subscription";
 import { getFreeTargetedSessionStatus } from "@/lib/programs/free-targeted-cooldown";
 import { TargetedSessionVariantPicker } from "@/components/dashboard/TargetedSessionVariantPicker";
-import { MonetagInPagePush } from "@/components/ads/MonetagInPagePush";
+import { FreeTierAdSlot } from "@/components/ads/FreeTierAdSlot";
 import type { BrianState } from "@/components/brian/BrianAvatar";
 
 const THEME_BRIAN_STATE: Record<TrainingTheme, BrianState> = {
@@ -63,7 +63,7 @@ export default async function EntrainementCiblePage({ params }: { params: Promis
           variants={[]}
           cooldownNextEligibleAtIso={cooldownNextEligibleAtIso}
         />
-        <MonetagInPagePush />
+        <FreeTierAdSlot />
       </>
     );
   }
@@ -83,7 +83,7 @@ export default async function EntrainementCiblePage({ params }: { params: Promis
         variants={variants}
         cooldownNextEligibleAtIso={null}
       />
-      {!premium && <MonetagInPagePush />}
+      {!premium && <FreeTierAdSlot />}
     </>
   );
 }

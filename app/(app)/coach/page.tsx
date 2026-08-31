@@ -6,7 +6,7 @@ import { getBrianMessageQuota } from "@/lib/brian/message-quota";
 import { composeWelcomeMessage } from "@/lib/brian/messages";
 import { CoachChat } from "@/components/coach/CoachChat";
 import { BrianTip } from "@/components/brian/BrianTip";
-import { MonetagInPagePush } from "@/components/ads/MonetagInPagePush";
+import { FreeTierAdSlot } from "@/components/ads/FreeTierAdSlot";
 import Link from "next/link";
 
 export default async function CoachPage() {
@@ -71,7 +71,7 @@ export default async function CoachPage() {
         />
       </div>
       <CoachChat initialMessages={initialMessages} initialQuota={premium ? null : brianQuota} />
-      {!premium && <MonetagInPagePush />}
+      {!premium && <FreeTierAdSlot />}
     </div>
   );
 }

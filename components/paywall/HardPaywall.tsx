@@ -262,6 +262,15 @@ export function HardPaywall({
           {loading ? "Préparation du paiement..." : `Ouvrir ma carte — ${selectedPlan.priceLabel}`}
         </button>
 
+        <button
+          type="button"
+          onClick={skipForNow}
+          disabled={skipping}
+          className="mt-2.5 flex h-[60px] w-full items-center justify-center rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-surface)] font-display text-xl font-extrabold uppercase tracking-[0.04em] text-[var(--color-text)] transition-transform active:scale-[.97] disabled:opacity-70"
+        >
+          {skipping ? "..." : "Continuer gratuitement"}
+        </button>
+
         {error && (
           <p className="mt-2 text-center text-xs text-[var(--color-danger)]">
             Impossible de lancer le paiement, réessaie dans un instant.
@@ -282,15 +291,6 @@ export function HardPaywall({
         <div className="mt-2.5">
           <AccessCodeForm />
         </div>
-
-        <button
-          type="button"
-          onClick={skipForNow}
-          disabled={skipping}
-          className="mx-auto mt-2 block text-center text-[11px] text-[var(--color-text-muted)] underline disabled:opacity-50"
-        >
-          {skipping ? "..." : "Payer ultérieurement"}
-        </button>
       </div>
     </div>
   );
