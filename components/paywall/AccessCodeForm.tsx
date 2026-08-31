@@ -38,7 +38,7 @@ export function AccessCodeForm() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mx-auto block text-center text-xs font-semibold text-white/60 underline"
+        className="mx-auto block text-center text-xs font-semibold text-[var(--color-text-muted)] underline"
       >
         J&apos;ai un code d&apos;accès
       </button>
@@ -61,17 +61,17 @@ export function AccessCodeForm() {
           autoCapitalize="characters"
           autoCorrect="off"
           spellCheck={false}
-          className="w-full rounded-[var(--radius-control)] border border-white/20 bg-white/10 px-3 py-2 text-sm uppercase tracking-widest text-white placeholder:text-white/40 placeholder:normal-case placeholder:tracking-normal"
+          className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-alt)] px-3 py-2 text-sm uppercase tracking-widest text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] placeholder:normal-case placeholder:tracking-normal"
         />
         <button
           type="submit"
           disabled={submitting || !code.trim()}
-          className="shrink-0 rounded-[var(--radius-control)] bg-white/15 px-3 py-2 text-xs font-bold uppercase tracking-wide text-white disabled:opacity-50"
+          className="shrink-0 rounded-[var(--radius-control)] bg-[var(--color-surface-alt)] px-3 py-2 text-xs font-bold uppercase tracking-wide text-[var(--color-text)] disabled:opacity-50"
         >
           {submitting ? "..." : "Valider"}
         </button>
       </div>
-      {error && <p className="text-center text-xs text-red-400">{error}</p>}
+      {error && <p className="text-center text-xs text-[var(--color-danger)]">{error}</p>}
     </form>
   );
 }
