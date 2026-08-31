@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import type Stripe from "stripe";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getStripeClient, STRIPE_PRICE_IDS } from "@/lib/stripe";
@@ -30,8 +31,8 @@ export async function POST(request: Request) {
   const existingSubscription = await prisma.subscription.findUnique({ where: { userId: user.id } });
   const origin = request.headers.get("origin") ?? process.env.NEXT_PUBLIC_APP_URL ?? "";
 
-  const session = await getStripeClient().checkout.sessions.create({
-    mode: "subscription",
+  const baseParams: Stripe.Checkout.SessionCreateParams = {
+    mode: "subscription" as const,
     customer: existingSubscription?.stripeCustomerId ?? undefined,
     customer_email: existingSubscription?.stripeCustomerId ? undefined : user.email,
     line_items: [{ price: priceId, quantity: 1 }],
@@ -46,7 +47,31 @@ export async function POST(request: Request) {
       metadata: parsed.data.affCode ? { userId: user.id, affCode: parsed.data.affCode } : { userId: user.id },
     },
     metadata: { userId: user.id, plan: parsed.data.plan },
-  });
+  };
+
+  // Le compte Stripe est partagé avec d'autres SaaS du fondateur — sa marque
+  // de compte (nom, couleur) ne peut donc pas être changée globalement sans
+  // affecter les autres produits. `branding_settings` permet de surcharger
+  // l'affichage juste pour CETTE session de paiement, sans toucher au compte.
+  // Fonctionnalité Stripe récente, pas encore dans les types du SDK
+  // installé (voir docs.stripe.com/api/checkout/sessions/create
+  // #create_checkout_session-branding_settings) — d'où le cast. Si Stripe
+  // la rejette pour une raison quelconque, on retente aussitôt sans elle:
+  // jamais bloquer un paiement pour une simple personnalisation visuelle.
+  let session;
+  try {
+    session = await getStripeClient().checkout.sessions.create({
+      ...baseParams,
+      branding_settings: {
+        display_name: "Progressa Foot",
+        button_color: "#1aa350",
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- branding_settings absent des types du SDK Stripe installé
+    } as any);
+  } catch (err) {
+    console.error("[stripe] checkout session with branding_settings failed, retrying without it", err);
+    session = await getStripeClient().checkout.sessions.create(baseParams);
+  }
 
   return NextResponse.json({ url: session.url });
 }
