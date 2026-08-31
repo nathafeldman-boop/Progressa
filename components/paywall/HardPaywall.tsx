@@ -17,6 +17,12 @@ const UNLOCKS = [
   { b: "Le classement", t: "amis, département, France — ta place chaque semaine." },
 ];
 
+const PLAN_LABELS: Record<PaywallPlan["id"], string> = {
+  WEEKLY: "Semaine",
+  MONTHLY: "Mensuel",
+  ANNUAL: "Annuel",
+};
+
 function formatRating(avgRating: number): string {
   return avgRating.toFixed(1).replace(".", ",");
 }
@@ -46,8 +52,8 @@ export function HardPaywall({
   reviewCount: number;
   plans: PaywallPlan[];
 }) {
-  // Le plan annuel (s'il existe) est présélectionné — meilleure valeur,
-  // toujours librement changeable pour le mensuel juste à côté.
+  // Le dernier plan de la liste (le plus engageant — annuel si présent,
+  // sinon mensuel) est présélectionné, toujours librement changeable.
   const [selectedPlanId, setSelectedPlanId] = useState<PaywallPlan["id"]>(plans[plans.length - 1].id);
   const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? plans[0];
   const [loading, setLoading] = useState(false);
@@ -166,7 +172,7 @@ export function HardPaywall({
                     key={p.id}
                     type="button"
                     onClick={() => setSelectedPlanId(p.id)}
-                    className="relative flex-1 rounded-[20px] border-2 px-3.5 py-[15px] text-left transition-colors"
+                    className="relative flex-1 rounded-[18px] border-2 px-2.5 py-3 text-left transition-colors"
                     style={{ background: on ? "var(--color-primary-soft)" : "var(--color-surface)", borderColor: on ? "var(--color-primary)" : "var(--color-border)" }}
                   >
                     {p.discountLabel && (
@@ -175,14 +181,14 @@ export function HardPaywall({
                       </span>
                     )}
                     <p
-                      className="text-[11px] font-bold uppercase tracking-[0.1em]"
+                      className="text-[10.5px] font-bold uppercase tracking-[0.08em]"
                       style={{ color: on ? "var(--color-primary-strong)" : "var(--color-text-muted)" }}
                     >
-                      {p.id === "MONTHLY" ? "Mensuel" : "Annuel"}
+                      {PLAN_LABELS[p.id]}
                     </p>
-                    <p className="mt-1.5 flex items-baseline gap-[3px]">
-                      <span className="font-display text-[29px] font-extrabold leading-[.9] text-[var(--color-text)]">{p.priceLabel}</span>
-                      <span className="text-[11px] font-semibold text-[var(--color-text-muted)]">{p.perLabel}</span>
+                    <p className="mt-1.5 flex flex-wrap items-baseline gap-x-[3px]">
+                      <span className="font-display text-2xl font-extrabold leading-[.9] text-[var(--color-text)]">{p.priceLabel}</span>
+                      <span className="text-[10.5px] font-semibold text-[var(--color-text-muted)]">{p.perLabel}</span>
                     </p>
                     <p className="mt-1.5 font-mono text-[9.5px]" style={{ color: on ? "var(--color-primary-strong)" : "#8b9a91" }}>
                       {p.subLabel}

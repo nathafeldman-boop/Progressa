@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getStripeClient, STRIPE_PRICE_IDS } from "@/lib/stripe";
 
 const bodySchema = z.object({
-  plan: z.enum(["MONTHLY", "ANNUAL"]),
+  plan: z.enum(["WEEKLY", "MONTHLY", "ANNUAL"]),
   affCode: z.string().max(64).nullable().optional(),
 });
 
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: "invalid_payload" }, { status: 400 });
 
-  const priceId = parsed.data.plan === "MONTHLY" ? STRIPE_PRICE_IDS.MONTHLY : STRIPE_PRICE_IDS.ANNUAL;
+  const priceId = STRIPE_PRICE_IDS[parsed.data.plan];
   if (!priceId) {
     return NextResponse.json({ error: "stripe_not_configured" }, { status: 500 });
   }
