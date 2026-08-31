@@ -818,6 +818,39 @@ function ActiveExerciseScreen({
             text="Un exercice à la fois, plein écran. Clique sur Commencer pour lancer le chrono, puis Terminé quand tu as fini — tu pourras noter la difficulté juste après."
           />
         )}
+
+        <CardTitle className="mt-3 text-center text-xl">
+          {block.exercise.emoji} {block.exercise.name}
+        </CardTitle>
+        <p className="mt-2 text-center text-sm text-[var(--color-text)]">{block.customInstruction}</p>
+        <p className="mt-2 text-center text-xs italic text-[var(--color-text-muted)]">{block.exercise.matchBenefit}</p>
+        {needsSubstituteCones && (
+          <p className="mx-auto mt-2 max-w-xs text-center text-xs font-semibold text-[var(--color-primary-strong)]">
+            💡 Pas de {EQUIPMENT_LABELS.CONES.toLowerCase()} ? Remplace-les par des chaussettes roulées, un sac ou une
+            bouteille au sol.
+          </p>
+        )}
+        {needsPartnerWarning && (
+          <p className="mx-auto mt-2 max-w-xs text-center text-xs font-semibold text-[var(--color-danger)]">
+            🧑‍🤝‍🧑 Cet exercice se fait normalement à deux. Seul aujourd&apos;hui ? Passe-le, ou improvise (mur, auto-lancer)
+            si c&apos;est possible.
+          </p>
+        )}
+
+        {/* Étapes textuelles avant l'animation: un joueur doit savoir quoi
+            faire avant de regarder une démo silencieuse (surtout que
+            certains exercices n'ont pas encore d'animation vraiment fidèle). */}
+        {state.phase === "idle" && block.exercise.steps.length > 0 && (
+          <Card className="mt-4 text-left">
+            <CardSubtitle>Comment faire, étape par étape</CardSubtitle>
+            <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-sm text-[var(--color-text)]">
+              {block.exercise.steps.map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Card>
+        )}
+
         {state.phase === "idle" && frames ? (
           <div className="mx-auto mt-3 w-full">
             <ExerciseFrameViewer sequence={frames} onReady={onStart} />
@@ -876,35 +909,6 @@ function ActiveExerciseScreen({
             deltas={state.reaction.deltas}
             className="mt-4 border-none bg-[var(--color-surface-alt)] p-3 shadow-none"
           />
-        )}
-
-        <CardTitle className="mt-4 text-center text-xl">
-          {block.exercise.emoji} {block.exercise.name}
-        </CardTitle>
-        <p className="mt-2 text-center text-sm text-[var(--color-text)]">{block.customInstruction}</p>
-        <p className="mt-2 text-center text-xs italic text-[var(--color-text-muted)]">{block.exercise.matchBenefit}</p>
-        {needsSubstituteCones && (
-          <p className="mx-auto mt-2 max-w-xs text-center text-xs font-semibold text-[var(--color-primary-strong)]">
-            💡 Pas de {EQUIPMENT_LABELS.CONES.toLowerCase()} ? Remplace-les par des chaussettes roulées, un sac ou une
-            bouteille au sol.
-          </p>
-        )}
-        {needsPartnerWarning && (
-          <p className="mx-auto mt-2 max-w-xs text-center text-xs font-semibold text-[var(--color-danger)]">
-            🧑‍🤝‍🧑 Cet exercice se fait normalement à deux. Seul aujourd&apos;hui ? Passe-le, ou improvise (mur, auto-lancer)
-            si c&apos;est possible.
-          </p>
-        )}
-
-        {state.phase === "idle" && block.exercise.steps.length > 0 && (
-          <Card className="mt-4 text-left">
-            <CardSubtitle>Comment faire, étape par étape</CardSubtitle>
-            <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-sm text-[var(--color-text)]">
-              {block.exercise.steps.map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ol>
-          </Card>
         )}
 
         <div className="mt-3 flex flex-wrap justify-center gap-2 text-sm font-semibold text-[var(--color-text-muted)]">
