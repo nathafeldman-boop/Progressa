@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   // contrairement à leur fichier sw.js de vérification par défaut).
   verification: {
     other: {
-      monetag: "35cf54a59a282436c0bc8d85e1f7db16",
+      monetag: "92895e3b6f482af499b6060157c09657",
     },
   },
   appleWebApp: {
