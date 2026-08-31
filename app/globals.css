@@ -86,6 +86,7 @@
   --color-badge-gold: var(--color-badge-gold);
   --font-display: var(--font-display);
   --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
 }
 
 html {
@@ -100,6 +101,10 @@ body {
 
 .font-display {
   font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-mono {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 /* Standalone PWA: respect the safe area on notched phones */
@@ -273,6 +278,62 @@ button:not(:disabled):active,
   .brian-juggle-frame-b {
     animation: none;
     opacity: 0;
+  }
+}
+
+/* Refonte du test d'évaluation (saisie manuelle) — components/tests/EstimateWizard.tsx */
+@keyframes ev-ring {
+  0% { opacity: 0.45; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.55); }
+}
+.ev-ring {
+  animation: ev-ring 2.6s ease-out infinite;
+}
+
+@keyframes ev-glow {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.ev-glow {
+  animation: ev-glow 4s ease-in-out infinite;
+}
+
+@keyframes ev-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.ev-float {
+  animation: ev-float 5s ease-in-out infinite;
+}
+
+@keyframes ev-sheen {
+  0% { transform: translateX(-140%) rotate(14deg); }
+  100% { transform: translateX(360%) rotate(14deg); }
+}
+.ev-sheen {
+  animation: ev-sheen 3.4s ease-in-out infinite;
+}
+
+@keyframes ev-pop {
+  0% { opacity: 0; transform: scale(0.86); }
+  62% { transform: scale(1.04); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.ev-pop {
+  animation: ev-pop 0.8s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+.ev-spin {
+  animation: spin 1.6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ev-ring, .ev-glow, .ev-float, .ev-sheen, .ev-pop, .ev-spin {
+    animation: none;
+  }
+  .ev-pop {
+    opacity: 1;
+    transform: none;
   }
 }
 

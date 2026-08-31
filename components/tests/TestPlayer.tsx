@@ -6,13 +6,14 @@ import { Card, CardSubtitle, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { BrianAvatar } from "@/components/brian/BrianAvatar";
 import { ConeTimer } from "@/components/tests/ConeTimer";
-import { composeTestFlowIntro, composeRestTip, composePersonalChatLockedMessage } from "@/lib/brian/messages";
+import { composeRestTip, composePersonalChatLockedMessage } from "@/lib/brian/messages";
 import { MIN_PLAUSIBLE_SECONDS } from "@/lib/evaluation-tests";
 import { elapsedSeconds, nowMs } from "@/lib/time";
 import { EXERCISE_FRAMES } from "@/lib/exercises/exercise-frames";
 import { ExerciseFrameViewer } from "@/components/exercises/ExerciseFrameViewer";
 import { trackClick } from "@/lib/analytics/track";
 import { getOrCreateAnonId } from "@/lib/onboarding/storage";
+import { EstimateWizard } from "@/components/tests/EstimateWizard";
 
 /** Test d'évaluation -> même séquence de poses Coach Brian que l'exercice équivalent en séance, quand elle existe. */
 const TEST_FRAMES_SLUG: Partial<Record<string, string>> = {
@@ -91,6 +92,8 @@ export function TestPlayer({
   // passer" et renvoie vers /progression au lieu de révéler la carte, y
   // compris juste après le tout premier test d'un nouveau joueur.
   const [justFinishedSession, setJustFinishedSession] = useState(false);
+  // Purement visuel: accordéon replié de la liste des épreuves sur l'écran d'intro.
+  const [showEligibleList, setShowEligibleList] = useState(false);
 
   useTicker(timerPhase === "running");
   const [, forceRestTick] = useState(0);
@@ -189,6 +192,9 @@ export function TestPlayer({
   // chronométré (/api/tests/submit) — aucune distinction en base ni à
   // l'affichage entre une valeur mesurée au chrono et une valeur tapée à la
   // main, exactement traité comme un test réel une fois enregistré.
+  // Un seul appel, toutes les valeurs d'un coup — le wizard (EstimateWizard)
+  // pilote sa propre navigation (form → analyse → révélation) via les props
+  // `submitting`/`error`, cette fonction ne navigue plus elle-même.
   async function submitEstimates() {
     setEstimateSubmitting(true);
     setEstimateError(null);
@@ -223,84 +229,121 @@ export function TestPlayer({
       }
       trackClick(getOrCreateAnonId(), "test_completed", "/tests#estimate");
       setJustFinishedSession(true);
-      setScreen("done");
-      router.refresh();
     } finally {
       setEstimateSubmitting(false);
     }
   }
 
   if (screen === "intro") {
+    const introFacts = [
+      { v: String(eligible.length), k: `test${eligible.length > 1 ? "s" : ""} guidé${eligible.length > 1 ? "s" : ""}` },
+      { v: "~15", k: "minutes" },
+      { v: "1", k: "carte joueur" },
+    ];
     return (
-      <div className="fixed inset-0 z-40 overflow-y-auto bg-[var(--color-bg)] [padding-top:env(safe-area-inset-top)] [padding-bottom:env(safe-area-inset-bottom)]">
-        <div className="mx-auto flex max-w-md flex-col p-4">
+      <div className="fixed inset-0 z-40 flex flex-col overflow-y-auto [background:linear-gradient(180deg,#f4fbf6_0%,#ffffff_42%)] [padding-bottom:env(safe-area-inset-bottom)] [padding-top:env(safe-area-inset-top)]">
+        <div className="mx-auto flex w-full max-w-md flex-1 flex-col p-6">
           <button type="button" onClick={quit} aria-label="Quitter les tests" className="self-start text-xl text-[var(--color-text-muted)]">
             ✕
           </button>
-        <p className="mt-2 font-mono text-[0.625rem] font-semibold uppercase tracking-[0.18em] text-[var(--color-primary-strong)]">
-          Tests d&apos;évaluation
-        </p>
-        <h1 className="mt-2 font-display text-4xl font-extrabold uppercase leading-[0.96] text-[var(--color-text)]">
-          Ce test va révéler
-          <br />
-          ton vrai niveau
-        </h1>
-        <p className="mt-3 max-w-[19rem] text-sm leading-relaxed text-[var(--color-text-muted)]">
-          {eligible.length} axe{eligible.length > 1 ? "s" : ""}, un par épreuve — au chrono ou de mémoire.
-          Progressa en déduit ta note générale et ton rang.
-        </p>
 
-        <div className="mt-5 flex flex-col gap-2">
-          {eligible.map((t, i) => (
-            <div
-              key={t.type}
-              className="flex items-center gap-3 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface-alt)] px-3.5 py-3"
-            >
-              <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[var(--color-primary-soft)] font-display text-base font-extrabold text-[var(--color-primary-strong)]">
-                {i + 1}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-[var(--color-text)]">{t.name}</p>
-                <p className="mt-0.5 font-mono text-[0.65rem] text-[var(--color-text-muted)]">
-                  AXE {t.axisLabel ?? "—"} · {t.unit.toUpperCase()}
-                </p>
-              </div>
+          <div className="relative mx-auto mt-3 h-[230px] w-[230px] shrink-0">
+            <div className="ev-glow pointer-events-none absolute inset-1.5 rounded-full" style={{ background: "radial-gradient(circle, rgba(26,163,80,.18), transparent 68%)" }} />
+            <div className="pointer-events-none absolute inset-[26px] rounded-full border border-[rgba(26,163,80,.22)]" />
+            <div className="ev-float absolute inset-0">
+              <BrianAvatar state="confident" size={230} />
             </div>
-          ))}
-        </div>
+          </div>
 
-        {locked.length > 0 && (
-          <p className="mt-3 text-xs text-[var(--color-text-muted)]">
-            {locked.length} test{locked.length > 1 ? "s" : ""} déjà passé{locked.length > 1 ? "s" : ""} récemment,
-            revient plus tard.
-          </p>
-        )}
+          <div className="mt-3.5">
+            <div className="inline-flex items-center gap-[7px] rounded-full bg-[var(--color-primary-soft)] px-3 py-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" />
+              <span className="font-mono text-[9.5px] tracking-[0.16em] text-[var(--color-primary-strong)]">COACH BRIAN · PRÊT</span>
+            </div>
+            <h1 className="mt-3.5 font-display text-[52px] font-extrabold uppercase leading-[.92] text-[var(--color-text)]">
+              Évalue
+              <br />
+              ton niveau
+            </h1>
+            <p className="mt-3 max-w-[19.5rem] text-[15.5px] leading-[1.55] text-[var(--color-text-muted)]">
+              Coach Brian va analyser tes performances pour identifier tes points forts et tes axes de progression,
+              {" "}
+              {firstName}.
+            </p>
+          </div>
 
-        <div className="mt-5 flex items-center gap-3 rounded-[var(--radius-card)] border border-[var(--color-primary-soft)] bg-[var(--color-primary-soft)] p-3.5">
-          <BrianAvatar state="confident" size={46} className="shrink-0" />
-          <p className="text-sm leading-snug text-[var(--color-text)]">{composeTestFlowIntro(firstName)}</p>
-        </div>
+          <div className="mt-5 flex gap-2">
+            {introFacts.map((f) => (
+              <div
+                key={f.k}
+                className="flex-1 rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-3.5 shadow-[0_1px_2px_rgba(16,35,26,.04),0_6px_18px_rgba(16,35,26,.05)]"
+              >
+                <p className="font-display text-2xl font-extrabold leading-[.9] text-[var(--color-text)]">{f.v}</p>
+                <p className="mt-1.5 text-[10.5px] text-[var(--color-text-muted)]">{f.k}</p>
+              </div>
+            ))}
+          </div>
 
-        <Button
-          className="mt-4 w-full"
-          onClick={() => {
-            trackClick(getOrCreateAnonId(), "test_estimate_started", "/tests");
-            setScreen("estimateAlert");
-          }}
-        >
-          Estimer mon niveau
-        </Button>
-        <Button
-          variant="secondary"
-          className="mt-2 w-full"
-          onClick={() => {
-            trackClick(getOrCreateAnonId(), "test_started", "/tests");
-            setScreen("test");
-            resetTestState();
-          }}
-        >
-          Plutôt faire le test chronométré
-        </Button>
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={() => setShowEligibleList((v) => !v)}
+              className="text-sm font-semibold text-[var(--color-primary-strong)] underline"
+            >
+              {showEligibleList ? "Masquer" : `Voir les ${eligible.length} épreuves`}
+            </button>
+            {showEligibleList && (
+              <div className="mt-2.5 flex flex-col gap-2">
+                {eligible.map((t, i) => (
+                  <div
+                    key={t.type}
+                    className="flex items-center gap-3 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface-alt)] px-3.5 py-3"
+                  >
+                    <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[var(--color-primary-soft)] font-display text-base font-extrabold text-[var(--color-primary-strong)]">
+                      {i + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-[var(--color-text)]">{t.name}</p>
+                      <p className="mt-0.5 font-mono text-[0.65rem] text-[var(--color-text-muted)]">
+                        AXE {t.axisLabel ?? "—"} · {t.unit.toUpperCase()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {locked.length > 0 && (
+              <p className="mt-3 text-xs text-[var(--color-text-muted)]">
+                {locked.length} test{locked.length > 1 ? "s" : ""} déjà passé{locked.length > 1 ? "s" : ""} récemment,
+                revient plus tard.
+              </p>
+            )}
+          </div>
+
+          <div className="flex-1" />
+
+          <button
+            type="button"
+            onClick={() => {
+              trackClick(getOrCreateAnonId(), "test_estimate_started", "/tests");
+              setScreen("estimateAlert");
+            }}
+            className="mt-5 flex h-[62px] w-full items-center justify-center gap-2.5 rounded-2xl bg-[var(--color-primary)] font-display text-xl font-extrabold uppercase tracking-[0.04em] text-[var(--color-on-primary)] transition-transform active:scale-95"
+            style={{ boxShadow: "0 18px 34px -12px rgba(26,163,80,.65)" }}
+          >
+            Commencer mon évaluation <span className="text-lg">→</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              trackClick(getOrCreateAnonId(), "test_started", "/tests");
+              setScreen("test");
+              resetTestState();
+            }}
+            className="mt-3 text-center text-sm font-semibold text-[var(--color-text-muted)]"
+          >
+            Plutôt faire le test chronométré
+          </button>
         </div>
       </div>
     );
@@ -323,7 +366,7 @@ export function TestPlayer({
             <h1 className="font-display text-2xl font-extrabold uppercase tracking-wide text-[var(--color-text)]">
               Comment ça marche
             </h1>
-            <Card className="text-left text-sm leading-relaxed">
+            <Card className="rounded-[24px] shadow-[0_1px_2px_rgba(16,35,26,.04),0_10px_28px_rgba(16,35,26,.07)] text-left text-sm leading-relaxed">
               <p>
                 Au lieu de faire chaque épreuve maintenant, tu indiques toi-même tes meilleures performances (record
                 de jonglages, temps de planche, etc.) — pratique si tu n&apos;as pas la place ou le temps de bouger
@@ -353,48 +396,20 @@ export function TestPlayer({
 
   if (screen === "estimateForm") {
     return (
-      <div className="fixed inset-0 z-40 overflow-y-auto bg-[var(--color-bg)] [padding-top:env(safe-area-inset-top)] [padding-bottom:env(safe-area-inset-bottom)]">
-        <div className="mx-auto flex max-w-md flex-col p-4">
-          <button
-            type="button"
-            onClick={() => setScreen("estimateAlert")}
-            aria-label="Retour"
-            className="self-start text-xl text-[var(--color-text-muted)]"
-          >
-            ✕
-          </button>
-          <h1 className="mt-2 font-display text-2xl font-extrabold uppercase tracking-wide text-[var(--color-text)]">
-            Tes meilleures performances
-          </h1>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">
-            Une épreuve que tu ne connais pas ? Laisse le champ vide, tu pourras la passer plus tard.
-          </p>
-
-          <div className="mt-5 flex flex-col gap-3">
-            {eligible.map((t) => (
-              <div key={t.type} className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface-alt)] p-3.5">
-                <p className="text-sm font-semibold text-[var(--color-text)]">{t.name}</p>
-                <p className="mt-0.5 font-mono text-[0.65rem] text-[var(--color-text-muted)]">
-                  AXE {t.axisLabel ?? "—"} · {t.unit.toUpperCase()}
-                </p>
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder={t.unit}
-                  value={estimateValues[t.type] ?? ""}
-                  onChange={(e) => setEstimateValues((prev) => ({ ...prev, [t.type]: e.target.value }))}
-                  className="mt-2 w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-2 text-sm"
-                />
-              </div>
-            ))}
-          </div>
-
-          {estimateError && <p className="mt-3 text-sm text-[var(--color-danger)]">{estimateError}</p>}
-
-          <Button className="mt-5 w-full" onClick={submitEstimates} disabled={estimateSubmitting}>
-            {estimateSubmitting ? "..." : "Valider mes stats"}
-          </Button>
-        </div>
+      <div className="fixed inset-0 z-40 flex flex-col bg-[var(--color-bg)]">
+        <EstimateWizard
+          eligible={eligible}
+          estimateValues={estimateValues}
+          onChange={(type, raw) => setEstimateValues((prev) => ({ ...prev, [type]: raw }))}
+          onSubmit={() => {
+            void submitEstimates();
+          }}
+          submitting={estimateSubmitting}
+          error={estimateError}
+          skipped={estimateSkipped}
+          onExitToAlert={() => setScreen("estimateAlert")}
+          onReveal={() => router.push(isFirstTime && justFinishedSession ? "/onboarding/carte" : "/progression")}
+        />
       </div>
     );
   }
