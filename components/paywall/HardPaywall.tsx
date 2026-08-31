@@ -13,9 +13,10 @@ import type { PaywallPlan } from "@/lib/stripe";
 
 const UNLOCKS = [
   { b: "Ton OVR et ton rang", t: "calculés sur tes 6 tests, débloqués tout de suite." },
-  { b: "Le programme de Coach Brian", t: "bâti sur ton poste et ton axe le plus faible." },
+  { b: "Le programme de Coach Brian", t: "bâti sur ton poste et ton axe le plus faible, sans limite de messages." },
   { b: "Ta carte qui évolue", t: "chaque séance terminée applique un delta réel." },
   { b: "Le classement", t: "amis, département, France — ta place chaque semaine." },
+  { b: "Aucune publicité", t: "ni classique ni récompensée — jamais d'attente à raccourcir." },
 ];
 
 const PLAN_LABELS: Record<PaywallPlan["id"], string> = {

@@ -9,7 +9,8 @@ import {
 } from "@/lib/programs/build-targeted-session";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { isPremiumActive } from "@/lib/subscription";
+import { isPremiumActive, hasSkippedPaywall } from "@/lib/subscription";
+import { getFreeTargetedSessionStatus } from "@/lib/programs/free-targeted-cooldown";
 import { TargetedSessionVariantPicker } from "@/components/dashboard/TargetedSessionVariantPicker";
 import type { BrianState } from "@/components/brian/BrianAvatar";
 
@@ -39,7 +40,29 @@ export default async function EntrainementCiblePage({ params }: { params: Promis
   if (!user) redirect("/connexion");
 
   const subscription = await prisma.subscription.findUnique({ where: { userId: user.id } });
-  if (!isPremiumActive(subscription)) redirect("/paywall");
+  const premium = isPremiumActive(subscription);
+  // Accessible à un joueur premium (illimité) ou ayant sauté le paiement
+  // ("Payer ultérieurement") — dans ce dernier cas, limité à 1 séance
+  // gratuite toutes les 48h, réductible par pub (voir free-targeted-cooldown.ts).
+  // Un compte qui n'a même pas vu le paywall reste bloqué, inchangé.
+  if (!premium && !hasSkippedPaywall(subscription)) redirect("/paywall");
+
+  const cooldown = premium ? null : await getFreeTargetedSessionStatus(user.id);
+  const cooldownNextEligibleAtIso = cooldown?.nextEligibleAt?.toISOString() ?? null;
+
+  if (cooldown && !cooldown.eligible) {
+    return (
+      <TargetedSessionVariantPicker
+        theme={theme as TrainingTheme}
+        label={THEME_LABELS[theme as TrainingTheme]}
+        emoji={THEME_EMOJI[theme as TrainingTheme]}
+        intro={NEED_INTRO[theme as TrainingTheme]}
+        brianState={THEME_BRIAN_STATE[theme as TrainingTheme]}
+        variants={[]}
+        cooldownNextEligibleAtIso={cooldownNextEligibleAtIso}
+      />
+    );
+  }
 
   const trainingTheme = theme as TrainingTheme;
   const variants = await previewTargetedSessionVariants(user.id, trainingTheme);
@@ -53,6 +76,7 @@ export default async function EntrainementCiblePage({ params }: { params: Promis
       intro={NEED_INTRO[trainingTheme]}
       brianState={THEME_BRIAN_STATE[trainingTheme]}
       variants={variants}
+      cooldownNextEligibleAtIso={null}
     />
   );
 }

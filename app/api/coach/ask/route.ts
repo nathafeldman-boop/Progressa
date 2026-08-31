@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { hasSkippedPaywall, isPremiumActive } from "@/lib/subscription";
+import { getBrianMessageQuota } from "@/lib/brian/message-quota";
 import { answerQuickQuestion, QUICK_QUESTIONS } from "@/lib/brian/coach-qa";
 
 const bodySchema = z.object({
@@ -11,6 +13,17 @@ const bodySchema = z.object({
 export async function POST(request: Request) {
   const user = await getCurrentInternalUser();
   if (!user) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+
+  const subscription = await prisma.subscription.findUnique({ where: { userId: user.id } });
+  const premium = isPremiumActive(subscription);
+  if (!premium && !hasSkippedPaywall(subscription)) {
+    return NextResponse.json({ error: "payment_required" }, { status: 402 });
+  }
+
+  const quota = await getBrianMessageQuota(user.id, premium);
+  if (quota.remaining <= 0) {
+    return NextResponse.json({ error: "brian_quota_reached", brianQuota: quota }, { status: 429 });
+  }
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: "invalid_payload" }, { status: 400 });
@@ -28,5 +41,6 @@ export async function POST(request: Request) {
     data: { userId: user.id, category: "RETENTION", text },
   });
 
-  return NextResponse.json({ id: message.id, text, createdAt: message.createdAt });
+  const updatedQuota = premium ? null : await getBrianMessageQuota(user.id, false);
+  return NextResponse.json({ id: message.id, text, createdAt: message.createdAt, brianQuota: updatedQuota });
 }

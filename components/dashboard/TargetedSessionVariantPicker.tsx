@@ -1,11 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BrianAvatar, type BrianState } from "@/components/brian/BrianAvatar";
 import { BrianTip } from "@/components/brian/BrianTip";
 import { Card, CardTitle } from "@/components/ui/Card";
+import { RewardedAdButton } from "@/components/ads/RewardedAdButton";
+import { trackClick } from "@/lib/analytics/track";
+import { getOrCreateAnonId } from "@/lib/onboarding/storage";
 import type { TargetedSessionVariantPreview } from "@/lib/programs/build-targeted-session";
+
+function formatRemaining(ms: number): string {
+  if (ms <= 0) return "0h";
+  const totalMinutes = Math.ceil(ms / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours <= 0) return `${minutes}min`;
+  if (minutes === 0) return `${hours}h`;
+  return `${hours}h${String(minutes).padStart(2, "0")}`;
+}
 
 export function TargetedSessionVariantPicker({
   theme,
@@ -14,6 +27,7 @@ export function TargetedSessionVariantPicker({
   intro,
   brianState,
   variants,
+  cooldownNextEligibleAtIso,
 }: {
   theme: string;
   label: string;
@@ -21,10 +35,26 @@ export function TargetedSessionVariantPicker({
   intro: string;
   brianState: BrianState;
   variants: TargetedSessionVariantPreview[];
+  cooldownNextEligibleAtIso: string | null;
 }) {
   const router = useRouter();
   const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
   const [error, setError] = useState(false);
+  const [nextEligibleAtIso, setNextEligibleAtIso] = useState(cooldownNextEligibleAtIso);
+  const [remainingMs, setRemainingMs] = useState(() =>
+    nextEligibleAtIso ? new Date(nextEligibleAtIso).getTime() - Date.now() : 0
+  );
+
+  useEffect(() => {
+    if (!nextEligibleAtIso) return;
+    const target = new Date(nextEligibleAtIso).getTime();
+    const tick = () => setRemainingMs(Math.max(0, target - Date.now()));
+    tick();
+    const interval = window.setInterval(tick, 30_000);
+    return () => window.clearInterval(interval);
+  }, [nextEligibleAtIso]);
+
+  const inCooldown = !!nextEligibleAtIso && remainingMs > 0;
 
   async function pick(variantIndex: number) {
     setLoadingIndex(variantIndex);
@@ -36,11 +66,14 @@ export function TargetedSessionVariantPicker({
         body: JSON.stringify({ variantIndex }),
       });
       if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (data.nextEligibleAt) setNextEligibleAtIso(data.nextEligibleAt);
         setError(true);
         setLoadingIndex(null);
         return;
       }
       const data = await res.json();
+      trackClick(getOrCreateAnonId(), "free_session_started", `/entrainement-cible/${theme}`);
       router.push(`/seance/${data.sessionId}`);
     } catch {
       setError(true);
@@ -60,35 +93,57 @@ export function TargetedSessionVariantPicker({
         </div>
       </div>
 
-      <BrianTip
-        tipKey="entrainement-cible-variantes"
-        text="Choisis la séance qui te tente le plus — elles travaillent toutes le même besoin, avec des exercices différents."
-      />
+      {inCooldown ? (
+        <Card className="space-y-3 text-center">
+          <CardTitle className="text-base">Prochaine séance gratuite dans</CardTitle>
+          <p className="font-display text-3xl font-extrabold tabular-nums text-[var(--color-text)]">
+            {formatRemaining(remainingMs)}
+          </p>
+          <p className="text-xs text-[var(--color-text-muted)]">
+            Tu peux attendre gratuitement, ou regarder une pub pour accélérer.
+          </p>
+          <RewardedAdButton
+            kind="SESSION_TIMER"
+            rewardLabel="-5h"
+            onGranted={(data) => {
+              const cooldown = data.targetedSessionCooldown as { nextEligibleAt: string | null } | undefined;
+              setNextEligibleAtIso(cooldown?.nextEligibleAt ?? null);
+            }}
+          />
+        </Card>
+      ) : (
+        <>
+          <BrianTip
+            tipKey="entrainement-cible-variantes"
+            text="Choisis la séance qui te tente le plus — elles travaillent toutes le même besoin, avec des exercices différents."
+          />
 
-      <div className="space-y-3">
-        {variants.map((v) => (
-          <button
-            key={v.variantIndex}
-            type="button"
-            onClick={() => pick(v.variantIndex)}
-            disabled={loadingIndex !== null}
-            className="block w-full text-left disabled:opacity-60"
-          >
-            <Card className="transition-transform active:scale-[0.98]">
-              <div className="flex items-center justify-between gap-2">
-                <CardTitle className="text-base">Séance {v.variantIndex + 1}</CardTitle>
-                <span className="text-xs font-semibold text-[var(--color-text-muted)]">{v.totalBlocks} exercices</span>
-              </div>
-              {v.mainExerciseNames.length > 0 && (
-                <p className="mt-1.5 text-sm text-[var(--color-text-muted)]">{v.mainExerciseNames.join(" · ")}...</p>
-              )}
-              <p className="mt-2 text-xs font-bold uppercase tracking-wide text-[var(--color-primary-strong)]">
-                {loadingIndex === v.variantIndex ? "Préparation..." : "Lancer cette séance →"}
-              </p>
-            </Card>
-          </button>
-        ))}
-      </div>
+          <div className="space-y-3">
+            {variants.map((v) => (
+              <button
+                key={v.variantIndex}
+                type="button"
+                onClick={() => pick(v.variantIndex)}
+                disabled={loadingIndex !== null}
+                className="block w-full text-left disabled:opacity-60"
+              >
+                <Card className="transition-transform active:scale-[0.98]">
+                  <div className="flex items-center justify-between gap-2">
+                    <CardTitle className="text-base">Séance {v.variantIndex + 1}</CardTitle>
+                    <span className="text-xs font-semibold text-[var(--color-text-muted)]">{v.totalBlocks} exercices</span>
+                  </div>
+                  {v.mainExerciseNames.length > 0 && (
+                    <p className="mt-1.5 text-sm text-[var(--color-text-muted)]">{v.mainExerciseNames.join(" · ")}...</p>
+                  )}
+                  <p className="mt-2 text-xs font-bold uppercase tracking-wide text-[var(--color-primary-strong)]">
+                    {loadingIndex === v.variantIndex ? "Préparation..." : "Lancer cette séance →"}
+                  </p>
+                </Card>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
       {error && (
         <p className="text-center text-sm text-[var(--color-danger)]">

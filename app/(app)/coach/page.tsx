@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentInternalUser } from "@/lib/auth";
 import { isPremiumActive, hasSkippedPaywall } from "@/lib/subscription";
+import { getBrianMessageQuota } from "@/lib/brian/message-quota";
 import { composeWelcomeMessage } from "@/lib/brian/messages";
 import { CoachChat } from "@/components/coach/CoachChat";
 import { BrianTip } from "@/components/brian/BrianTip";
@@ -13,10 +14,13 @@ export default async function CoachPage() {
 
   const subscription = await prisma.subscription.findUnique({ where: { userId: user.id } });
   const premium = isPremiumActive(subscription);
-  // Seule page accessible à un joueur ayant sauté le paiement ("Payer
+  // Accessible à un joueur premium ou ayant sauté le paiement ("Payer
   // ultérieurement" sur le paywall) — voir hasSkippedPaywall(). Toutes les
-  // autres pages du groupe (app) restent un hard paywall classique.
+  // autres pages du groupe (app) restent un hard paywall classique, sauf
+  // l'entraînement ciblé qui a sa propre limite gratuite (48h + pub).
   if (!premium && !hasSkippedPaywall(subscription)) redirect("/paywall");
+
+  const brianQuota = await getBrianMessageQuota(user.id, premium);
 
   const messages = await prisma.brianMessage.findMany({
     where: { userId: user.id },
@@ -51,7 +55,7 @@ export default async function CoachPage() {
           className="mb-3 flex items-center justify-between gap-2 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface-alt)] px-3.5 py-2.5"
         >
           <p className="text-[12.5px] leading-[1.4] text-[var(--color-text)]">
-            <b>Accès limité</b> — carte, séances et classement restent verrouillés.
+            <b>Accès gratuit</b> — carte, progression et classement restent réservés à Premium.
           </p>
           <span className="shrink-0 text-[11px] font-bold uppercase tracking-wide text-[var(--color-primary-strong)]">
             Débloquer →
@@ -65,7 +69,7 @@ export default async function CoachPage() {
           text="Pose-moi n'importe quelle question sur ton entraînement — je réponds en fonction de tes vraies stats, pas de généralités."
         />
       </div>
-      <CoachChat initialMessages={initialMessages} />
+      <CoachChat initialMessages={initialMessages} initialQuota={premium ? null : brianQuota} />
     </div>
   );
 }
