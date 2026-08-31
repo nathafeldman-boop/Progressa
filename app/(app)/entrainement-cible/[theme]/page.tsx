@@ -12,6 +12,7 @@ import { prisma } from "@/lib/prisma";
 import { isPremiumActive, hasSkippedPaywall } from "@/lib/subscription";
 import { getFreeTargetedSessionStatus } from "@/lib/programs/free-targeted-cooldown";
 import { TargetedSessionVariantPicker } from "@/components/dashboard/TargetedSessionVariantPicker";
+import { MonetagInPagePush } from "@/components/ads/MonetagInPagePush";
 import type { BrianState } from "@/components/brian/BrianAvatar";
 
 const THEME_BRIAN_STATE: Record<TrainingTheme, BrianState> = {
@@ -52,15 +53,18 @@ export default async function EntrainementCiblePage({ params }: { params: Promis
 
   if (cooldown && !cooldown.eligible) {
     return (
-      <TargetedSessionVariantPicker
-        theme={theme as TrainingTheme}
-        label={THEME_LABELS[theme as TrainingTheme]}
-        emoji={THEME_EMOJI[theme as TrainingTheme]}
-        intro={NEED_INTRO[theme as TrainingTheme]}
-        brianState={THEME_BRIAN_STATE[theme as TrainingTheme]}
-        variants={[]}
-        cooldownNextEligibleAtIso={cooldownNextEligibleAtIso}
-      />
+      <>
+        <TargetedSessionVariantPicker
+          theme={theme as TrainingTheme}
+          label={THEME_LABELS[theme as TrainingTheme]}
+          emoji={THEME_EMOJI[theme as TrainingTheme]}
+          intro={NEED_INTRO[theme as TrainingTheme]}
+          brianState={THEME_BRIAN_STATE[theme as TrainingTheme]}
+          variants={[]}
+          cooldownNextEligibleAtIso={cooldownNextEligibleAtIso}
+        />
+        <MonetagInPagePush />
+      </>
     );
   }
 
@@ -69,14 +73,17 @@ export default async function EntrainementCiblePage({ params }: { params: Promis
   if (variants.length === 0) redirect("/dashboard?erreur=entrainement-cible-indisponible");
 
   return (
-    <TargetedSessionVariantPicker
-      theme={trainingTheme}
-      label={THEME_LABELS[trainingTheme]}
-      emoji={THEME_EMOJI[trainingTheme]}
-      intro={NEED_INTRO[trainingTheme]}
-      brianState={THEME_BRIAN_STATE[trainingTheme]}
-      variants={variants}
-      cooldownNextEligibleAtIso={null}
-    />
+    <>
+      <TargetedSessionVariantPicker
+        theme={trainingTheme}
+        label={THEME_LABELS[trainingTheme]}
+        emoji={THEME_EMOJI[trainingTheme]}
+        intro={NEED_INTRO[trainingTheme]}
+        brianState={THEME_BRIAN_STATE[trainingTheme]}
+        variants={variants}
+        cooldownNextEligibleAtIso={null}
+      />
+      {!premium && <MonetagInPagePush />}
+    </>
   );
 }
