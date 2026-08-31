@@ -675,6 +675,12 @@ model Subscription {
   // isPremiumActive() considère le compte premium si status=ACTIVE OU si
   // cette date est dans le futur.
   bonusPremiumUntil    DateTime?
+  // Joueur qui a cliqué "Payer ultérieurement" sur le paywall: accès à
+  // l'app débloqué mais ultra restreint (coach uniquement) tant qu'il n'est
+  // pas premium — voir hasSkippedPaywall() dans lib/subscription.ts. Reste
+  // renseigné même après passage premium (historique), sans effet une fois
+  // isPremiumActive() vrai.
+  paywallSkippedAt     DateTime?
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
 }

@@ -21,3 +21,14 @@ export function isPremiumActive(subscription: Subscription | null | undefined): 
 export function sessionCountForTier(subscription: Subscription | null | undefined): number {
   return isPremiumActive(subscription) ? 3 : 0;
 }
+
+/**
+ * "Payer ultérieurement": le joueur a explicitement choisi de sauter le
+ * paiement depuis le paywall (voir /api/paywall/skip-later). Débloque
+ * uniquement Coach Brian (app/(app)/coach/page.tsx) — toutes les autres
+ * pages du groupe (app) restent derrière `if (!premium) redirect("/paywall")`
+ * sans changement. Un premium actif rend ce statut sans effet.
+ */
+export function hasSkippedPaywall(subscription: Subscription | null | undefined): boolean {
+  return !!subscription?.paywallSkippedAt;
+}

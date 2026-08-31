@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { BrianAvatar } from "@/components/brian/BrianAvatar";
 import { PlayerCardView } from "@/components/card/PlayerCardView";
 import { trackClick } from "@/lib/analytics/track";
@@ -56,8 +57,10 @@ export function HardPaywall({
   // sinon mensuel) est présélectionné, toujours librement changeable.
   const [selectedPlanId, setSelectedPlanId] = useState<PaywallPlan["id"]>(plans[plans.length - 1].id);
   const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? plans[0];
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [skipping, setSkipping] = useState(false);
 
   useEffect(() => {
     trackClick(getOrCreateAnonId(), "paywall_viewed", "/paywall");
@@ -83,6 +86,19 @@ export function HardPaywall({
       setError(true);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function skipForNow() {
+    setSkipping(true);
+    trackClick(getOrCreateAnonId(), "paywall_skipped", "/paywall");
+    try {
+      await fetch("/api/paywall/skip-later", { method: "POST" });
+    } finally {
+      // Coach Brian est la seule page accessible sans abonnement (voir
+      // app/(app)/coach/page.tsx) — inutile d'envoyer vers /dashboard pour
+      // se faire renvoyer ici aussitôt.
+      router.push("/coach");
     }
   }
 
@@ -265,6 +281,15 @@ export function HardPaywall({
         <div className="mt-2.5">
           <AccessCodeForm />
         </div>
+
+        <button
+          type="button"
+          onClick={skipForNow}
+          disabled={skipping}
+          className="mx-auto mt-2 block text-center text-[11px] text-[var(--color-text-muted)] underline disabled:opacity-50"
+        >
+          {skipping ? "..." : "Payer ultérieurement"}
+        </button>
       </div>
     </div>
   );
