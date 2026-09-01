@@ -7,6 +7,8 @@ import { BrianAvatar } from "@/components/brian/BrianAvatar";
 import { OnboardingBackground } from "@/components/onboarding/OnboardingBackground";
 import { CalibratingCardTeaser } from "@/components/card/CalibratingCardTeaser";
 import { Button } from "@/components/ui/Button";
+import { MonetagInPagePush } from "@/components/ads/MonetagInPagePush";
+import { isPremiumActive } from "@/lib/subscription";
 
 /**
  * Premier vrai moment avec Coach Brian, juste après l'onboarding (section 1
@@ -28,14 +30,19 @@ export default async function OnboardingBrianPage() {
     );
   }
 
-  const [welcomeMessage, program, testsTaken] = await Promise.all([
+  const [welcomeMessage, program, testsTaken, subscription] = await Promise.all([
     prisma.brianMessage.findFirst({ where: { userId: user.id, category: "WELCOME" }, orderBy: { createdAt: "desc" } }),
     getCurrentWeeklyProgram(user.id),
     prisma.evaluationResult.count({ where: { userId: user.id } }),
+    prisma.subscription.findUnique({ where: { userId: user.id } }),
   ]);
 
   const firstSession = program?.sessions.find((s) => s.status === "PLANNED") ?? program?.sessions[0] ?? null;
   const welcomeText = welcomeMessage?.text ?? composeWelcomeMessage(user.firstName);
+  // Le compte existe déjà à cette étape (juste après l'inscription, avant le
+  // paywall) — jamais montré à un joueur déjà premium par un cas limite de
+  // retour sur cette page, même si ça n'arrive pas dans le funnel normal.
+  const premium = isPremiumActive(subscription);
 
   // Le tout premier passage (aucun test encore passé) doit établir le
   // niveau du joueur avant tout entraînement — section 2 du cahier des
@@ -71,6 +78,12 @@ export default async function OnboardingBrianPage() {
               </Link>
             )}
           </div>
+
+          {!premium && (
+            <div className="w-full max-w-sm">
+              <MonetagInPagePush />
+            </div>
+          )}
         </div>
       </div>
     );
@@ -92,6 +105,12 @@ export default async function OnboardingBrianPage() {
           {firstSession ? "Commencer mon premier entraînement" : "Aller à mon tableau de bord"}
         </Button>
       </Link>
+
+      {!premium && (
+        <div className="w-full max-w-sm">
+          <MonetagInPagePush />
+        </div>
+      )}
     </div>
   );
 }
